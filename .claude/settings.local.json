@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\Users\\\\NHATTHANG\\\\FptUniversity\\\\SEP490\\\\web-user-backtrack\\\\src\\\\routes\\\\found\" /b)",
+      "Bash(dir:*)",
+      "Bash(npx shadcn@latest add card badge)",
+      "Bash(npm run build:*)"
+    ]
+  }
+}
