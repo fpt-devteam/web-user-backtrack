@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Smartphone, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { BacktrackHeader } from '@/shared/components/BacktrackHeader'
+import { BacktrackHeader } from '@/components/shared/backtrack-header'
 
 export const Route = createFileRoute('/download/')({
   component: DownloadAppPage,

@@ -1,7 +1,78 @@
-# shadcn instructions
+# shadcn/ui Component Guidelines
 
-Use the latest version of Shadcn to install new components, like this command to add a button component:
+## IMPORTANT: Always Prioritize shadcn/ui Components
+
+When implementing ANY UI elements, you MUST:
+
+1. **Use shadcn/ui components first** - Always check if a shadcn/ui component exists before writing custom HTML
+2. **Install new components when needed** - If a component doesn't exist in the project, install it using the command below
+3. **Limit raw HTML usage** - Only use raw HTML when absolutely necessary (e.g., semantic structure, layouts). For interactive elements, forms, cards, buttons, badges, etc., ALWAYS use shadcn/ui components
+4. **Compose components** - Combine multiple shadcn/ui components to create rich UIs instead of writing custom HTML/CSS
+
+## Installing shadcn/ui Components
+
+Use the latest version of shadcn to install new components:
 
 ```bash
-pnpm dlx shadcn@latest add button
+npx shadcn@latest add [component-name]
 ```
+
+Examples:
+```bash
+npx shadcn@latest add button
+npx shadcn@latest add card
+npx shadcn@latest add badge
+npx shadcn@latest add dialog
+npx shadcn@latest add form
+npx shadcn@latest add input
+npx shadcn@latest add select
+npx shadcn@latest add table
+```
+
+## Available shadcn/ui Components
+
+Before implementing UI, check if these components are available:
+- **Layout**: Card, Separator, Aspect Ratio, Scroll Area
+- **Forms**: Button, Input, Textarea, Checkbox, Radio Group, Select, Switch, Slider, Label, Form
+- **Data Display**: Table, Badge, Avatar, Skeleton, Progress
+- **Feedback**: Alert, Alert Dialog, Toast, Dialog, Sheet
+- **Navigation**: Tabs, Dropdown Menu, Command, Navigation Menu
+- **Overlays**: Dialog, Sheet, Popover, Tooltip, Hover Card
+
+Full list: https://ui.shadcn.com/docs/components
+
+## Example: Good vs Bad Practice
+
+❌ **BAD** - Using raw HTML:
+```tsx
+<div className="border rounded-lg p-4">
+  <button className="bg-blue-500 text-white px-4 py-2 rounded">
+    Click me
+  </button>
+</div>
+```
+
+✅ **GOOD** - Using shadcn/ui:
+```tsx
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+
+<Card className="p-4">
+  <Button>Click me</Button>
+</Card>
+```
+
+## When to Use Raw HTML
+
+Only use raw HTML for:
+- Semantic structure (main, section, article, header, footer)
+- Simple layout containers (div, span) when no component alternative exists
+- Text content (p, h1-h6) without styling needs
+- Lists (ul, ol, li) for simple content
+
+## Always Ask First
+
+If you're unsure whether a shadcn/ui component exists for your use case:
+1. Check the documentation: https://ui.shadcn.com/docs/components
+2. Install the component if it exists
+3. Only use custom HTML as a last resort

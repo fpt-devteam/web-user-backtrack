@@ -2,12 +2,17 @@ import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 
-import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx'
+import * as TanStackQueryProvider from '@/integrations/tanstack-query/root-provider.tsx'
+import { AuthProvider } from '@/hooks/use-auth'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
 import './styles.css'
+import { NotFoundPage } from '@/components/ui/errors/not-found-page.tsx'
+import { InternalServerErrorPage } from '@/components/ui/errors/internal-server-error-page.tsx'
+import { Spinner } from '@/components/ui/spinner.tsx'
+import { Toaster } from "@/components/ui/sonner"
 // Create a new router instance
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
@@ -20,6 +25,9 @@ const router = createRouter({
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
+  defaultErrorComponent: () => <InternalServerErrorPage />,
+  defaultPendingComponent: () => <Spinner size="xl" />,
+  defaultNotFoundComponent: () => <NotFoundPage />,
 })
 
 // Register the router instance for type safety
@@ -36,7 +44,10 @@ if (rootElement && !rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+          <Toaster position='top-right' />
+        </AuthProvider>
       </TanStackQueryProvider.Provider>
     </StrictMode>,
   )
