@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DownloadIndexRouteImport } from './routes/download/index'
-import { Route as ChatAnonymousRouteImport } from './routes/chat/anonymous'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
+import { Route as ChatConversationIdIndexRouteImport } from './routes/chat/conversation/$id/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,49 +24,54 @@ const DownloadIndexRoute = DownloadIndexRouteImport.update({
   path: '/download/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChatAnonymousRoute = ChatAnonymousRouteImport.update({
-  id: '/chat/anonymous',
-  path: '/chat/anonymous',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const FoundIdIndexRoute = FoundIdIndexRouteImport.update({
   id: '/found/$id/',
   path: '/found/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatConversationIdIndexRoute = ChatConversationIdIndexRouteImport.update({
+  id: '/chat/conversation/$id/',
+  path: '/chat/conversation/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/chat/anonymous': typeof ChatAnonymousRoute
   '/download': typeof DownloadIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
+  '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/chat/anonymous': typeof ChatAnonymousRoute
   '/download': typeof DownloadIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
+  '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/chat/anonymous': typeof ChatAnonymousRoute
   '/download/': typeof DownloadIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
+  '/chat/conversation/$id/': typeof ChatConversationIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat/anonymous' | '/download' | '/found/$id'
+  fullPaths: '/' | '/download' | '/found/$id' | '/chat/conversation/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat/anonymous' | '/download' | '/found/$id'
-  id: '__root__' | '/' | '/chat/anonymous' | '/download/' | '/found/$id/'
+  to: '/' | '/download' | '/found/$id' | '/chat/conversation/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/download/'
+    | '/found/$id/'
+    | '/chat/conversation/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ChatAnonymousRoute: typeof ChatAnonymousRoute
   DownloadIndexRoute: typeof DownloadIndexRoute
   FoundIdIndexRoute: typeof FoundIdIndexRoute
+  ChatConversationIdIndexRoute: typeof ChatConversationIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,13 +90,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DownloadIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/chat/anonymous': {
-      id: '/chat/anonymous'
-      path: '/chat/anonymous'
-      fullPath: '/chat/anonymous'
-      preLoaderRoute: typeof ChatAnonymousRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/found/$id/': {
       id: '/found/$id/'
       path: '/found/$id'
@@ -99,14 +97,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FoundIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/conversation/$id/': {
+      id: '/chat/conversation/$id/'
+      path: '/chat/conversation/$id'
+      fullPath: '/chat/conversation/$id'
+      preLoaderRoute: typeof ChatConversationIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ChatAnonymousRoute: ChatAnonymousRoute,
   DownloadIndexRoute: DownloadIndexRoute,
   FoundIdIndexRoute: FoundIdIndexRoute,
+  ChatConversationIdIndexRoute: ChatConversationIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

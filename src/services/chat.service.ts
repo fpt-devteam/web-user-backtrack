@@ -20,15 +20,23 @@ export const chatService = {
     return data.data;
   },
 
-  async getMessages(conversationId: string): Promise<Message[]> {
-    const { data } = await privateClient.get<ApiResponse<Message[]>>(
-      `/api/chat/messages/${conversationId}`
+  async getConversationById(id: string): Promise<Conversation> {
+    const { data } = await privateClient.get<ApiResponse<Conversation>>(
+      `/api/chat/conversations/${id}`
     );
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch conversations');
+    return data.data;
+  },
+
+  async getMessages(conversationId: string, cursor: string | null): Promise<CursorPagedResponse<Message>> {
+    const url = `/api/chat/messages/${conversationId}` + (cursor ? `?cursor=${cursor}` : '');
+    const { data } = await privateClient.get<ApiResponse<CursorPagedResponse<Message>>>(url);
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch messages');
     return data.data;
   },
 
   async sendMessage(conversationId: string, content: string): Promise<Message> {
+    console.log('Sending message to conversation:', conversationId, 'Content:', content);
     const { data } = await privateClient.post<ApiResponse<Message>>(
       `/api/chat/messages/${conversationId}`,
       { content }

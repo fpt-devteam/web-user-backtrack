@@ -12,6 +12,7 @@ import { auth } from '@/lib/firebase.ts'
 import { userKeys } from '@/hooks/use-user';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { userService } from '@/services/user.service';
+import { toast } from '@/lib/toast';
 
 interface AuthContextValue {
   profile: UserProfile | null;
@@ -77,7 +78,8 @@ export function useSignInAnonymous() {
       await signInAnonymously(auth)
     },
     onError: (error) => {
-      console.error('Firebase sign-in error:', error)
+      console.error('Firebase sign-in error:', error);
+      toast.fromError(error);
     },
   })
 }

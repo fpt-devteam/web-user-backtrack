@@ -4,6 +4,7 @@ import { useEffect, useCallback } from 'react';
 import { chatService } from '@/services/chat.service';
 import { useSocket } from './use-socket';
 import type { Message, CreateConversationRequest } from '@/types/chat.types';
+import { toast } from '@/lib/toast';
 
 export const chatKeys = {
   all: ['chat'] as const,
@@ -21,12 +22,30 @@ export function useGetConversations() {
   });
 }
 
-export function useGetMessages(conversationId: string | undefined) {
-  return useQuery({
-    queryKey: chatKeys.messages(conversationId!),
-    queryFn: () => chatService.getMessages(conversationId!),
+export function useGetConversationById(id: string, enabled: boolean = true) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['chat', 'conversation', id],
+    queryFn: () => chatService.getConversationById(id),
+    enabled,
+    staleTime: 1000 * 60, // 1 minute
+  });
+  if (error) {
+    toast.fromError(error);
+  }
+  return { data, isLoading };
+
+}
+
+export function useGetMessages(conversationId: string) {
+  return useInfiniteQuery({
+    queryKey: chatKeys.messages(conversationId),
+    queryFn: ({ pageParam }) =>
+      chatService.getMessages(conversationId, pageParam),
     enabled: !!conversationId,
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 30, // 30 seconds,
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+
   });
 }
 
@@ -37,6 +56,10 @@ export function useCreateConversation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     },
+    onError: (error) => {
+      console.error('Error creating conversation:', error);
+      toast.fromError(error);
+    }
   });
 }
 
@@ -45,47 +68,12 @@ export function useSendMessage(conversationId: string) {
 
   return useMutation({
     mutationFn: (content: string) => chatService.sendMessage(conversationId, content),
-    onMutate: async (content) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: chatKeys.messages(conversationId) });
-
-      // Snapshot previous value
-      const previousMessages = queryClient.getQueryData<Message[]>(
-        chatKeys.messages(conversationId)
-      );
-
-      // Optimistically update
-      const optimisticMessage: Message = {
-        id: `temp-${Date.now()}`,
-        conversationId,
-        senderId: 'current-user', // Replace with actual user ID
-        content,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      queryClient.setQueryData<Message[]>(
-        chatKeys.messages(conversationId),
-        (old) => [...(old || []), optimisticMessage]
-      );
-
-      return { previousMessages };
-    },
-    onError: (_, __, context) => {
-      // Rollback on error
-      if (context?.previousMessages) {
-        queryClient.setQueryData(
-          chatKeys.messages(conversationId),
-          context.previousMessages
-        );
-      }
-    },
-    onSettled: () => {
-      // Always refetch after mutation
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) });
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     },
   });
+
 }
 
 export function useRealtimeMessages(conversationId: string | undefined) {
