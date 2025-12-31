@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { InlineMessage } from '@/components/ui/inline-message';
 import { useAuth } from '@/hooks/use-auth';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import type { Message } from '@/types/chat.types';
 
 interface MessageListProps {

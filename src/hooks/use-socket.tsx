@@ -2,7 +2,8 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { Socket } from 'socket.io-client';
 import { socketManager } from '@/lib/socket';
-import { useAuth } from '@/hooks/use-auth'; // Your auth hook
+import { useAuth } from '@/hooks/use-auth';
+import { auth } from '@/lib/firebase';
 
 interface SocketContextValue {
   socket: Socket | null;
@@ -14,49 +15,56 @@ interface SocketContextValue {
 const SocketContext = createContext<SocketContextValue | null>(null);
 
 export function SocketProvider({ children }: { children: ReactNode }) {
-  const { token } = useAuth(); // Get token from your auth system
+  const { profile } = useAuth();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!token) {
+    if (!profile) {
       socketManager.disconnect();
       setSocket(null);
       setIsConnected(false);
       return;
     }
 
-    const socketInstance = socketManager.connect(token);
-    setSocket(socketInstance);
+    const initSocket = async () => {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) return;
 
-    const handleConnect = () => {
-      console.log('Socket connected:', socketInstance.id);
-      setIsConnected(true);
+      const socketInstance = socketManager.connect(token);
+      setSocket(socketInstance);
+
+      const handleConnect = () => {
+        console.log('Socket connected:', socketInstance.id);
+        setIsConnected(true);
+      };
+
+      const handleDisconnect = (reason: string) => {
+        console.log('Socket disconnected:', reason);
+        setIsConnected(false);
+      };
+
+      const handleConnectError = (error: Error) => {
+        console.error('Socket connection error:', error.message);
+        setIsConnected(false);
+      };
+
+      socketInstance.on('connect', handleConnect);
+      socketInstance.on('disconnect', handleDisconnect);
+      socketInstance.on('connect_error', handleConnectError);
+
+      // Set initial state
+      setIsConnected(socketInstance.connected);
     };
 
-    const handleDisconnect = (reason: string) => {
-      console.log('Socket disconnected:', reason);
-      setIsConnected(false);
-    };
-
-    const handleConnectError = (error: Error) => {
-      console.error('Socket connection error:', error.message);
-      setIsConnected(false);
-    };
-
-    socketInstance.on('connect', handleConnect);
-    socketInstance.on('disconnect', handleDisconnect);
-    socketInstance.on('connect_error', handleConnectError);
-
-    // Set initial state
-    setIsConnected(socketInstance.connected);
+    initSocket();
 
     return () => {
-      socketInstance.off('connect', handleConnect);
-      socketInstance.off('disconnect', handleDisconnect);
-      socketInstance.off('connect_error', handleConnectError);
+      socket?.off('connect');
+      socket?.off('disconnect');
+      socket?.off('connect_error');
     };
-  }, [token]);
+  }, [profile]);
 
   const joinConversation = useCallback((conversationId: string) => {
     socket?.emit('join_conversation', conversationId);

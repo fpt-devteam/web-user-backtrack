@@ -1,5 +1,4 @@
 // src/features/user/hooks/useMyProfileQuery.ts
-import { toast } from '@/lib/toast'
 import { qrService } from '@/services/qr.service'
 import { useQuery } from '@tanstack/react-query'
 

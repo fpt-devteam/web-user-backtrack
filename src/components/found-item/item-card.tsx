@@ -9,7 +9,7 @@ interface ItemCardProps {
   readonly description: string
 }
 
-export function ItemCard({ name, id, imageUrl, description }: ItemCardProps) {
+export function ItemCard({ name, id: _id, imageUrl, description }: ItemCardProps) {
   return (
     <Card className="p-6 mb-6 hover:shadow-lg transition-all duration-200">
       {/* Lost Item Badge */}

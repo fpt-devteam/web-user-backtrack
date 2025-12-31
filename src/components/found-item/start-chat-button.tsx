@@ -8,7 +8,7 @@ import { useNavigate } from "@tanstack/react-router"
 export function StartChatButton(
   { partnerId, itemName }: { readonly partnerId: string; readonly itemName?: string }
 ) {
-  const { mutateAsync: createConversation, isPending: isCreatingConversation, data: conversationResponse } = useCreateConversation();
+  const { mutateAsync: createConversation, isPending: isCreatingConversation } = useCreateConversation();
   const { mutateAsync: signInAnonymous, isPending: isSigningIn } = useSignInAnonymous();
   const isLoading = isCreatingConversation || isSigningIn;
   const navigate = useNavigate();

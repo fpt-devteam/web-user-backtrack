@@ -19,7 +19,7 @@ export function ConversationHeader({
         :
         <div className="flex items-center p-4">
           <Avatar className="inline-block h-10 w-10 rounded-full mr-4 align-middle" >
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-linear-to-br from-purple-400 via-pink-500 to-red-500">
               <span className="text-lg font-semibold text-white">
                 {conversation?.partner.displayName?.charAt(0).toUpperCase() || '?'}
               </span>

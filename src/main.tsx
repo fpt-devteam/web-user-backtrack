@@ -11,8 +11,8 @@ import { routeTree } from './routeTree.gen'
 import './styles.css'
 import { NotFoundPage } from '@/components/ui/errors/not-found-page.tsx'
 import { InternalServerErrorPage } from '@/components/ui/errors/internal-server-error-page.tsx'
-import { Spinner } from '@/components/ui/spinner.tsx'
 import { Toaster } from "@/components/ui/sonner"
+import { Splash } from './components/ui/splash'
 // Create a new router instance
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
@@ -26,7 +26,7 @@ const router = createRouter({
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
   defaultErrorComponent: () => <InternalServerErrorPage />,
-  defaultPendingComponent: () => <Spinner size="xl" />,
+  defaultPendingComponent: () => <Splash />,
   defaultNotFoundComponent: () => <NotFoundPage />,
 })
 

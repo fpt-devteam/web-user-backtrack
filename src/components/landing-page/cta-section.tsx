@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { ScanLine } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { QRScanner } from '@/components/qr-scanner/qr-scanner'
 
