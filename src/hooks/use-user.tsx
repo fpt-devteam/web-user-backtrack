@@ -25,3 +25,13 @@ export const useUpsertUser = () => {
     },
   })
 }
+
+export const useCreateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation<UserProfile, Error>({
+    mutationFn: () => userService.createUser(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.me() })
+    },
+  })
+}

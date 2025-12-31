@@ -12,5 +12,10 @@ export const userService = {
     const { data } = await privateClient.post<ApiResponse<UserProfile>>('/api/core/users');
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to upsert user');
     return data.data;
+  },
+  async createUser(): Promise<UserProfile> {
+    const { data } = await privateClient.post<ApiResponse<UserProfile>>('/api/core/users');
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to create user');
+    return data.data;
   }
 };

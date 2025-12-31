@@ -4,13 +4,15 @@ import type { CreateConversationRequest } from "@/types/chat.types";
 import { useSignInAnonymous } from "@/hooks/use-auth";
 import { Spinner } from "@/components/ui/spinner";
 import { useNavigate } from "@tanstack/react-router"
+import { useCreateUser } from "@/hooks/use-user";
 
 export function StartChatButton(
   { partnerId, itemName }: { readonly partnerId: string; readonly itemName?: string }
 ) {
   const { mutateAsync: createConversation, isPending: isCreatingConversation } = useCreateConversation();
   const { mutateAsync: signInAnonymous, isPending: isSigningIn } = useSignInAnonymous();
-  const isLoading = isCreatingConversation || isSigningIn;
+  const { mutateAsync: createUser, isPending: isCreatingUser } = useCreateUser();
+  const isLoading = isCreatingConversation || isSigningIn || isCreatingUser;
   const navigate = useNavigate();
 
   const createConversationRequest: CreateConversationRequest = {
@@ -20,6 +22,7 @@ export function StartChatButton(
   };
   const handleStartChat = async () => {
     signInAnonymous()
+      .then(() => createUser())
       .then(() => createConversation(createConversationRequest))
       .then((res) => {
         navigate({ to: "/chat/conversation/$id", params: { id: res.conversationId } })

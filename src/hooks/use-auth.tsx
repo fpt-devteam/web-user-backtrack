@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const auth = getAuth();
