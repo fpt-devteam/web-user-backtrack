@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 
 import * as TanStackQueryProvider from '@/integrations/tanstack-query/root-provider.tsx'
 import { AuthProvider } from '@/hooks/use-auth'
+import { SocketProvider } from '@/hooks/use-socket'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -45,8 +46,10 @@ if (rootElement && !rootElement.innerHTML) {
     <StrictMode>
       <TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
         <AuthProvider>
-          <RouterProvider router={router} />
-          <Toaster position='top-right' />
+          <SocketProvider>
+            <RouterProvider router={router} />
+            <Toaster position='top-right' />
+          </SocketProvider>
         </AuthProvider>
       </TanStackQueryProvider.Provider>
     </StrictMode>,

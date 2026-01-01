@@ -18,7 +18,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    allowedHosts: ["1c4a3e3506fe.ngrok-free.app"],
+    allowedHosts: ["1c4a3e3506fe.ngrok-free.app", "c5b2fb5076ce.ngrok-free.app"],
     host: true,
     port: 5173,
   },

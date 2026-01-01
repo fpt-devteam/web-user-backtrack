@@ -12,14 +12,13 @@ class SocketManager {
       return this.socket;
     }
 
-    // Disconnect existing socket if token changed
     if (this.socket) {
       this.socket.disconnect();
     }
 
     this.token = token;
     this.socket = io(SOCKET_URL, {
-      path: '/hub',
+      path: '/api/chat/hub',
       transports: ['websocket', 'polling'],
       auth: { token },
       extraHeaders: {

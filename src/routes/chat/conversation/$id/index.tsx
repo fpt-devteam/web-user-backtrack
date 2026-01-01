@@ -11,10 +11,12 @@ function ConversationDetail() {
   const { id: conversationId } = Route.useParams();
 
   return (
-    <div>
+    <div className="flex h-screen flex-col overflow-hidden">
       <ConversationHeader conversationId={conversationId} />
-      <MessageList conversationId={conversationId} />
-      <div className="sticky bottom-0 z-10 bg-background">
+      <div className="flex-1 overflow-hidden">
+        <MessageList conversationId={conversationId} />
+      </div>
+      <div className="border-t bg-background">
         <MessageInput conversationId={conversationId} />
       </div>
     </div>

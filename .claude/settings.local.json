@@ -5,7 +5,11 @@
       "Bash(dir:*)",
       "Bash(npx shadcn@latest add card badge)",
       "Bash(npm run build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "FileOp(write:*)",
+      "FileOp(read:*)",
+      "FileOp(delete:*)",
+      "FileOp(create:*)"
     ]
   }
 }

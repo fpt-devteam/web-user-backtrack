@@ -35,17 +35,14 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       setSocket(socketInstance);
 
       const handleConnect = () => {
-        console.log('Socket connected:', socketInstance.id);
         setIsConnected(true);
       };
 
-      const handleDisconnect = (reason: string) => {
-        console.log('Socket disconnected:', reason);
+      const handleDisconnect = () => {
         setIsConnected(false);
       };
 
-      const handleConnectError = (error: Error) => {
-        console.error('Socket connection error:', error.message);
+      const handleConnectError = () => {
         setIsConnected(false);
       };
 
@@ -53,7 +50,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       socketInstance.on('disconnect', handleDisconnect);
       socketInstance.on('connect_error', handleConnectError);
 
-      // Set initial state
       setIsConnected(socketInstance.connected);
     };
 
