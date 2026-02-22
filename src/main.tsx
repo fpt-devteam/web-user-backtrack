@@ -10,8 +10,8 @@ import { SocketProvider } from '@/hooks/use-socket'
 import { routeTree } from './routeTree.gen'
 
 import './styles.css'
-import { NotFoundPage } from '@/components/ui/errors/not-found-page.tsx'
-import { InternalServerErrorPage } from '@/components/ui/errors/internal-server-error-page.tsx'
+import { NotFoundPage } from '@/components/shared/errors/not-found-page'
+import { InternalServerErrorPage } from '@/components/shared/errors/internal-server-error-page'
 import { Toaster } from "@/components/ui/sonner"
 import { Splash } from './components/ui/splash'
 // Create a new router instance

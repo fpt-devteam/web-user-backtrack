@@ -1,7 +1,7 @@
 // src/features/user/hooks/useMyProfileQuery.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { userService } from '@/services/user.service'
-import type { UserProfile } from '@/types/user.types'
+import type { UserProfile } from '@/types/user.type'
 
 export const userKeys = {
   all: ['user'] as const,
@@ -13,16 +13,6 @@ export const useGetMe = (enabled: boolean) => {
     queryFn: () => userService.getMe(),
     staleTime: 60_000, // 1 minute
     enabled,
-  })
-}
-
-export const useUpsertUser = () => {
-  const queryClient = useQueryClient();
-  return useMutation<UserProfile, Error>({
-    mutationFn: () => userService.upsertUser(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.me() })
-    },
   })
 }
 

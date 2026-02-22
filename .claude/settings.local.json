@@ -9,7 +9,13 @@
       "FileOp(write:*)",
       "FileOp(read:*)",
       "FileOp(delete:*)",
-      "FileOp(create:*)"
+      "FileOp(create:*)",
+      "Bash(head:*)",
+      "Bash(cd \"C:\\\\Users\\\\NHATTHANG\\\\FptUniversity\\\\SEP490\\\\web-user-backtrack\" && npx tsc --noEmit 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\NHATTHANG\\\\FptUniversity\\\\SEP490\\\\web-user-backtrack\" && npx shadcn@latest add sheet --yes 2>&1)",
+      "Bash(echo EXIT:$?:*)",
+      "Bash(ls routes:*)",
+      "Bash(cd \"C:\\\\Users\\\\NHATTHANG\\\\FptUniversity\\\\SEP490\\\\web-user-backtrack\" && npx shadcn@latest add dialog --yes 2>&1)"
     ]
   }
 }

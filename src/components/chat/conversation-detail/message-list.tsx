@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useGetMessages, chatKeys } from '@/hooks/use-chat';
 import { useSocket } from '@/hooks/use-socket';
 import { useAuth } from '@/hooks/use-auth';
-import type { Message } from '@/types/chat.types';
+import type { Message } from '@/types/chat.type';
 import type { CursorPagedResponse } from '@/types/pagination.type';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';

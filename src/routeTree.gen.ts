@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SignUpIndexRouteImport } from './routes/sign-up/index'
+import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as DownloadIndexRouteImport } from './routes/download/index'
+import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
 import { Route as ChatConversationIdIndexRouteImport } from './routes/chat/conversation/$id/index'
 
@@ -19,9 +22,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignUpIndexRoute = SignUpIndexRouteImport.update({
+  id: '/sign-up/',
+  path: '/sign-up/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInIndexRoute = SignInIndexRouteImport.update({
+  id: '/sign-in/',
+  path: '/sign-in/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DownloadIndexRoute = DownloadIndexRouteImport.update({
   id: '/download/',
   path: '/download/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FoundIdIndexRoute = FoundIdIndexRouteImport.update({
@@ -37,39 +55,68 @@ const ChatConversationIdIndexRoute = ChatConversationIdIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountIndexRoute
   '/download': typeof DownloadIndexRoute
+  '/sign-in': typeof SignInIndexRoute
+  '/sign-up': typeof SignUpIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
   '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountIndexRoute
   '/download': typeof DownloadIndexRoute
+  '/sign-in': typeof SignInIndexRoute
+  '/sign-up': typeof SignUpIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
   '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account/': typeof AccountIndexRoute
   '/download/': typeof DownloadIndexRoute
+  '/sign-in/': typeof SignInIndexRoute
+  '/sign-up/': typeof SignUpIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
   '/chat/conversation/$id/': typeof ChatConversationIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/download' | '/found/$id' | '/chat/conversation/$id'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/download'
+    | '/sign-in'
+    | '/sign-up'
+    | '/found/$id'
+    | '/chat/conversation/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/download' | '/found/$id' | '/chat/conversation/$id'
+  to:
+    | '/'
+    | '/account'
+    | '/download'
+    | '/sign-in'
+    | '/sign-up'
+    | '/found/$id'
+    | '/chat/conversation/$id'
   id:
     | '__root__'
     | '/'
+    | '/account/'
     | '/download/'
+    | '/sign-in/'
+    | '/sign-up/'
     | '/found/$id/'
     | '/chat/conversation/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountIndexRoute: typeof AccountIndexRoute
   DownloadIndexRoute: typeof DownloadIndexRoute
+  SignInIndexRoute: typeof SignInIndexRoute
+  SignUpIndexRoute: typeof SignUpIndexRoute
   FoundIdIndexRoute: typeof FoundIdIndexRoute
   ChatConversationIdIndexRoute: typeof ChatConversationIdIndexRoute
 }
@@ -83,11 +130,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sign-up/': {
+      id: '/sign-up/'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in/': {
+      id: '/sign-in/'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/download/': {
       id: '/download/'
       path: '/download'
       fullPath: '/download'
       preLoaderRoute: typeof DownloadIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/found/$id/': {
@@ -109,7 +177,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountIndexRoute: AccountIndexRoute,
   DownloadIndexRoute: DownloadIndexRoute,
+  SignInIndexRoute: SignInIndexRoute,
+  SignUpIndexRoute: SignUpIndexRoute,
   FoundIdIndexRoute: FoundIdIndexRoute,
   ChatConversationIdIndexRoute: ChatConversationIdIndexRoute,
 }

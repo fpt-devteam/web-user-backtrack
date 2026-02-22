@@ -6,7 +6,7 @@ import type {
   Message,
   CreateConversationRequest,
   CreateConversationResponse
-} from '@/types/chat.types';
+} from '@/types/chat.type';
 import type { CursorPagedResponse } from '@/types/pagination.type';
 
 export const chatService = {

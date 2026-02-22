@@ -1,7 +1,7 @@
 // /api/qr/qr-code/public-code/:publicCode
 import { publicClient } from '@/lib/api-client';
 import type { ApiResponse } from '@/types/api-response.type';
-import type { QRCodeDetails } from '@/types/qr.types';
+import type { QRCodeDetails } from '@/types/qr.type';
 
 export const qrService = {
   async getQrCodeByPublicCode(publicCode: string): Promise<QRCodeDetails> {

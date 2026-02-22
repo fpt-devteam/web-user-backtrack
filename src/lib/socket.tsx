@@ -1,7 +1,7 @@
 // src/lib/socket.ts
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
+const SOCKET_URL = import.meta.env.VITE_API_URL;
 
 class SocketManager {
   private socket: Socket | null = null;

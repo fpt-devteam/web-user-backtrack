@@ -3,29 +3,21 @@ import { BacktrackHeader } from '@/components/shared/backtrack-header'
 import { HeroSection } from '@/components/landing-page/hero-section'
 import { CTASection } from '@/components/landing-page/cta-section'
 import { HowItWorksSection } from '@/components/landing-page/how-it-work-section'
-import { useState } from 'react'
 import { Footer } from '@/components/landing-page/footer'
 
 export const Route = createFileRoute('/')({
-  component: App,
+  component: LandingPage,
 })
 
-function App() {
-  const [showScanner, setShowScanner] = useState(false)
-
+function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <BacktrackHeader />
-
-      <section className="px-6 pb-8 text-center max-w-md mx-auto">
+      <main>
         <HeroSection />
-        <CTASection
-          showScanner={showScanner}
-          onScannerToggle={setShowScanner}
-        />
+        <CTASection />
         <HowItWorksSection />
-      </section>
-
+      </main>
       <Footer />
     </div>
   )

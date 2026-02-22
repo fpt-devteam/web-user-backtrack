@@ -6,18 +6,26 @@ import {
   type ReactNode,
   useMemo,
 } from 'react';
-import type { UserProfile } from '@/types/user.types';
-import { onAuthStateChanged, signOut, signInAnonymously, getAuth } from 'firebase/auth';
+import type { UserProfile } from '@/types/user.type';
+import {
+  onAuthStateChanged, signOut, signInAnonymously,
+  getAuth, signInWithEmailAndPassword, EmailAuthProvider,
+  linkWithCredential, createUserWithEmailAndPassword, sendEmailVerification,
+  GoogleAuthProvider, signInWithPopup, linkWithPopup,
+} from 'firebase/auth';
 import { auth } from '@/lib/firebase.ts'
 import { userKeys } from '@/hooks/use-user';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { userService } from '@/services/user.service';
 import { toast } from '@/lib/toast';
+import type { CheckEmailStatusRequest, SignInWithEmailAndPasswordInput } from '@/types/auth.type';
+import { authService } from '@/services/auth.service';
 
 interface AuthContextValue {
   profile: UserProfile | null;
   loading: boolean;
   logout: () => Promise<void>;
+  syncProfile: () => Promise<void>;
 }
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -47,6 +55,15 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     return () => unsubscribe();
   }, [])
 
+  const syncProfile = async () => {
+    try {
+      const backendProfile = await userService.getMe();
+      setProfile(backendProfile);
+    } catch (error) {
+      console.error('Error syncing user profile:', error);
+      setProfile(null);
+    }
+  }
 
   const logout = async () => {
     await signOut(auth)
@@ -58,8 +75,9 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       profile,
       loading,
       logout,
+      syncProfile
     }
-  }, [profile, loading, logout])
+  }, [profile, loading, logout, syncProfile])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
@@ -81,5 +99,109 @@ export function useSignInAnonymous() {
       console.error('Firebase sign-in error:', error);
       toast.fromError(error);
     },
+  })
+}
+
+export function useSignInWithEmailAndPassword() {
+  const { syncProfile } = useAuth()
+
+  return useMutation({
+    mutationFn: async ({ email, password }: SignInWithEmailAndPasswordInput) => {
+      const currentUser = auth.currentUser;
+
+      if (currentUser?.isAnonymous) {
+        const credential = EmailAuthProvider.credential(email, password);
+        await linkWithCredential(currentUser, credential);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    },
+    onSuccess: async () => {
+      await userService.createUser()
+      await syncProfile()
+    },
+    onError: (error) => {
+      toast.fromError(error)
+    },
+  });
+}
+
+export function useSignInWithGoogle() {
+  const { syncProfile } = useAuth()
+
+  return useMutation({
+    mutationFn: async () => {
+      const provider = new GoogleAuthProvider()
+      const currentUser = auth.currentUser
+
+      if (currentUser?.isAnonymous) {
+        await linkWithPopup(currentUser, provider)
+      } else {
+        await signInWithPopup(auth, provider)
+      }
+    },
+    onSuccess: async () => {
+      await userService.createUser()
+      await syncProfile()
+    },
+    onError: (error) => {
+      toast.fromError(error)
+    },
+  })
+}
+
+export function useCreateAccount() {
+  return useMutation({
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const { user } = await createUserWithEmailAndPassword(auth, email, password)
+      await sendEmailVerification(user)
+    },
+    onError: (error) => {
+      toast.fromError(error)
+    },
+  })
+}
+
+export function useResendVerificationEmail() {
+  return useMutation({
+    mutationFn: async () => {
+      const user = auth.currentUser
+      if (!user) throw new Error('No authenticated user found')
+      await sendEmailVerification(user)
+    },
+    onSuccess: () => {
+      toast.success('Verification email resent!')
+    },
+    onError: (error) => {
+      toast.fromError(error)
+    },
+  })
+}
+
+export function useSignOut() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      await signOut(auth);
+    },
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: userKeys.all });
+    },
+    onError: (error) => {
+      console.error('Firebase sign-out error:', error);
+      toast.fromError(error);
+    }
+  });
+}
+
+export function useCheckEmailStatus() {
+  return useMutation({
+    mutationFn: async (request: CheckEmailStatusRequest) => {
+      return authService.checkEmailStatus(request);
+    },
+    onError: (error) => {
+      console.error('Error checking email status:', error);
+      toast.fromError(error);
+    }
   })
 }

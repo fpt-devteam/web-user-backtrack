@@ -1,7 +1,7 @@
 // src/hooks/use-chat.ts
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { chatService } from '@/services/chat.service';
-import type { CreateConversationRequest } from '@/types/chat.types';
+import type { CreateConversationRequest } from '@/types/chat.type';
 import { toast } from '@/lib/toast';
 
 export const chatKeys = {

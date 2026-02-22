@@ -1,6 +1,6 @@
 import { useCreateConversation } from "@/hooks/use-chat";
 import { Button } from "@/components/ui/button";
-import type { CreateConversationRequest } from "@/types/chat.types";
+import type { CreateConversationRequest } from "@/types/chat.type";
 import { useSignInAnonymous } from "@/hooks/use-auth";
 import { Spinner } from "@/components/ui/spinner";
 import { useNavigate } from "@tanstack/react-router"
