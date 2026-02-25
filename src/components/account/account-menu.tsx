@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bell, Shield, HelpCircle, ChevronRight, LogOut, QrCode } from 'lucide-react'
+import { Bell, Shield, HelpCircle, ChevronRight, LogOut, QrCode, WalletCardsIcon } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { useNavigate } from '@tanstack/react-router'
 import { SubscriptionCard } from '@/components/account/subscription/subscription-card'
@@ -19,9 +19,8 @@ function MenuItem({ icon: Icon, label, description, onClick, danger }: Readonly<
       className="group w-full flex items-center gap-4 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors duration-150 rounded-2xl"
     >
       <div
-        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
-          danger ? 'bg-red-50 group-hover:bg-red-100' : 'bg-gray-100 group-hover:bg-gray-200'
-        }`}
+        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${danger ? 'bg-red-50 group-hover:bg-red-100' : 'bg-gray-100 group-hover:bg-gray-200'
+          }`}
       >
         <Icon className={`w-5 h-5 ${danger ? 'text-red-500' : 'text-gray-600'}`} />
       </div>
@@ -54,6 +53,12 @@ export function AccountMenu({ onLogout }: Readonly<AccountMenuProps>) {
           label: 'My QR Codes',
           description: 'Digital backtrack profile',
         },
+        {
+          icon: WalletCardsIcon,
+          label: 'Billing Information',
+          description: 'Manage payment methods and invoices',
+          onClick: () => navigate({ to: '/account/billing' }),
+        }
       ],
     },
     {

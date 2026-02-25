@@ -15,9 +15,10 @@ import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as DownloadIndexRouteImport } from './routes/download/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as PremiumSuccessIndexRouteImport } from './routes/premium/success/index'
 import { Route as PremiumCheckoutIndexRouteImport } from './routes/premium/checkout/index'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
-import { Route as AccountSubscriptionIndexRouteImport } from './routes/account/subscription/index'
+import { Route as AccountBillingIndexRouteImport } from './routes/account/billing/index'
 import { Route as ChatConversationIdIndexRouteImport } from './routes/chat/conversation/$id/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -50,6 +51,11 @@ const AccountIndexRoute = AccountIndexRouteImport.update({
   path: '/account/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PremiumSuccessIndexRoute = PremiumSuccessIndexRouteImport.update({
+  id: '/premium/success/',
+  path: '/premium/success/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PremiumCheckoutIndexRoute = PremiumCheckoutIndexRouteImport.update({
   id: '/premium/checkout/',
   path: '/premium/checkout/',
@@ -60,12 +66,11 @@ const FoundIdIndexRoute = FoundIdIndexRouteImport.update({
   path: '/found/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AccountSubscriptionIndexRoute =
-  AccountSubscriptionIndexRouteImport.update({
-    id: '/account/subscription/',
-    path: '/account/subscription/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const AccountBillingIndexRoute = AccountBillingIndexRouteImport.update({
+  id: '/account/billing/',
+  path: '/account/billing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatConversationIdIndexRoute = ChatConversationIdIndexRouteImport.update({
   id: '/chat/conversation/$id/',
   path: '/chat/conversation/$id/',
@@ -79,9 +84,10 @@ export interface FileRoutesByFullPath {
   '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
-  '/account/subscription': typeof AccountSubscriptionIndexRoute
+  '/account/billing': typeof AccountBillingIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
   '/premium/checkout': typeof PremiumCheckoutIndexRoute
+  '/premium/success': typeof PremiumSuccessIndexRoute
   '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -91,9 +97,10 @@ export interface FileRoutesByTo {
   '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
-  '/account/subscription': typeof AccountSubscriptionIndexRoute
+  '/account/billing': typeof AccountBillingIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
   '/premium/checkout': typeof PremiumCheckoutIndexRoute
+  '/premium/success': typeof PremiumSuccessIndexRoute
   '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesById {
@@ -104,9 +111,10 @@ export interface FileRoutesById {
   '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
-  '/account/subscription/': typeof AccountSubscriptionIndexRoute
+  '/account/billing/': typeof AccountBillingIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
+  '/premium/success/': typeof PremiumSuccessIndexRoute
   '/chat/conversation/$id/': typeof ChatConversationIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -118,9 +126,10 @@ export interface FileRouteTypes {
     | '/premium'
     | '/sign-in'
     | '/sign-up'
-    | '/account/subscription'
+    | '/account/billing'
     | '/found/$id'
     | '/premium/checkout'
+    | '/premium/success'
     | '/chat/conversation/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -130,9 +139,10 @@ export interface FileRouteTypes {
     | '/premium'
     | '/sign-in'
     | '/sign-up'
-    | '/account/subscription'
+    | '/account/billing'
     | '/found/$id'
     | '/premium/checkout'
+    | '/premium/success'
     | '/chat/conversation/$id'
   id:
     | '__root__'
@@ -142,9 +152,10 @@ export interface FileRouteTypes {
     | '/premium/'
     | '/sign-in/'
     | '/sign-up/'
-    | '/account/subscription/'
+    | '/account/billing/'
     | '/found/$id/'
     | '/premium/checkout/'
+    | '/premium/success/'
     | '/chat/conversation/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -155,9 +166,10 @@ export interface RootRouteChildren {
   PremiumIndexRoute: typeof PremiumIndexRoute
   SignInIndexRoute: typeof SignInIndexRoute
   SignUpIndexRoute: typeof SignUpIndexRoute
-  AccountSubscriptionIndexRoute: typeof AccountSubscriptionIndexRoute
+  AccountBillingIndexRoute: typeof AccountBillingIndexRoute
   FoundIdIndexRoute: typeof FoundIdIndexRoute
   PremiumCheckoutIndexRoute: typeof PremiumCheckoutIndexRoute
+  PremiumSuccessIndexRoute: typeof PremiumSuccessIndexRoute
   ChatConversationIdIndexRoute: typeof ChatConversationIdIndexRoute
 }
 
@@ -205,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/premium/success/': {
+      id: '/premium/success/'
+      path: '/premium/success'
+      fullPath: '/premium/success'
+      preLoaderRoute: typeof PremiumSuccessIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/premium/checkout/': {
       id: '/premium/checkout/'
       path: '/premium/checkout'
@@ -219,11 +238,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FoundIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/account/subscription/': {
-      id: '/account/subscription/'
-      path: '/account/subscription'
-      fullPath: '/account/subscription'
-      preLoaderRoute: typeof AccountSubscriptionIndexRouteImport
+    '/account/billing/': {
+      id: '/account/billing/'
+      path: '/account/billing'
+      fullPath: '/account/billing'
+      preLoaderRoute: typeof AccountBillingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/conversation/$id/': {
@@ -243,9 +262,10 @@ const rootRouteChildren: RootRouteChildren = {
   PremiumIndexRoute: PremiumIndexRoute,
   SignInIndexRoute: SignInIndexRoute,
   SignUpIndexRoute: SignUpIndexRoute,
-  AccountSubscriptionIndexRoute: AccountSubscriptionIndexRoute,
+  AccountBillingIndexRoute: AccountBillingIndexRoute,
   FoundIdIndexRoute: FoundIdIndexRoute,
   PremiumCheckoutIndexRoute: PremiumCheckoutIndexRoute,
+  PremiumSuccessIndexRoute: PremiumSuccessIndexRoute,
   ChatConversationIdIndexRoute: ChatConversationIdIndexRoute,
 }
 export const routeTree = rootRouteImport

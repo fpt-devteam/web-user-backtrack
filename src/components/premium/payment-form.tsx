@@ -5,11 +5,10 @@ import { Sparkles } from 'lucide-react'
 import { stripePromise } from '@/integrations/stripe-provider'
 
 interface PaymentFormInnerProps {
-  planLabel: string
   planPrice: string
 }
 
-function PaymentFormInner({ planLabel, planPrice }: Readonly<PaymentFormInnerProps>) {
+function PaymentFormInner({ planPrice }: Readonly<PaymentFormInnerProps>) {
   const stripe = useStripe()
   const elements = useElements()
   const [isProcessing, setIsProcessing] = useState(false)
@@ -71,7 +70,7 @@ interface PaymentFormProps {
   planPrice: string
 }
 
-export function PaymentForm({ clientSecret, planLabel, planPrice }: Readonly<PaymentFormProps>) {
+export function PaymentForm({ clientSecret, planPrice }: Readonly<PaymentFormProps>) {
   return (
     <Elements
       stripe={stripePromise}
@@ -87,7 +86,7 @@ export function PaymentForm({ clientSecret, planLabel, planPrice }: Readonly<Pay
         },
       }}
     >
-      <PaymentFormInner planLabel={planLabel} planPrice={planPrice} />
+      <PaymentFormInner planPrice={planPrice} />
     </Elements>
   )
 }
