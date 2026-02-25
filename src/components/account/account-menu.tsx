@@ -1,6 +1,7 @@
 import React from 'react'
 import { Star, Bell, Shield, HelpCircle, ChevronRight, LogOut, QrCode } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { useNavigate } from '@tanstack/react-router'
 
 interface AccountMenuItem {
   icon: React.ElementType
@@ -9,49 +10,6 @@ interface AccountMenuItem {
   onClick?: () => void
   danger?: boolean
 }
-
-const ACCOUNT_MENU_SECTIONS: { heading: string; items: AccountMenuItem[] }[] = [
-  {
-    heading: 'Membership',
-    items: [
-      {
-        icon: Star,
-        label: 'Backtrack Premium',
-        description: 'Upgrade for more features',
-      },
-      {
-        icon: QrCode,
-        label: 'My QR Codes',
-        description: 'Manage your registered items',
-      },
-    ],
-  },
-  {
-    heading: 'Settings',
-    items: [
-      {
-        icon: Bell,
-        label: 'Notifications',
-        description: 'Manage alerts and updates',
-      },
-      {
-        icon: Shield,
-        label: 'Privacy & Security',
-        description: 'Password, data, permissions',
-      },
-    ],
-  },
-  {
-    heading: 'Support',
-    items: [
-      {
-        icon: HelpCircle,
-        label: 'Help Center',
-        description: 'FAQs and contact support',
-      },
-    ],
-  },
-]
 
 function MenuItem({ icon: Icon, label, description, onClick, danger }: Readonly<AccountMenuItem>) {
   return (
@@ -84,11 +42,57 @@ interface AccountMenuProps {
 }
 
 export function AccountMenu({ onLogout }: Readonly<AccountMenuProps>) {
+  const navigate = useNavigate()
+
+  const sections: { heading: string; items: AccountMenuItem[] }[] = [
+    {
+      heading: 'Membership',
+      items: [
+        {
+          icon: Star,
+          label: 'Premium Plan',
+          description: 'Upgrade for more features',
+          onClick: () => navigate({ to: '/premium' }),
+        },
+        {
+          icon: QrCode,
+          label: 'My QR Codes',
+          description: 'Digital backtrack profile',
+        },
+      ],
+    },
+    {
+      heading: 'Settings',
+      items: [
+        {
+          icon: Bell,
+          label: 'Notifications',
+          description: 'Manage alerts and updates',
+        },
+        {
+          icon: Shield,
+          label: 'Privacy & Security',
+          description: 'Password, data, permissions',
+        },
+      ],
+    },
+    {
+      heading: 'Support',
+      items: [
+        {
+          icon: HelpCircle,
+          label: 'Help Center',
+          description: 'FAQs and contact support',
+        },
+      ],
+    },
+  ]
+
   return (
     <div className="flex flex-col gap-4">
       {/* Sections – single column on mobile, 2-column grid on desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {ACCOUNT_MENU_SECTIONS.map((section) => (
+        {sections.map((section) => (
           <div key={section.heading} className="bg-white rounded-3xl px-2 py-2">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 pt-2 pb-1">
               {section.heading}

@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignUpIndexRouteImport } from './routes/sign-up/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
+import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as DownloadIndexRouteImport } from './routes/download/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as PremiumCheckoutIndexRouteImport } from './routes/premium/checkout/index'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
 import { Route as ChatConversationIdIndexRouteImport } from './routes/chat/conversation/$id/index'
 
@@ -32,6 +34,11 @@ const SignInIndexRoute = SignInIndexRouteImport.update({
   path: '/sign-in/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PremiumIndexRoute = PremiumIndexRouteImport.update({
+  id: '/premium/',
+  path: '/premium/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DownloadIndexRoute = DownloadIndexRouteImport.update({
   id: '/download/',
   path: '/download/',
@@ -40,6 +47,11 @@ const DownloadIndexRoute = DownloadIndexRouteImport.update({
 const AccountIndexRoute = AccountIndexRouteImport.update({
   id: '/account/',
   path: '/account/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PremiumCheckoutIndexRoute = PremiumCheckoutIndexRouteImport.update({
+  id: '/premium/checkout/',
+  path: '/premium/checkout/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FoundIdIndexRoute = FoundIdIndexRouteImport.update({
@@ -57,18 +69,22 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
   '/download': typeof DownloadIndexRoute
+  '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
+  '/premium/checkout': typeof PremiumCheckoutIndexRoute
   '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
   '/download': typeof DownloadIndexRoute
+  '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
+  '/premium/checkout': typeof PremiumCheckoutIndexRoute
   '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesById {
@@ -76,9 +92,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
   '/download/': typeof DownloadIndexRoute
+  '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
+  '/premium/checkout/': typeof PremiumCheckoutIndexRoute
   '/chat/conversation/$id/': typeof ChatConversationIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -87,27 +105,33 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/download'
+    | '/premium'
     | '/sign-in'
     | '/sign-up'
     | '/found/$id'
+    | '/premium/checkout'
     | '/chat/conversation/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account'
     | '/download'
+    | '/premium'
     | '/sign-in'
     | '/sign-up'
     | '/found/$id'
+    | '/premium/checkout'
     | '/chat/conversation/$id'
   id:
     | '__root__'
     | '/'
     | '/account/'
     | '/download/'
+    | '/premium/'
     | '/sign-in/'
     | '/sign-up/'
     | '/found/$id/'
+    | '/premium/checkout/'
     | '/chat/conversation/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -115,9 +139,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   DownloadIndexRoute: typeof DownloadIndexRoute
+  PremiumIndexRoute: typeof PremiumIndexRoute
   SignInIndexRoute: typeof SignInIndexRoute
   SignUpIndexRoute: typeof SignUpIndexRoute
   FoundIdIndexRoute: typeof FoundIdIndexRoute
+  PremiumCheckoutIndexRoute: typeof PremiumCheckoutIndexRoute
   ChatConversationIdIndexRoute: typeof ChatConversationIdIndexRoute
 }
 
@@ -144,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/premium/': {
+      id: '/premium/'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof PremiumIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/download/': {
       id: '/download/'
       path: '/download'
@@ -156,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/premium/checkout/': {
+      id: '/premium/checkout/'
+      path: '/premium/checkout'
+      fullPath: '/premium/checkout'
+      preLoaderRoute: typeof PremiumCheckoutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/found/$id/': {
@@ -179,9 +219,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   DownloadIndexRoute: DownloadIndexRoute,
+  PremiumIndexRoute: PremiumIndexRoute,
   SignInIndexRoute: SignInIndexRoute,
   SignUpIndexRoute: SignUpIndexRoute,
   FoundIdIndexRoute: FoundIdIndexRoute,
+  PremiumCheckoutIndexRoute: PremiumCheckoutIndexRoute,
   ChatConversationIdIndexRoute: ChatConversationIdIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -13,7 +13,8 @@ import './styles.css'
 import { NotFoundPage } from '@/components/shared/errors/not-found-page'
 import { InternalServerErrorPage } from '@/components/shared/errors/internal-server-error-page'
 import { Toaster } from "@/components/ui/sonner"
-import { Splash } from './components/ui/splash'
+import { Splash } from '@/components/ui/splash'
+import { StripeProvider } from '@/integrations/stripe-provider'
 // Create a new router instance
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
@@ -47,8 +48,10 @@ if (rootElement && !rootElement.innerHTML) {
       <TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
         <AuthProvider>
           <SocketProvider>
-            <RouterProvider router={router} />
-            <Toaster position='top-right' />
+            <StripeProvider>
+              <RouterProvider router={router} />
+              <Toaster position='top-right' />
+            </StripeProvider>
           </SocketProvider>
         </AuthProvider>
       </TanStackQueryProvider.Provider>

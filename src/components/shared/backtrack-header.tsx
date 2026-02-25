@@ -1,10 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { NavDrawer } from '@/components/shared/nav-drawer'
 import { BacktrackLogo } from '@/components/shared/backtrack-logo'
-import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 
-const DESKTOP_NAV_LINKS = ['Premium Plan', 'Download', 'Support'] as const
+const DESKTOP_NAV_LINKS: { label: string; to: string }[] = [
+  { label: 'Premium Plan', to: '/premium' },
+  { label: 'Download', to: '/download' },
+  { label: 'Support', to: '/support' },
+]
 
 export function BacktrackHeader() {
   const navigate = useNavigate()
@@ -23,13 +26,16 @@ export function BacktrackHeader() {
         </button>
 
         {/* Desktop nav links */}
-        <nav className="hidden lg:flex items-center gap-7 flex-1 justify-end">
-          {DESKTOP_NAV_LINKS.map((link) => (
+        <nav className="hidden lg:flex items-center gap-1 flex-1 justify-end">
+          {DESKTOP_NAV_LINKS.map(({ label, to }) => (
             <button
-              key={link}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              key={label}
+              onClick={() => navigate({ to })}
+              className="relative px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200 rounded-lg group"
             >
-              {link}
+              {label}
+              {/* Animated underline */}
+              <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left rounded-full" />
             </button>
           ))}
         </nav>
@@ -37,23 +43,13 @@ export function BacktrackHeader() {
         {/* Desktop actions */}
         <div className="hidden lg:flex items-center gap-3">
           <div className="w-px h-5 bg-gray-300" />
-          {profile ? (
-            <Button
-              variant="ghost"
-              className="text-gray-700 font-medium p-4"
-              onClick={() => navigate({ to: '/account' })}
-            >
-              Account
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              className="text-gray-700 font-medium p-4"
-              onClick={() => navigate({ to: '/sign-in' })}
-            >
-              Sign-in
-            </Button>
-          )}
+          <button
+            onClick={() => navigate({ to: profile ? '/account' : '/sign-in' })}
+            className="relative px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200 rounded-lg group"
+          >
+            {profile ? 'Account' : 'Sign-in'}
+            <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left rounded-full" />
+          </button>
         </div>
 
         {/* Mobile: hamburger only */}
