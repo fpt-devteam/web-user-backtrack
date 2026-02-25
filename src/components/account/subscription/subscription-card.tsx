@@ -106,7 +106,7 @@ function ActiveCard({ sub }: { sub: SubscriptionInfo }) {
         <FooterNote sub={sub} />
 
         <button
-          onClick={() => navigate({ to: '/premium' })}
+          onClick={() => navigate({ to: '/account/subscription' })}
           className="flex shrink-0 items-center gap-1 rounded-xl bg-white/15 hover:bg-white/25 transition-colors px-3 py-1.5 text-xs font-semibold text-white ml-3"
         >
           Manage <ArrowRight className="h-3 w-3" />

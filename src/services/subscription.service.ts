@@ -28,4 +28,10 @@ export const subscriptionService = {
       currentPeriodEnd: new Date(data.data.currentPeriodEnd),
     };
   },
+
+  async cancelSubscription(): Promise<CreateSubscriptionResponse> {
+    const { data } = await privateClient.delete<ApiResponse<CreateSubscriptionResponse>>('/api/qr/subscriptions/me');
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to cancel subscription');
+    return data.data;
+  },
 };

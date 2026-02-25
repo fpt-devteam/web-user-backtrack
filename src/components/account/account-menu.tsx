@@ -2,7 +2,7 @@ import React from 'react'
 import { Bell, Shield, HelpCircle, ChevronRight, LogOut, QrCode } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { useNavigate } from '@tanstack/react-router'
-import { SubscriptionCard } from '@/components/account/subscription-card'
+import { SubscriptionCard } from '@/components/account/subscription/subscription-card'
 
 interface AccountMenuItem {
   icon: React.ElementType
