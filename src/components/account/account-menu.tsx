@@ -1,7 +1,8 @@
 import React from 'react'
-import { Star, Bell, Shield, HelpCircle, ChevronRight, LogOut, QrCode } from 'lucide-react'
+import { Bell, Shield, HelpCircle, ChevronRight, LogOut, QrCode } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { useNavigate } from '@tanstack/react-router'
+import { SubscriptionCard } from '@/components/account/subscription-card'
 
 interface AccountMenuItem {
   icon: React.ElementType
@@ -49,12 +50,6 @@ export function AccountMenu({ onLogout }: Readonly<AccountMenuProps>) {
       heading: 'Membership',
       items: [
         {
-          icon: Star,
-          label: 'Premium Plan',
-          description: 'Upgrade for more features',
-          onClick: () => navigate({ to: '/premium' }),
-        },
-        {
           icon: QrCode,
           label: 'My QR Codes',
           description: 'Digital backtrack profile',
@@ -90,6 +85,9 @@ export function AccountMenu({ onLogout }: Readonly<AccountMenuProps>) {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Subscription status card */}
+      <SubscriptionCard />
+
       {/* Sections – single column on mobile, 2-column grid on desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {sections.map((section) => (

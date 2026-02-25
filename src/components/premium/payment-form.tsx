@@ -1,15 +1,8 @@
 import { useState } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js'
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
 import { Sparkles } from 'lucide-react'
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ?? '')
+import { stripePromise } from '@/integrations/stripe-provider'
 
 interface PaymentFormInnerProps {
   planLabel: string

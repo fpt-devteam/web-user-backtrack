@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { subscriptionService } from '@/services/subscription.service';
 import { toast } from '@/lib/toast';
 import type { CreateSubscriptionRequest } from '@/types/subscription.type';
@@ -10,5 +10,12 @@ export function useCreateSubscription() {
     onError: (error) => {
       toast.fromError(error);
     },
+  });
+}
+
+export function useMySubscription() {
+  return useQuery({
+    queryKey: ['subscription', 'me'],
+    queryFn: () => subscriptionService.getMySubscription(),
   });
 }
