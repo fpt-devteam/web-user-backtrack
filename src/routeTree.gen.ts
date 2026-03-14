@@ -15,6 +15,7 @@ import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as DownloadIndexRouteImport } from './routes/download/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as ProfilePublicCodeIndexRouteImport } from './routes/profile/$public-code/index'
 import { Route as PremiumSuccessIndexRouteImport } from './routes/premium/success/index'
 import { Route as PremiumCheckoutIndexRouteImport } from './routes/premium/checkout/index'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
@@ -49,6 +50,11 @@ const DownloadIndexRoute = DownloadIndexRouteImport.update({
 const AccountIndexRoute = AccountIndexRouteImport.update({
   id: '/account/',
   path: '/account/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfilePublicCodeIndexRoute = ProfilePublicCodeIndexRouteImport.update({
+  id: '/profile/$public-code/',
+  path: '/profile/$public-code/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PremiumSuccessIndexRoute = PremiumSuccessIndexRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/found/$id': typeof FoundIdIndexRoute
   '/premium/checkout': typeof PremiumCheckoutIndexRoute
   '/premium/success': typeof PremiumSuccessIndexRoute
+  '/profile/$public-code': typeof ProfilePublicCodeIndexRoute
   '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/found/$id': typeof FoundIdIndexRoute
   '/premium/checkout': typeof PremiumCheckoutIndexRoute
   '/premium/success': typeof PremiumSuccessIndexRoute
+  '/profile/$public-code': typeof ProfilePublicCodeIndexRoute
   '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/found/$id/': typeof FoundIdIndexRoute
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
   '/premium/success/': typeof PremiumSuccessIndexRoute
+  '/profile/$public-code/': typeof ProfilePublicCodeIndexRoute
   '/chat/conversation/$id/': typeof ChatConversationIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/found/$id'
     | '/premium/checkout'
     | '/premium/success'
+    | '/profile/$public-code'
     | '/chat/conversation/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/found/$id'
     | '/premium/checkout'
     | '/premium/success'
+    | '/profile/$public-code'
     | '/chat/conversation/$id'
   id:
     | '__root__'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/found/$id/'
     | '/premium/checkout/'
     | '/premium/success/'
+    | '/profile/$public-code/'
     | '/chat/conversation/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   FoundIdIndexRoute: typeof FoundIdIndexRoute
   PremiumCheckoutIndexRoute: typeof PremiumCheckoutIndexRoute
   PremiumSuccessIndexRoute: typeof PremiumSuccessIndexRoute
+  ProfilePublicCodeIndexRoute: typeof ProfilePublicCodeIndexRoute
   ChatConversationIdIndexRoute: typeof ChatConversationIdIndexRoute
 }
 
@@ -215,6 +228,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/$public-code/': {
+      id: '/profile/$public-code/'
+      path: '/profile/$public-code'
+      fullPath: '/profile/$public-code'
+      preLoaderRoute: typeof ProfilePublicCodeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/premium/success/': {
@@ -266,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   FoundIdIndexRoute: FoundIdIndexRoute,
   PremiumCheckoutIndexRoute: PremiumCheckoutIndexRoute,
   PremiumSuccessIndexRoute: PremiumSuccessIndexRoute,
+  ProfilePublicCodeIndexRoute: ProfilePublicCodeIndexRoute,
   ChatConversationIdIndexRoute: ChatConversationIdIndexRoute,
 }
 export const routeTree = rootRouteImport
