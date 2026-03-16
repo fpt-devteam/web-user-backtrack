@@ -14,7 +14,7 @@ const CHAT_MESSAGES: ChatMessage[] = [
 
 function SmartAIRecoveryCard() {
   return (
-    <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 h-full flex flex-col">
+    <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-blue-100 h-full flex flex-col">
       {/* Header badges */}
       <div className="flex items-center gap-2 mb-4">
         <span className="bg-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg tracking-wide uppercase">
@@ -96,7 +96,7 @@ function SmartAIRecoveryCard() {
 
 function ConnectAndRecoverCard() {
   return (
-    <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 h-full flex flex-col">
+    <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-blue-100 h-full flex flex-col">
       <div className="flex items-start justify-between mb-3">
         <div className="w-11 h-11 bg-green-100 rounded-2xl flex items-center justify-center">
           <Lock className="w-5 h-5 text-green-600" />

@@ -4,7 +4,7 @@ const NAV_LINKS = ['How it works', 'Premium', 'Download', 'Privacy', 'Terms'] as
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-100 bg-white">
+    <footer className="border-t border-blue-100 bg-white/60 backdrop-blur-sm">
       <div className="px-5 lg:px-10 py-8 lg:py-10 w-full max-w-md lg:max-w-screen-xl mx-auto">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 

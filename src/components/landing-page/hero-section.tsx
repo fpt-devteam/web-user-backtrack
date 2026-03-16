@@ -2,10 +2,10 @@ import { ScanLine, ArrowRight, Star, Shield, Zap, CheckCircle, Sparkles } from '
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-white">
+    <section className="relative overflow-hidden">
       {/* Background blobs */}
-      <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl opacity-60 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-50 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl opacity-50 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-blue-200 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl opacity-30 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-200 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl opacity-25 pointer-events-none" />
 
       <div className="relative px-5 lg:px-10 pt-10 lg:pt-20 pb-10 lg:pb-24 w-full max-w-md lg:max-w-screen-xl mx-auto">
         <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">

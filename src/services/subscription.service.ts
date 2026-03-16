@@ -1,9 +1,10 @@
-import { privateClient } from '@/lib/api-client';
+import { privateClient, publicClient } from '@/lib/api-client';
 import type { ApiResponse } from '@/types/api-response.type';
 import type {
   CreateSubscriptionRequest,
   CreateSubscriptionResponse,
   SubscriptionInfo,
+  SubscriptionPlan,
 } from '@/types/subscription.type';
 
 type SubscriptionInfoRaw = Omit<SubscriptionInfo, 'currentPeriodStart' | 'currentPeriodEnd'> & {
@@ -32,6 +33,12 @@ export const subscriptionService = {
   async cancelSubscription(): Promise<CreateSubscriptionResponse> {
     const { data } = await privateClient.delete<ApiResponse<CreateSubscriptionResponse>>('/api/qr/subscriptions/me');
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to cancel subscription');
+    return data.data;
+  },
+
+  async getPlans(): Promise<SubscriptionPlan[]> {
+    const { data } = await publicClient.get<ApiResponse<SubscriptionPlan[]>>('/api/qr/subscriptions/plans');
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch plans');
     return data.data;
   },
 };

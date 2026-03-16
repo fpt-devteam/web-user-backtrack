@@ -7,9 +7,6 @@ export function useCreateSubscription() {
   return useMutation({
     mutationFn: (request: CreateSubscriptionRequest) =>
       subscriptionService.createSubscription(request),
-    onError: (error) => {
-      toast.fromError(error);
-    },
   });
 }
 
@@ -30,5 +27,13 @@ export function useCancelSubscription() {
     onError: (error) => {
       toast.fromError(error);
     },
+  });
+}
+
+export function usePlans() {
+  return useQuery({
+    queryKey: ['subscription', 'plans'],
+    queryFn: () => subscriptionService.getPlans(),
+    staleTime: 1000 * 60 * 10,
   });
 }
