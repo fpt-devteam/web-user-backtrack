@@ -2,18 +2,11 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useGetOrgById } from '@/hooks/use-org'
 import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
 import { useCreateUser } from '@/hooks/use-user'
+import { chatService } from '@/services/chat.service'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import {
-  MapPin,
-  Phone,
-  Building2,
-  ArrowLeft,
-  MessageCircle,
-  ShieldCheck,
-  Sparkles,
-} from 'lucide-react'
+import { MapPin, Phone, ArrowLeft, MessageCircle, ShieldCheck } from 'lucide-react'
 import { motion, type Variants } from 'framer-motion'
 
 export const Route = createFileRoute('/org/$id/')({
@@ -21,11 +14,11 @@ export const Route = createFileRoute('/org/$id/')({
 })
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16 },
   show: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.07, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
   }),
 }
 
@@ -45,129 +38,126 @@ function OrgDetailPage() {
       await createUser()
       await syncProfile()
     }
+
+    // Check if a conversation with this org already exists
+    try {
+      const existing = await chatService.getConversationByOrgId(id)
+      if (existing?.conversationId) {
+        navigate({ to: '/chat/conversation/$id', params: { id: existing.conversationId } })
+        return
+      }
+    } catch {
+      // If check fails, fall through to the new-chat flow
+    }
+
     navigate({ to: '/chat/new/$orgId', params: { orgId: id } })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 flex flex-col">
-      {/* ── Header ─────────────────────────────────────────────── */}
+    <div className="min-h-screen bg-white flex flex-col">
+
+      {/* ── Header ── */}
       <motion.div
-        initial={{ y: -48, opacity: 0 }}
+        initial={{ y: -40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-white/80 backdrop-blur-xl border-b border-white/60 px-4 py-3.5 flex items-center gap-3 sticky top-0 z-10 shadow-sm"
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="bg-white border-b border-[#f0f0f0] px-4 py-4 flex items-center gap-3 sticky top-0 z-10"
       >
-        <motion.button
-          whileTap={{ scale: 0.88 }}
-          whileHover={{ scale: 1.08 }}
-          onClick={() => navigate({ to: '/org' })}
-          className="p-2 rounded-full hover:bg-gray-100/80 transition-colors"
+        <button
+          onClick={() => navigate({ to: '/organizations' })}
+          className="p-2 -ml-1 rounded-xl hover:bg-[#f5f5f5] transition-colors duration-200"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
-        </motion.button>
-        <h1 className="text-base font-semibold text-gray-900 truncate">
+          <ArrowLeft className="w-5 h-5 text-[#111]" />
+        </button>
+        <h1 className="text-base font-black text-[#111] truncate tracking-tight">
           {isLoading ? <Skeleton className="h-5 w-32 inline-block" /> : (org?.name ?? 'Organisation')}
         </h1>
       </motion.div>
 
-      {/* ── Content ──────────────────────────────────────────── */}
-      <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-5 space-y-4 pb-36">
+      {/* ── Content ── */}
+      <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-6 space-y-3 pb-36">
         {isLoading ? (
           <OrgDetailSkeleton />
         ) : org ? (
           <>
-            {/* ── Org Card ── */}
-            <motion.div
-              custom={0}
-              variants={fadeUp}
-              initial="hidden"
-              animate="show"
-              className="bg-white/90 backdrop-blur-sm rounded-3xl border border-white shadow-xl shadow-blue-900/5 overflow-hidden"
-            >
-              {/* Decorative top stripe */}
-              <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 via-violet-500 to-pink-500" />
-
-              <div className="p-6">
-                <div className="flex items-center gap-4 mb-5">
-                  {/* Animated avatar */}
-                  <div className="relative shrink-0">
-                    <motion.div
-                      animate={{ scale: [1, 1.06, 1] }}
-                      transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                      className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 opacity-30 blur-md"
+            {/* ── Identity block ── */}
+            <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
+              <div className="bg-[#F7F7F7] rounded-3xl p-5">
+                <div className="flex items-start gap-4">
+                  {/* Logo */}
+                  <div className="w-14 h-14 rounded-2xl bg-white border border-[#efefef] flex items-center justify-center shrink-0 overflow-hidden">
+                    <img
+                      src={org.logoUrl ?? '/org-default.png'}
+                      alt={org.name}
+                      className="w-9 h-9 object-contain"
                     />
-                    <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                      <Building2 className="h-8 w-8 text-white" />
-                    </div>
                   </div>
 
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900">{org.name}</h2>
-                    <motion.span
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.15, type: 'spring', stiffness: 300 }}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-50 Ring-1 ring-blue-100 px-3 py-1 rounded-full mt-1.5"
-                    >
-                      {org.industryType}
-                    </motion.span>
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <h2 className="text-xl font-black text-[#111] leading-tight tracking-tight">
+                      {org.name}
+                    </h2>
+                    {org.industryType && (
+                      <span className="inline-block mt-1.5 text-[10px] font-bold text-[#0099BB] bg-[#00D2FE]/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        {org.industryType}
+                      </span>
+                    )}
                   </div>
-                </div>
-
-                {/* Info rows */}
-                <div className="space-y-3">
-                  {org.displayAddress && (
-                    <motion.div custom={1} variants={fadeUp} initial="hidden" animate="show" className="flex items-start gap-3 group">
-                      <div className="p-1.5 rounded-lg bg-rose-50 group-hover:bg-rose-100 transition-colors">
-                        <MapPin className="h-4 w-4 text-rose-500" />
-                      </div>
-                      <p className="text-sm text-gray-700 leading-relaxed pt-0.5">{org.displayAddress}</p>
-                    </motion.div>
-                  )}
-                  {org.phone && (
-                    <motion.div custom={2} variants={fadeUp} initial="hidden" animate="show" className="flex items-center gap-3 group">
-                      <div className="p-1.5 rounded-lg bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
-                        <Phone className="h-4 w-4 text-emerald-500" />
-                      </div>
-                      <a href={`tel:${org.phone}`} className="text-sm text-blue-600 hover:underline font-medium">
-                        {org.phone}
-                      </a>
-                    </motion.div>
-                  )}
-                  {org.status && (
-                    <motion.div custom={3} variants={fadeUp} initial="hidden" animate="show" className="flex items-center gap-3 group">
-                      <div className="p-1.5 rounded-lg bg-green-50 group-hover:bg-green-100 transition-colors">
-                        <ShieldCheck className="h-4 w-4 text-green-500" />
-                      </div>
-                      <span className="text-sm font-medium text-emerald-700">{org.status}</span>
-                    </motion.div>
-                  )}
                 </div>
               </div>
             </motion.div>
 
-            {/* ── Verified safe drop banner ── */}
-            <motion.div
-              custom={1}
-              variants={fadeUp}
-              initial="hidden"
-              animate="show"
-              className="relative overflow-hidden bg-gradient-to-r from-blue-500/10 via-violet-500/10 to-pink-500/10 border border-blue-200/60 rounded-2xl p-4"
-            >
-              {/* Animated blobs */}
-              <motion.div
-                animate={{ x: [0, 8, 0], y: [0, -6, 0] }}
-                transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
-                className="absolute -top-4 -right-4 h-20 w-20 rounded-full bg-blue-400/20 blur-xl"
-              />
-              <div className="relative flex items-start gap-3">
-                <div className="p-2 rounded-xl bg-white shadow-sm shrink-0">
-                  <Sparkles className="h-4 w-4 text-violet-500" />
+            {/* ── Info rows ── */}
+            <motion.div custom={1} variants={fadeUp} initial="hidden" animate="show">
+              <div className="bg-white rounded-3xl border border-[#f0f0f0] divide-y divide-[#f5f5f5] overflow-hidden">
+                {org.displayAddress && (
+                  <div className="flex items-start gap-3 px-5 py-4">
+                    <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0 mt-0.5">
+                      <MapPin className="w-4 h-4 text-rose-400" />
+                    </div>
+                    <div className="flex-1 min-w-0 pt-1">
+                      <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-widest mb-0.5">Address</p>
+                      <p className="text-sm font-semibold text-[#111] leading-snug">{org.displayAddress}</p>
+                    </div>
+                  </div>
+                )}
+                {org.phone && (
+                  <div className="flex items-start gap-3 px-5 py-4">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
+                      <Phone className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="flex-1 min-w-0 pt-1">
+                      <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-widest mb-0.5">Phone</p>
+                      <a href={`tel:${org.phone}`} className="text-sm font-semibold text-[#0099BB] hover:underline">
+                        {org.phone}
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {org.status && (
+                  <div className="flex items-start gap-3 px-5 py-4">
+                    <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
+                      <ShieldCheck className="w-4 h-4 text-green-400" />
+                    </div>
+                    <div className="flex-1 min-w-0 pt-1">
+                      <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-widest mb-0.5">Status</p>
+                      <p className="text-sm font-semibold text-emerald-600">{org.status}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* ── Verified banner ── */}
+            <motion.div custom={2} variants={fadeUp} initial="hidden" animate="show">
+              <div className="bg-[#00D2FE]/8 border border-[#00D2FE]/20 rounded-3xl px-5 py-4 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-[#00D2FE]/15 flex items-center justify-center shrink-0 mt-0.5">
+                  <ShieldCheck className="w-4 h-4 text-[#0099BB]" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm mb-0.5">✅ Verified Safe Drop Point</p>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    This organisation is a verified safe drop point. Hand in found items or enquire about lost belongings.
+                  <p className="text-sm font-black text-[#111] tracking-tight">Verified Safe Drop Point</p>
+                  <p className="text-xs text-[#aaa] mt-0.5 font-medium leading-relaxed">
+                    Hand in found items or enquire about lost belongings — no personal info shared.
                   </p>
                 </div>
               </div>
@@ -176,30 +166,20 @@ function OrgDetailPage() {
         ) : null}
       </div>
 
-      {/* ── Fixed CTA ─────────────────────────────────────────── */}
+      {/* ── Fixed CTA ── */}
       {org && (
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-white/60 px-4 pt-3 pb-7 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]"
+          transition={{ delay: 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#f0f0f0] px-4 pt-3 pb-8"
         >
-          <motion.div whileTap={{ scale: 0.97 }} className="max-w-sm mx-auto">
+          <div className="max-w-sm mx-auto">
             <Button
               onClick={handleStartChat}
               disabled={isAuthPending}
-              className="relative w-full h-14 rounded-full text-base font-semibold flex items-center justify-center gap-2.5 overflow-hidden
-                         bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600
-                         shadow-lg shadow-violet-500/30
-                         hover:shadow-xl hover:shadow-violet-500/40 hover:scale-[1.02]
-                         transition-all duration-300"
+              className="w-full h-14 rounded-2xl text-[15px] font-black bg-[#111] hover:bg-[#222] text-white flex items-center justify-center gap-2.5 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-none"
             >
-              {/* Shimmer effect */}
-              <motion.div
-                animate={{ x: [-200, 300] }}
-                transition={{ repeat: Infinity, duration: 2.5, ease: 'linear', repeatDelay: 1 }}
-                className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
-              />
               {isAuthPending ? (
                 <Spinner size="sm" />
               ) : (
@@ -209,7 +189,7 @@ function OrgDetailPage() {
                 </>
               )}
             </Button>
-          </motion.div>
+          </div>
         </motion.div>
       )}
     </div>
@@ -218,21 +198,25 @@ function OrgDetailPage() {
 
 function OrgDetailSkeleton() {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="bg-white rounded-3xl border border-gray-100 p-6 space-y-4 shadow-sm"
-    >
-      <div className="flex items-center gap-4">
-        <Skeleton className="h-16 w-16 rounded-2xl" />
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-44" />
-          <Skeleton className="h-5 w-24 rounded-full" />
+    <div className="space-y-3">
+      <div className="bg-[#F7F7F7] rounded-3xl p-5 flex items-start gap-4">
+        <Skeleton className="w-14 h-14 rounded-2xl shrink-0" />
+        <div className="space-y-2 pt-1 flex-1">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-20 rounded-full" />
         </div>
       </div>
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-2/3" />
-      <Skeleton className="h-4 w-1/2" />
-    </motion.div>
+      <div className="bg-white rounded-3xl border border-[#f0f0f0] divide-y divide-[#f5f5f5] overflow-hidden">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 px-5 py-4">
+            <Skeleton className="w-8 h-8 rounded-xl shrink-0" />
+            <div className="space-y-1.5 flex-1">
+              <Skeleton className="h-2.5 w-16 rounded-full" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

@@ -4,19 +4,20 @@ const NAV_LINKS = ['How it works', 'Premium', 'Download', 'Privacy', 'Terms'] as
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-100 bg-white">
+    <footer className="border-t border-[#e5e5e5] bg-white">
       <div className="px-5 lg:px-10 py-8 lg:py-10 w-full max-w-md lg:max-w-screen-xl mx-auto">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
           {/* Logo + tagline */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                <div className="w-2.5 h-2.5 rounded-full bg-white" />
+              {/* Cyan logo mark — Moneda style geometric circle */}
+              <div className="w-6 h-6 rounded-full bg-[#00D2FE] flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#111]" />
               </div>
-              <span className="text-blue-500 font-extrabold text-lg tracking-tight">Backtrack</span>
+              <span className="text-[#111] font-black text-lg tracking-tight">Backtrack</span>
             </div>
-            <p className="text-xs text-gray-400">Everything has a way back.</p>
+            <p className="text-xs text-[#aaa] font-medium">Everything has a way back.</p>
           </div>
 
           {/* Nav links */}
@@ -24,7 +25,7 @@ export function Footer() {
             {NAV_LINKS.map((link) => (
               <button
                 key={link}
-                className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200"
+                className="text-sm text-[#777] hover:text-[#00D2FE] font-medium transition-colors duration-200"
               >
                 {link}
               </button>
@@ -33,17 +34,17 @@ export function Footer() {
 
           {/* Social + copyright */}
           <div className="flex flex-col items-start lg:items-end gap-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               {[Twitter, Github, Instagram].map((Icon, i) => (
                 <button
                   key={i}
-                  className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-colors duration-200"
+                  className="w-8 h-8 rounded-full border border-[#e5e5e5] flex items-center justify-center text-[#aaa] hover:text-[#00D2FE] hover:border-[#00D2FE]/50 transition-all duration-200"
                 >
                   <Icon className="w-3.5 h-3.5" />
                 </button>
               ))}
             </div>
-            <p className="text-xs text-gray-400">© 2026 Backtrack Inc. All rights reserved.</p>
+            <p className="text-xs text-[#bbb] font-medium">© 2026 Backtrack Inc. All rights reserved.</p>
           </div>
 
         </div>

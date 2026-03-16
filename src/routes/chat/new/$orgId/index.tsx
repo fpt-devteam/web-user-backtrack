@@ -38,7 +38,7 @@ function NewChatPage() {
       }
     }
     run()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const { data: existingConversation, isLoading: isCheckingConversation } =
@@ -60,57 +60,57 @@ function NewChatPage() {
   // ── Skeleton ──
   if (isCheckingConversation) {
     return (
-      <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/20 to-purple-50/10">
-        <header className="sticky top-0 z-20 w-full border-b border-white/60 bg-white/80 backdrop-blur-xl shadow-sm shrink-0">
-          <div className="flex items-center gap-3 px-3 py-3">
-            <div className="p-2"><ArrowLeft className="h-5 w-5 text-muted-foreground" /></div>
+      <div className="flex h-screen flex-col overflow-hidden bg-white">
+        <header className="sticky top-0 z-20 w-full border-b border-[#f0f0f0] bg-white shrink-0">
+          <div className="flex items-center gap-3 px-4 py-4">
+            <div className="p-2 -ml-1">
+              <ArrowLeft className="h-5 w-5 text-[#111]" />
+            </div>
             <Skeleton className="h-10 w-10 rounded-full" />
             <div className="flex-1 space-y-2">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-3.5 w-20" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-16" />
             </div>
           </div>
         </header>
-        <div className="flex-1 flex items-center justify-center">
-          <Skeleton className="h-6 w-48 rounded-xl" />
+        <div className="flex-1 flex items-center justify-center bg-[#F7F7F7]">
+          <Skeleton className="h-5 w-40 rounded-xl" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/20 to-purple-50/10">
+    <div className="flex h-screen flex-col overflow-hidden bg-white">
 
-      {/* ── Header ─────────────────────────────────────────────── */}
+      {/* ── Header ── */}
       <motion.header
         initial={{ y: -40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-        className="sticky top-0 z-20 w-full border-b border-white/60 bg-white/80 backdrop-blur-xl shadow-sm shrink-0"
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="sticky top-0 z-20 w-full border-b border-[#f0f0f0] bg-white shrink-0"
       >
-        <div className="flex items-center gap-3 px-3 py-3">
-          <motion.button
-            whileTap={{ scale: 0.85 }}
-            whileHover={{ scale: 1.08 }}
+        <div className="flex items-center gap-3 px-4 py-4">
+          <button
             onClick={() => navigate({ to: '/org/$id', params: { id: orgId } })}
-            className="p-2 rounded-full hover:bg-gray-100/80 transition-colors shrink-0"
+            className="p-2 -ml-1 rounded-xl hover:bg-[#f5f5f5] transition-colors duration-200 shrink-0"
             aria-label="Go back"
           >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
-          </motion.button>
+            <ArrowLeft className="h-5 w-5 text-[#111]" />
+          </button>
 
           {/* Avatar */}
           <div className="relative shrink-0">
             {isConnected && (
               <motion.div
-                animate={{ scale: [1, 1.4, 1], opacity: [0.45, 0, 0.45] }}
-                transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-                className="absolute inset-0 rounded-full bg-green-400/50"
+                animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0, 0.3] }}
+                transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                className="absolute inset-0 rounded-full bg-green-400/40"
               />
             )}
-            <Avatar className="h-10 w-10 border-2 border-primary/10 shadow-md relative">
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 via-violet-500 to-pink-500 text-white font-semibold">
-                {isLoading ? <Building2 className="h-5 w-5" /> : initial}
+            <Avatar className="h-10 w-10 relative">
+              <AvatarFallback className="bg-[#00D2FE]/15 text-[#0099BB] font-black text-sm">
+                {isLoading ? <Building2 className="h-4 w-4" /> : initial}
               </AvatarFallback>
             </Avatar>
             <AnimatePresence mode="wait">
@@ -121,8 +121,8 @@ function NewChatPage() {
                 exit={{ scale: 0 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 className={cn(
-                  'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white shadow-sm',
-                  isConnected ? 'bg-green-500' : 'bg-gray-400',
+                  'absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white',
+                  isConnected ? 'bg-green-500' : 'bg-[#ccc]',
                 )}
               />
             </AnimatePresence>
@@ -131,24 +131,38 @@ function NewChatPage() {
           {/* Name & status */}
           <div className="flex-1 min-w-0">
             {isLoading ? (
-              <>
-                <Skeleton className="h-5 w-28 mb-1" />
-                <Skeleton className="h-3.5 w-16" />
-              </>
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-3 w-16" />
+              </div>
             ) : (
               <>
-                <h1 className="truncate text-sm font-semibold leading-tight text-gray-900">{title}</h1>
-                <div className="flex items-center gap-1.5 mt-0.5">
+                <h1 className="truncate text-sm font-black text-[#111] tracking-tight leading-tight">
+                  {title}
+                </h1>
+                <div className="flex items-center gap-1 mt-0.5">
                   <AnimatePresence mode="wait">
                     {isConnected ? (
-                      <motion.div key="on" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1">
+                      <motion.div
+                        key="on"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-1"
+                      >
                         <Wifi className="h-3 w-3 text-green-500" />
-                        <span className="text-xs text-green-600 font-medium">Online</span>
+                        <span className="text-[11px] text-green-600 font-semibold">Online</span>
                       </motion.div>
                     ) : (
-                      <motion.div key="off" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1">
-                        <WifiOff className="h-3 w-3 text-gray-400" />
-                        <span className="text-xs text-gray-500">Connecting…</span>
+                      <motion.div
+                        key="off"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-1"
+                      >
+                        <WifiOff className="h-3 w-3 text-[#ccc]" />
+                        <span className="text-[11px] text-[#bbb] font-medium">Connecting…</span>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -159,47 +173,41 @@ function NewChatPage() {
         </div>
       </motion.header>
 
-      {/* ── Empty intro state ──────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center gap-5 px-6 pb-6">
+      {/* ── Empty intro state ── */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center gap-5 px-6 pb-6 bg-[#F7F7F7]">
         <motion.div
-          initial={{ scale: 0.7, opacity: 0 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1, type: 'spring', stiffness: 280, damping: 22 }}
-          className="relative"
         >
-          {/* Pulsing glow */}
-          <motion.div
-            animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.15, 0.4] }}
-            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-400 to-purple-500 blur-xl"
-          />
-          <div className="relative h-24 w-24 rounded-3xl bg-gradient-to-br from-blue-500 via-violet-600 to-purple-600 flex items-center justify-center shadow-2xl shadow-violet-500/30">
-            <Building2 className="h-12 w-12 text-white" />
+          <div className="w-20 h-20 rounded-3xl bg-[#00D2FE]/15 flex items-center justify-center">
+            <Building2 className="h-10 w-10 text-[#0099BB]" />
           </div>
         </motion.div>
 
         {isLoading ? (
-          <Skeleton className="h-5 w-48 rounded-xl" />
+          <Skeleton className="h-4 w-48 rounded-xl" />
         ) : (
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            className="text-center text-sm text-muted-foreground max-w-xs leading-relaxed"
+            transition={{ delay: 0.18, duration: 0.35 }}
+            className="text-center"
           >
-            Start a conversation with{' '}
-            <span className="font-semibold text-gray-900">{org?.name}</span>.{' '}
-            They will respond as soon as possible.
-          </motion.p>
+            <p className="text-sm font-black text-[#111] tracking-tight">{org?.name}</p>
+            <p className="text-xs text-[#aaa] font-medium mt-1 max-w-[220px] leading-relaxed">
+              Send a message to get started. They'll respond as soon as possible.
+            </p>
+          </motion.div>
         )}
       </div>
 
-      {/* ── Pinned message input ──────────────────────────────── */}
+      {/* ── Message input ── */}
       <motion.div
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="border-t border-white/60 bg-white/80 backdrop-blur-xl shrink-0"
+        transition={{ delay: 0.18, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="border-t border-[#f0f0f0] bg-white shrink-0"
       >
         <MessageInput orgId={orgId} />
       </motion.div>

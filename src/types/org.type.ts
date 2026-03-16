@@ -10,6 +10,7 @@ export interface Org {
   externalPlaceId: string | null;
   phone: string | null;
   industryType: string;
+  logoUrl: string | null;
   taxIdentificationNumber: string | null;
   status: 'Active' | 'Inactive' | string;
   createdAt: string;

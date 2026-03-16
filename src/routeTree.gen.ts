@@ -13,7 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignUpIndexRouteImport } from './routes/sign-up/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as PremiumIndexRouteImport } from './routes/premium/index'
-import { Route as OrgIndexRouteImport } from './routes/org/index'
+import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
 import { Route as DownloadIndexRouteImport } from './routes/download/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProfilePublicCodeIndexRouteImport } from './routes/profile/$public-code/index'
@@ -45,9 +45,9 @@ const PremiumIndexRoute = PremiumIndexRouteImport.update({
   path: '/premium/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrgIndexRoute = OrgIndexRouteImport.update({
-  id: '/org/',
-  path: '/org/',
+const OrganizationsIndexRoute = OrganizationsIndexRouteImport.update({
+  id: '/organizations/',
+  path: '/organizations/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DownloadIndexRoute = DownloadIndexRouteImport.update({
@@ -105,7 +105,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
   '/download': typeof DownloadIndexRoute
-  '/org': typeof OrgIndexRoute
+  '/organizations': typeof OrganizationsIndexRoute
   '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
@@ -122,7 +122,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
   '/download': typeof DownloadIndexRoute
-  '/org': typeof OrgIndexRoute
+  '/organizations': typeof OrganizationsIndexRoute
   '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
@@ -140,7 +140,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
   '/download/': typeof DownloadIndexRoute
-  '/org/': typeof OrgIndexRoute
+  '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
@@ -159,7 +159,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/download'
-    | '/org'
+    | '/organizations'
     | '/premium'
     | '/sign-in'
     | '/sign-up'
@@ -176,7 +176,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/download'
-    | '/org'
+    | '/organizations'
     | '/premium'
     | '/sign-in'
     | '/sign-up'
@@ -193,7 +193,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account/'
     | '/download/'
-    | '/org/'
+    | '/organizations/'
     | '/premium/'
     | '/sign-in/'
     | '/sign-up/'
@@ -211,7 +211,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   DownloadIndexRoute: typeof DownloadIndexRoute
-  OrgIndexRoute: typeof OrgIndexRoute
+  OrganizationsIndexRoute: typeof OrganizationsIndexRoute
   PremiumIndexRoute: typeof PremiumIndexRoute
   SignInIndexRoute: typeof SignInIndexRoute
   SignUpIndexRoute: typeof SignUpIndexRoute
@@ -255,11 +255,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PremiumIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/org/': {
-      id: '/org/'
-      path: '/org'
-      fullPath: '/org'
-      preLoaderRoute: typeof OrgIndexRouteImport
+    '/organizations/': {
+      id: '/organizations/'
+      path: '/organizations'
+      fullPath: '/organizations'
+      preLoaderRoute: typeof OrganizationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/download/': {
@@ -339,7 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   DownloadIndexRoute: DownloadIndexRoute,
-  OrgIndexRoute: OrgIndexRoute,
+  OrganizationsIndexRoute: OrganizationsIndexRoute,
   PremiumIndexRoute: PremiumIndexRoute,
   SignInIndexRoute: SignInIndexRoute,
   SignUpIndexRoute: SignUpIndexRoute,

@@ -48,7 +48,7 @@ export function ConversationHeader({ conversationId }: ConversationHeaderProps) 
         <motion.button
           whileTap={{ scale: 0.85 }}
           whileHover={{ scale: 1.1 }}
-          onClick={() => navigate({ to: '/org' })}
+          onClick={() => navigate({ to: '/organizations' })}
           className="p-2 rounded-full hover:bg-gray-100/80 transition-colors shrink-0"
           aria-label="Go back"
         >

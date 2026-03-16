@@ -30,17 +30,17 @@ export const chatService = {
 
   /**
    * Returns existing conversation with this org, or null if none exists yet.
-   *
-   * TODO: Enable once backend exposes one of:
-   *   • GET /api/chat/conversations?orgId=<id>
-   *   • GET /api/chat/conversations/org/<id>
-   *   • Adds `orgId` field to the Conversation response so we can filter client-side.
-   *
-   * Until then, returns null so NewChatPage always shows the "Start conversation" UI.
+   * Fetches all conversation pages and matches by partner.id === orgId.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getConversationByOrgId(_orgId: string): Promise<Conversation | null> {
-    return null;
+  async getConversationByOrgId(orgId: string): Promise<Conversation | null> {
+    let cursor: string | null = null
+    do {
+      const page = await chatService.getConversations(cursor)
+      const found = page.items.find((c) => c.partner?.id === orgId)
+      if (found) return found
+      cursor = page.hasMore ? (page.nextCursor ?? null) : null
+    } while (cursor)
+    return null
   },
 
   async getMessages(conversationId: string, cursor: string | null): Promise<CursorPagedResponse<Message>> {
