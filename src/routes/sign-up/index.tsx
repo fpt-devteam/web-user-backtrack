@@ -91,7 +91,7 @@ function SignUpPage() {
   const stepLabel = STEP_LABELS[step]
 
   return (
-    <div className="min-h-screen bg-white flex flex-col lg:flex-row">
+    <div className="min-h-screen flex flex-col lg:flex-row">
 
       {/* ── Left panel – desktop only ──────────────────────────── */}
       <div className="hidden lg:flex lg:w-[45%] bg-linear-to-br from-slate-800 via-blue-900 to-blue-700 flex-col justify-between px-14 py-12 shrink-0">

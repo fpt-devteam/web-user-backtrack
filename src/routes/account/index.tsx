@@ -23,7 +23,7 @@ function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen">
       <BacktrackHeader />
       <main className="max-w-5xl mx-auto px-5 py-6 lg:py-10 lg:px-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-8">

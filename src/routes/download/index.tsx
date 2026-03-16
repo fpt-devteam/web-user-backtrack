@@ -10,7 +10,7 @@ export const Route = createFileRoute('/download/')({
 
 function DownloadAppPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
       <BacktrackHeader />
 

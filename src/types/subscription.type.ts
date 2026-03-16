@@ -2,6 +2,17 @@ export type CreateSubscriptionRequest = {
   priceId: string;
 };
 
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  providerPriceId: string;
+  features: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type CreateSubscriptionResponse = {
   clientSecret: string;
 };

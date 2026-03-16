@@ -11,7 +11,7 @@ function SignInPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col lg:flex-row">
+    <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Back to home – absolute on mobile, top-left corner */}
       <button
         type="button"

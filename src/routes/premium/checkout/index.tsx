@@ -46,7 +46,7 @@ function CheckoutPage() {
   const avatarInitial = (profile?.displayName ?? profile?.email ?? 'U')[0].toUpperCase()
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen">
       {/* Checkout header */}
       <header className="bg-white border-b border-gray-100">
         <div className="flex items-center justify-between max-w-6xl mx-auto px-5 lg:px-10 py-4">

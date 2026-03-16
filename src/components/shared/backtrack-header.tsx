@@ -4,7 +4,7 @@ import { BacktrackLogo } from '@/components/shared/backtrack-logo'
 import { useAuth } from '@/hooks/use-auth'
 
 const DESKTOP_NAV_LINKS: { label: string; to: string }[] = [
-  { label: 'Premium Plan', to: '/premium' },
+  { label: 'Pricing', to: '/premium' },
   { label: 'Download', to: '/download' },
   { label: 'Support', to: '/support' },
 ]
@@ -14,7 +14,7 @@ export function BacktrackHeader() {
   const { profile } = useAuth()
 
   return (
-    <header className="bg-white sticky top-0 z-20 border-b border-gray-100">
+    <header className="bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-blue-100">
       <div className="max-w-7xl mx-auto px-5 lg:px-10 py-4 flex items-center justify-between gap-6">
 
         {/* Logo */}
