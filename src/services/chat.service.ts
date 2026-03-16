@@ -28,11 +28,34 @@ export const chatService = {
     return data.data;
   },
 
+  /**
+   * Returns existing conversation with this org, or null if none exists yet.
+   *
+   * TODO: Enable once backend exposes one of:
+   *   • GET /api/chat/conversations?orgId=<id>
+   *   • GET /api/chat/conversations/org/<id>
+   *   • Adds `orgId` field to the Conversation response so we can filter client-side.
+   *
+   * Until then, returns null so NewChatPage always shows the "Start conversation" UI.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getConversationByOrgId(_orgId: string): Promise<Conversation | null> {
+    return null;
+  },
+
   async getMessages(conversationId: string, cursor: string | null): Promise<CursorPagedResponse<Message>> {
-    const url = `/api/chat/messages/${conversationId}` + (cursor ? `?cursor=${cursor}` : '');
-    const { data } = await privateClient.get<ApiResponse<CursorPagedResponse<Message>>>(url);
-    if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch messages');
-    return data.data;
+    const url = `/api/chat/conversations/${conversationId}/messages` + (cursor ? `?cursor=${cursor}` : '');
+    const { data } = await privateClient.get<ApiResponse<Record<string, unknown>>>(url);
+    if (!data.success) throw new Error((data.error as { message?: string })?.message ?? 'Failed to fetch messages');
+
+    // Backend returns { messages: [], nextCursor, hasMore } — normalize to CursorPagedResponse shape
+    const raw = data.data as Record<string, unknown>;
+    const items = (raw.messages ?? raw.items ?? []) as Message[];
+    return {
+      items,
+      nextCursor: (raw.nextCursor ?? raw.next_cursor ?? null) as string | null,
+      hasMore: (raw.hasMore ?? raw.has_more ?? false) as boolean,
+    };
   },
 
   async sendMessage(conversationId: string, content: string): Promise<Message> {

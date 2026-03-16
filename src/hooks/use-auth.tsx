@@ -11,7 +11,8 @@ import {
   onAuthStateChanged, signOut, signInAnonymously,
   getAuth, signInWithEmailAndPassword, EmailAuthProvider,
   linkWithCredential, createUserWithEmailAndPassword, sendEmailVerification,
-  GoogleAuthProvider, signInWithPopup, linkWithPopup,
+  GoogleAuthProvider, signInWithPopup, linkWithPopup, signInWithCredential,
+  type AuthError,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase.ts'
 import { userKeys } from '@/hooks/use-user';
@@ -39,12 +40,17 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
-        if (firebaseUser) {
+        if (firebaseUser && !firebaseUser.isAnonymous) {
+          // Anonymous users have no backend profile yet — skip getMe() to
+          // avoid a 401. The caller (e.g. handleStartChat) must call
+          // createUser() then syncProfile() explicitly.
           const backendProfile = await userService.getMe();
           setProfile(backendProfile);
-        } else {
+        } else if (!firebaseUser) {
           setProfile(null);
         }
+        // firebaseUser.isAnonymous → leave profile unchanged; let the
+        // downstream flow (createUser → syncProfile) set it.
       } catch (error) {
         console.error('Error fetching user profile:', error);
         setProfile(null);
@@ -111,7 +117,18 @@ export function useSignInWithEmailAndPassword() {
 
       if (currentUser?.isAnonymous) {
         const credential = EmailAuthProvider.credential(email, password);
-        await linkWithCredential(currentUser, credential);
+        try {
+          await linkWithCredential(currentUser, credential);
+        } catch (err) {
+          const authErr = err as AuthError;
+          if (authErr.code === 'auth/credential-already-in-use' || authErr.code === 'auth/email-already-in-use') {
+            // Credential belongs to an existing account — sign out anonymous then sign in normally
+            await signOut(auth);
+            await signInWithEmailAndPassword(auth, email, password);
+          } else {
+            throw err;
+          }
+        }
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -135,7 +152,25 @@ export function useSignInWithGoogle() {
       const currentUser = auth.currentUser
 
       if (currentUser?.isAnonymous) {
-        await linkWithPopup(currentUser, provider)
+        try {
+          await linkWithPopup(currentUser, provider)
+        } catch (err) {
+          const authErr = err as AuthError;
+          if (authErr.code === 'auth/credential-already-in-use') {
+            // Google account already exists as a separate Firebase user.
+            // Sign out the anonymous session, then sign in with the returned credential.
+            const credential = GoogleAuthProvider.credentialFromError(authErr);
+            await signOut(auth);
+            if (credential) {
+              await signInWithCredential(auth, credential);
+            } else {
+              // Fallback: open a fresh Google popup
+              await signInWithPopup(auth, provider);
+            }
+          } else {
+            throw err;
+          }
+        }
       } else {
         await signInWithPopup(auth, provider)
       }

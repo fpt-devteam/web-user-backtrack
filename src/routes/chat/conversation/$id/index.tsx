@@ -13,10 +13,11 @@ function ConversationDetail() {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <ConversationHeader conversationId={conversationId} />
-      <div className="flex-1 overflow-hidden">
+      {/* min-h-0 prevents flexbox from growing this child beyond the remaining space */}
+      <div className="flex-1 min-h-0">
         <MessageList conversationId={conversationId} />
       </div>
-      <div className="border-t bg-background">
+      <div className="shrink-0 border-t bg-background">
         <MessageInput conversationId={conversationId} />
       </div>
     </div>
