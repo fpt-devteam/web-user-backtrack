@@ -255,9 +255,9 @@ function PricingPage() {
   }
 
   const sortedPlans = plans
-    ? [...plans].sort((a, b) =>
-        a.name.toLowerCase() === 'monthly' ? -1 : 1,
-      )
+    ? [...plans].sort((a, _) =>
+      a.name.toLowerCase() === 'monthly' ? -1 : 1,
+    )
     : []
 
   return (
