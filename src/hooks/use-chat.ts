@@ -7,6 +7,7 @@ import { toast } from '@/lib/toast';
 export const chatKeys = {
   all: ['chat'] as const,
   conversations: () => [...chatKeys.all, 'conversations'] as const,
+  conversationByOrg: (orgId: string) => [...chatKeys.all, 'conversation-by-org', orgId] as const,
   messages: (conversationId: string) => [...chatKeys.all, 'messages', conversationId] as const,
 };
 
@@ -31,7 +32,17 @@ export function useGetConversationById(id: string, enabled: boolean = true) {
     toast.fromError(error);
   }
   return { data, isLoading };
+}
 
+/** Check if current user already has a conversation with a given org. Returns null if none. */
+export function useGetConversationByOrgId(orgId: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: chatKeys.conversationByOrg(orgId),
+    queryFn: () => chatService.getConversationByOrgId(orgId),
+    enabled: !!orgId && enabled,
+    staleTime: 1000 * 30,
+    retry: false, // don't retry on 404
+  });
 }
 
 export function useGetMessages(conversationId: string) {
