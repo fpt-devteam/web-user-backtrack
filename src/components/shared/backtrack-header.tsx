@@ -1,44 +1,29 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { NavDrawer } from '@/components/shared/nav-drawer'
 import { useAuth } from '@/hooks/use-auth'
 
-const DESKTOP_NAV_LINKS: { label: string; to: string }[] = [
+const DESKTOP_NAV_LINKS: Array<{ label: string; to: string }> = [
   { label: 'Pricing', to: '/premium' },
-  { label: 'Download', to: '/download' },
   { label: 'Support', to: '/support' },
+  { label: 'Messager', to: '/messager' },
 ]
 
-/** Inline wordmark – no SVG file dependency, fully styleable */
 function WordmarkLogo() {
-  return (
-    <span
-      className="flex items-center gap-1.5 select-none"
-      style={{ fontFamily: "'Plus Jakarta Sans', 'Montserrat', 'Poppins', system-ui, sans-serif" }}
-    >
-      {/* Small icon mark */}
-      <span
-        className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: 'linear-gradient(135deg,#4F46E5,#6366F1)' }}
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-          <path
-            d="M7 1.5 L12 4.5 L12 9.5 L7 12.5 L2 9.5 L2 4.5 Z"
-            stroke="white" strokeWidth="1.4" strokeLinejoin="round" fill="none"
-          />
-          <circle cx="7" cy="7" r="2" fill="white" />
-        </svg>
-      </span>
-      {/* Text: "back" dark + "track" indigo accent */}
-      <span className="text-[17px] font-black tracking-tight leading-none text-[#111]">
-        back<span style={{ color: '#6366F1' }}>track</span>
-      </span>
-    </span>
-  )
+  return <img src="/backtrack-logo.svg" alt="Backtrack" className="h-8 w-auto select-none" />
 }
 
 export function BacktrackHeader() {
   const navigate = useNavigate()
+  const { location } = useRouterState()
   const { profile } = useAuth()
+
+  const handleGetApp = () => {
+    if (location.pathname === '/') {
+      document.getElementById('download-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      navigate({ to: '/download' })
+    }
+  }
 
   return (
     <header
@@ -64,7 +49,7 @@ export function BacktrackHeader() {
               className="relative px-4 py-2 text-sm font-semibold text-[#4B5563] hover:text-[#111] transition-colors duration-200 rounded-lg group"
             >
               {label}
-              <span className="absolute bottom-1 left-4 right-4 h-[1.5px] bg-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left rounded-full" />
+              <span className="absolute bottom-1 left-4 right-4 h-[1.5px] bg-brand-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left rounded-full" />
             </button>
           ))}
         </nav>
@@ -81,8 +66,8 @@ export function BacktrackHeader() {
 
           {/* Get the App — solid CTA */}
           <button
-            onClick={() => navigate({ to: '/download' })}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-full transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-indigo-500/20 active:scale-95"
+            onClick={handleGetApp}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-full transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-brand-500/20 active:scale-95"
             style={{ background: 'var(--btn-dark-gradient)' }}
           >
             Get the App

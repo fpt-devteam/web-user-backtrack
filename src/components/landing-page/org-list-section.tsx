@@ -19,7 +19,7 @@ export function OrgListSection() {
           A global network of{' '}
           <span
             style={{
-              backgroundImage: 'linear-gradient(135deg,#4F46E5,#6366F1)',
+              backgroundImage: 'linear-gradient(135deg,var(--brand-700),var(--brand-600))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -54,16 +54,16 @@ export function OrgListSection() {
         to="/organizations"
         className="flex items-center gap-2 text-base font-bold transition-all duration-200 rounded-full px-8 py-3.5 border-2"
         style={{
-          color: '#4F46E5',
-          borderColor: '#4F46E5',
+          color: 'var(--brand-primary)',
+          borderColor: 'var(--brand-primary)',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#4F46E5'
+          e.currentTarget.style.backgroundColor = 'var(--brand-primary)'
           e.currentTarget.style.color = '#fff'
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent'
-          e.currentTarget.style.color = '#4F46E5'
+          e.currentTarget.style.color = 'var(--brand-primary)'
         }}
       >
         View all partners
@@ -108,7 +108,7 @@ function MarqueeTrack({ orgs, reverse }: { orgs: any[]; reverse?: boolean }) {
             />
           ) : (
             <div className="w-72 h-72 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#E8E8E4' }}>
-              <Building2 className="w-8 h-8 text-[#ccc] group-hover:text-indigo-400 transition-colors duration-200" />
+              <Building2 className="w-8 h-8 text-[#ccc] group-hover:text-brand-400 transition-colors duration-200" />
             </div>
           )}
           <span className="text-xs font-semibold text-[#aaa] group-hover:text-[#444] transition-colors duration-200 text-center leading-tight break-words w-full">

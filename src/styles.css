@@ -100,6 +100,41 @@ code {
   96%           { transform: rotate(-2deg); }
   98%           { transform: rotate(2deg); }
 }
+/* Combined float + wiggle — no transform conflict */
+@keyframes floatWiggle {
+  0%            { transform: translateY(0px)  rotate(0deg);  }
+  15%           { transform: translateY(-4px) rotate(-2deg); }
+  30%           { transform: translateY(-8px) rotate(2deg);  }
+  45%           { transform: translateY(-4px) rotate(-1deg); }
+  50%           { transform: translateY(0px)  rotate(0deg);  }
+  62%           { transform: translateY(2px)  rotate(1deg);  }
+  75%           { transform: translateY(0px)  rotate(-1deg); }
+  88%           { transform: translateY(-3px) rotate(2deg);  }
+  100%          { transform: translateY(0px)  rotate(0deg);  }
+}
+@keyframes floatA {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes floatB {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-9px); }
+}
+@keyframes spinCW  { to { transform: rotate(360deg);  } }
+@keyframes spinCCW { to { transform: rotate(-360deg); } }
+@keyframes pulseRing {
+  0%   { transform: scale(0.85); opacity: 0.7; }
+  100% { transform: scale(2);    opacity: 0;   }
+}
+@keyframes popIn {
+  0%   { opacity:0; transform: scale(0.5); }
+  70%  {            transform: scale(1.1); }
+  100% { opacity:1; transform: scale(1);   }
+}
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0);    }
+}
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -110,23 +145,23 @@ code {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   BRAND COLOR TOKENS  (Indigo/Purple core)
+   BRAND COLOR TOKENS  (Cyan core — #00D2FE direction)
    Change ONE section here → whole app re-themes automatically.
-   Scale follows Tailwind v4 oklch indigo palette.
+   Scale follows Tailwind v4 oklch cyan palette.
 ───────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Full indigo scale */
-  --brand-50:  oklch(0.962 0.018 272.3);
-  --brand-100: oklch(0.930 0.034 272.8);
-  --brand-200: oklch(0.870 0.065 274.0);
-  --brand-300: oklch(0.785 0.115 274.7);
-  --brand-400: oklch(0.673 0.182 276.9);
-  --brand-500: oklch(0.585 0.233 277.1);
-  --brand-600: oklch(0.511 0.262 277.0);
-  --brand-700: oklch(0.457 0.240 277.0);
-  --brand-800: oklch(0.398 0.195 277.4);
-  --brand-900: oklch(0.359 0.144 278.7);
-  --brand-950: oklch(0.257 0.090 281.3);
+  /* Full cyan scale */
+  --brand-50:  oklch(0.984 0.019 200.9);
+  --brand-100: oklch(0.956 0.045 203.4);
+  --brand-200: oklch(0.917 0.080 205.0);
+  --brand-300: oklch(0.865 0.127 207.1);
+  --brand-400: oklch(0.789 0.154 211.5);
+  --brand-500: oklch(0.715 0.143 215.2);
+  --brand-600: oklch(0.609 0.126 221.7);
+  --brand-700: oklch(0.520 0.105 223.1);
+  --brand-800: oklch(0.450 0.085 224.3);
+  --brand-900: oklch(0.398 0.070 226.9);
+  --brand-950: oklch(0.302 0.056 229.7);
 
   /* Semantic aliases — use these in components */
   --brand-primary:       var(--brand-600);   /* main CTA / buttons  */

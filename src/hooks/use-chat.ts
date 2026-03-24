@@ -1,7 +1,6 @@
 // src/hooks/use-chat.ts
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { chatService } from '@/services/chat.service';
-import type { CreateConversationRequest } from '@/types/chat.type';
 import { toast } from '@/lib/toast';
 
 export const chatKeys = {
@@ -56,32 +55,5 @@ export function useGetMessages(conversationId: string) {
     getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
 
   });
-}
-
-export function useCreateConversation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (request: CreateConversationRequest) => chatService.createConversation(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
-    },
-    onError: (error) => {
-      console.error('Error creating conversation:', error);
-      toast.fromError(error);
-    }
-  });
-}
-
-export function useSendMessage(conversationId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (content: string) => chatService.sendMessage(conversationId, content),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) });
-      queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
-    },
-  });
-
 }
 

@@ -19,13 +19,22 @@ export interface SendToConversationPayload {
   content: string;
 }
 
+export interface SendToRecipientPayload {
+  recipientId: string;
+  type?: string;
+  content: string;
+}
+
 export interface SendToOrgPayload {
   orgId: string;
   type?: string;
   content: string;
 }
 
-export type SendMessagePayload = SendToConversationPayload | SendToOrgPayload;
+export type SendMessagePayload =
+  | SendToConversationPayload
+  | SendToRecipientPayload
+  | SendToOrgPayload;
 
 export interface MessageSendSuccessData {
   conversationId: string;
@@ -43,6 +52,7 @@ interface SocketContextValue {
   sendTypingStart: (conversationId: string) => void;
   sendTypingStop: (conversationId: string) => void;
   onMessageSendSuccess: (handler: (data: MessageSendSuccessData) => void) => () => void;
+  onMessageSendSupportSuccess: (handler: (data: MessageSendSuccessData) => void) => () => void;
 }
 
 const SocketContext = createContext<SocketContextValue | null>(null);
@@ -116,7 +126,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
   // ── Messaging ────────────────────────────────────────────────────────────────
   const sendMessage = useCallback((payload: SendMessagePayload) => {
-    socketRef.current?.emit('message:send', payload);
+    const isOrg = 'orgId' in payload;
+    socketRef.current?.emit(
+      isOrg ? 'message:send:support' : 'message:send',
+      payload,
+    );
   }, []);
 
   // ── Typing indicators ────────────────────────────────────────────────────────
@@ -139,6 +153,16 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const onMessageSendSupportSuccess = useCallback(
+    (handler: (data: MessageSendSuccessData) => void) => {
+      const s = socketRef.current;
+      if (!s) return () => {};
+      s.on('message:send:support:success', handler);
+      return () => s.off('message:send:support:success', handler);
+    },
+    [],
+  );
+
   return (
     <SocketContext.Provider
       value={{
@@ -150,6 +174,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         sendTypingStart,
         sendTypingStop,
         onMessageSendSuccess,
+        onMessageSendSupportSuccess,
       }}
     >
       {children}

@@ -1,4 +1,5 @@
-import { Sparkles, MapPin, Clock, ArrowRight, ImageIcon, FileText, Navigation } from 'lucide-react'
+import React from 'react'
+import { ArrowRight, Clock, FileText, ImageIcon, MapPin, Navigation, Sparkles } from 'lucide-react'
 
 interface MatchDimension {
   icon: React.ElementType
@@ -8,9 +9,9 @@ interface MatchDimension {
   barGrad: string
 }
 
-const MATCH_DIMENSIONS: MatchDimension[] = [
-  { icon: FileText,   label: 'Description',       score: 92, color: 'text-indigo-300',  barGrad: 'linear-gradient(90deg,#818CF8,#6366F1)' },
-  { icon: ImageIcon,  label: 'Image Recognition',  score: 87, color: 'text-purple-300',  barGrad: 'linear-gradient(90deg,#C084FC,#A855F7)' },
+const MATCH_DIMENSIONS: Array<MatchDimension> = [
+  { icon: FileText,   label: 'Description',       score: 92, color: 'text-brand-300',  barGrad: 'linear-gradient(90deg,var(--brand-400),var(--brand-600))' },
+  { icon: ImageIcon,  label: 'Image Recognition',  score: 87, color: 'text-brand-200',  barGrad: 'linear-gradient(90deg,var(--brand-300),var(--brand-500))' },
   { icon: Navigation, label: 'Location Proximity', score: 95, color: 'text-emerald-300', barGrad: 'linear-gradient(90deg,#34D399,#10B981)' },
   { icon: Clock,      label: 'Time Correlation',   score: 78, color: 'text-amber-300',   barGrad: 'linear-gradient(90deg,#FCD34D,#F59E0B)' },
 ]
@@ -18,13 +19,15 @@ const MATCH_DIMENSIONS: MatchDimension[] = [
 function LostCard() {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-xl shadow-black/10 w-full">
-      {/* Image area — reduced height */}
-      <div className="relative h-24 lg:h-28 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-        <svg viewBox="0 0 120 100" className="w-16 h-14 opacity-60" fill="none">
-          <rect x="30" y="35" width="60" height="50" rx="8" fill="#64748b" />
-          <path d="M45 35 Q45 20 60 20 Q75 20 75 35" stroke="#64748b" strokeWidth="5" fill="none" strokeLinecap="round" />
-          <rect x="50" y="55" width="20" height="12" rx="3" fill="#94a3b8" />
-        </svg>
+      {/* Real product photo */}
+      <div className="relative h-52 lg:h-60 bg-slate-50">
+        <img
+          src="/package1.jpg"
+          alt="Lost black Elly handbag"
+          className="w-full h-full object-cover object-center"
+        />
+        {/* Subtle dark scrim so badges stay readable */}
+        <div className="absolute inset-0 bg-black/10" />
         <div className="absolute top-2 left-2 bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
           Lost
         </div>
@@ -34,13 +37,13 @@ function LostCard() {
         </div>
       </div>
       <div className="p-3">
-        <h3 className="font-black text-[#111] text-xs mb-0.5">Blue North Face Backpack</h3>
+        <h3 className="font-black text-[#111] text-xs mb-0.5">Black Elly Handbag</h3>
         <p className="text-[11px] text-[#777] leading-relaxed mb-2">
-          Medium-sized blue backpack, contains a laptop &amp; gym clothes. Last seen near the fountain.
+          Black quilted leather handbag with brand scarf, silver buckle. Lost at shopping mall.
         </p>
         <div className="flex items-center gap-1 text-[11px] text-[#aaa]">
           <MapPin className="w-2.5 h-2.5 shrink-0" />
-          <span className="truncate">Central Park, New York</span>
+          <span className="truncate">Vincom Center, Ha Noi</span>
         </div>
       </div>
     </div>
@@ -50,12 +53,14 @@ function LostCard() {
 function FoundCard() {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-xl shadow-black/10 w-full">
-      <div className="relative h-24 lg:h-28 bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center">
-        <svg viewBox="0 0 120 100" className="w-16 h-14 opacity-70" fill="none">
-          <rect x="30" y="35" width="60" height="50" rx="8" fill="#4338CA" />
-          <path d="M45 35 Q45 20 60 20 Q75 20 75 35" stroke="#4338CA" strokeWidth="5" fill="none" strokeLinecap="round" />
-          <rect x="50" y="55" width="20" height="12" rx="3" fill="#6366F1" />
-        </svg>
+      {/* Bag with contents — signals it's been opened & verified */}
+      <div className="relative h-52 lg:h-60 bg-slate-50">
+        <img
+          src="/package2.jpg"
+          alt="Found Elly handbag with contents"
+          className="w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/10" />
         <div className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
           Found
         </div>
@@ -65,13 +70,13 @@ function FoundCard() {
         </div>
       </div>
       <div className="p-3">
-        <h3 className="font-black text-[#111] text-xs mb-0.5">Found a Blue Backpack</h3>
+        <h3 className="font-black text-[#111] text-xs mb-0.5">Found: Elly Handbag + Items</h3>
         <p className="text-[11px] text-[#777] leading-relaxed mb-2">
-          Blue backpack with a laptop inside, found by the park fountain area. Owner please claim!
+          Black quilted bag with phone, tablet &amp; notebook inside. Found near entrance. Owner claim!
         </p>
         <div className="flex items-center gap-1 text-[11px] text-[#aaa]">
           <MapPin className="w-2.5 h-2.5 shrink-0" />
-          <span className="truncate">Central Park, New York</span>
+          <span className="truncate">Vincom Center, Ha Noi</span>
         </div>
       </div>
     </div>
@@ -99,8 +104,8 @@ function MatchScoreRing() {
           />
           <defs>
             <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#818CF8" />
-              <stop offset="100%" stopColor="#6366F1" />
+              <stop offset="0%" stopColor="var(--brand-400)" />
+              <stop offset="100%" stopColor="var(--brand-600)" />
             </linearGradient>
           </defs>
         </svg>
@@ -109,7 +114,7 @@ function MatchScoreRing() {
           <span className="text-[8px] text-white/50 font-bold uppercase tracking-wide">Match</span>
         </div>
       </div>
-      <div className="bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+      <div className="bg-brand-600/20 border border-brand-400/30 text-brand-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
         High Confidence
       </div>
     </div>
@@ -122,9 +127,9 @@ export function AiMatchingSection() {
       {/* Soft indigo glow accents */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-72 h-72 rounded-full blur-3xl"
-          style={{ background: 'radial-gradient(circle,rgba(99,102,241,0.10) 0%,transparent 70%)' }} />
+          style={{ background: 'radial-gradient(circle,oklch(0.609 0.126 221.7 / 0.10) 0%,transparent 70%)' }} />
         <div className="absolute bottom-0 right-1/4 w-72 h-72 rounded-full blur-3xl"
-          style={{ background: 'radial-gradient(circle,rgba(139,92,246,0.07) 0%,transparent 70%)' }} />
+          style={{ background: 'radial-gradient(circle,oklch(0.520 0.105 223.1 / 0.07) 0%,transparent 70%)' }} />
       </div>
 
       <div className="relative px-5 lg:px-10 py-10 lg:py-14 w-full max-w-md lg:max-w-5xl mx-auto">
@@ -132,7 +137,7 @@ export function AiMatchingSection() {
         {/* Section header */}
         <div className="text-center mb-8 lg:mb-10">
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white/60 text-[11px] font-bold px-3 py-1.5 rounded-full mb-3 uppercase tracking-wider">
-            <Sparkles className="w-3 h-3 text-indigo-400" />
+            <Sparkles className="w-3 h-3 text-brand-400" />
             AI-Powered Matching Engine
           </div>
           <h2 className="text-2xl lg:text-4xl font-black text-white mb-3 leading-tight tracking-tighter">
@@ -140,7 +145,7 @@ export function AiMatchingSection() {
             <br className="hidden lg:block" />
             <span
               style={{
-                backgroundImage: 'linear-gradient(135deg,#818CF8 0%,#6366F1 60%,#A78BFA 100%)',
+                backgroundImage: 'linear-gradient(135deg,var(--brand-400) 0%,var(--brand-600) 60%,var(--brand-300) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -159,9 +164,6 @@ export function AiMatchingSection() {
         <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-3 mb-8 lg:mb-10">
 
           <div className="w-full lg:flex-1">
-            <p className="text-white/30 text-[10px] font-black uppercase tracking-widest mb-2 text-center lg:text-left">
-              Report #1 — Lost
-            </p>
             <LostCard />
           </div>
 
@@ -172,9 +174,9 @@ export function AiMatchingSection() {
               {/* Indigo AI brain */}
               <div className="relative">
                 <div className="absolute inset-0 rounded-xl blur-lg opacity-40"
-                  style={{ background: 'linear-gradient(135deg,#6366F1,#818CF8)' }} />
+                  style={{ background: 'linear-gradient(135deg,var(--brand-600),var(--brand-400))' }} />
                 <div className="relative w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shadow-xl"
-                  style={{ background: 'linear-gradient(135deg,#4F46E5,#6366F1)' }}>
+                  style={{ background: 'linear-gradient(135deg,var(--brand-700),var(--brand-600))' }}>
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
               </div>
@@ -187,9 +189,6 @@ export function AiMatchingSection() {
           </div>
 
           <div className="w-full lg:flex-1">
-            <p className="text-white/30 text-[10px] font-black uppercase tracking-widest mb-2 text-center lg:text-right">
-              Report #2 — Found
-            </p>
             <FoundCard />
           </div>
         </div>
@@ -222,8 +221,8 @@ export function AiMatchingSection() {
               Backtrack scans <span className="text-white font-black">thousands of reports</span> every minute — automatically.
             </p>
             <button
-              className="flex items-center gap-2 font-black text-xs py-2.5 px-6 rounded-full transition-all duration-200 shadow-lg whitespace-nowrap shrink-0 tracking-wide text-white hover:-translate-y-0.5 hover:shadow-indigo-500/25 hover:shadow-xl active:scale-95"
-              style={{ background: 'linear-gradient(135deg,#4F46E5,#6366F1)' }}
+              className="flex items-center gap-2 font-black text-xs py-2.5 px-6 rounded-full transition-all duration-200 shadow-lg whitespace-nowrap shrink-0 tracking-wide text-white hover:-translate-y-0.5 hover:shadow-brand-600/25 hover:shadow-xl active:scale-95"
+              style={{ background: 'linear-gradient(135deg,var(--brand-700),var(--brand-600))' }}
             >
               Try AI Search
               <ArrowRight className="w-3.5 h-3.5" />

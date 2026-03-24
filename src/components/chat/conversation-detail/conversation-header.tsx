@@ -1,122 +1,144 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { useGetConversationById } from "@/hooks/use-chat"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useSocket } from "@/hooks/use-socket"
-import { cn } from "@/lib/utils"
-import { ArrowLeft, Wifi, WifiOff } from "lucide-react"
-import { useNavigate } from "@tanstack/react-router"
-import { motion, AnimatePresence } from "framer-motion"
+import { Skeleton } from '@/components/ui/skeleton'
+import { useGetConversationById } from '@/hooks/use-chat'
+import { useGetOrgById } from '@/hooks/use-org'
+import { useSocket } from '@/hooks/use-socket'
+import { ArrowLeft, Phone, Video } from 'lucide-react'
+import { useRouter } from '@tanstack/react-router'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type ConversationHeaderProps = {
   readonly conversationId: string
+  /** Called when the user clicks the back/close button.
+   *  If omitted, falls back to router.history.back() */
+  readonly onClose?: () => void
 }
 
-export function ConversationHeader({ conversationId }: ConversationHeaderProps) {
+export function ConversationHeader({ conversationId, onClose }: ConversationHeaderProps) {
   const { data: conversation, isLoading } = useGetConversationById(conversationId)
   const { isConnected } = useSocket()
-  const navigate = useNavigate()
+  const router = useRouter()
 
-  const title = conversation?.partner?.displayName ?? 'Conversation'
-  const initial = title.charAt(0).toUpperCase()
+  const handleBack = () => {
+    if (onClose) onClose()
+    else router.history.back()
+  }
 
+  // Support conversations have partner = null; use org.name instead
+  const { data: org } = useGetOrgById(conversation?.orgId ?? '')
+
+  const name =
+    conversation?.partner?.displayName?.trim() ||
+    org?.name?.trim() ||
+    ''
+  // API field is avatarUrl; fall back to logoUrl for org conversations
+  const avatarUrl =
+    conversation?.partner?.avatarUrl?.trim() ??
+    conversation?.partner?.avatar?.trim() ??
+    org?.logoUrl?.trim()
+  const initial = (name || '?').charAt(0).toUpperCase()
+
+  /* ── Skeleton ── */
   if (isLoading || !conversation) {
     return (
-      <header className="sticky top-0 z-20 w-full border-b border-white/60 bg-white/80 backdrop-blur-xl shadow-sm">
-        <div className="flex items-center gap-3 px-3 py-3">
-          <div className="p-2">
-            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-3.5 w-20" />
-          </div>
+      <header className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white shrink-0">
+        <div className="p-1.5 text-gray-400">
+          <ArrowLeft className="h-5 w-5" />
         </div>
+        <div className="relative shrink-0">
+          <Skeleton className="w-9 h-9 rounded-full" />
+        </div>
+        <div className="flex-1 space-y-1.5">
+          <Skeleton className="h-4 w-28 rounded-full" />
+          <Skeleton className="h-3 w-16 rounded-full" />
+        </div>
+        <Skeleton className="w-8 h-8 rounded-full" />
+        <Skeleton className="w-8 h-8 rounded-full" />
       </header>
     )
   }
 
   return (
     <motion.header
-      initial={{ y: -40, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="sticky top-0 z-20 w-full border-b border-white/60 bg-white/80 backdrop-blur-xl shadow-sm"
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white shrink-0"
     >
-      <div className="flex items-center gap-3 px-3 py-3">
-        {/* Back button */}
-        <motion.button
-          whileTap={{ scale: 0.85 }}
-          whileHover={{ scale: 1.1 }}
-          onClick={() => navigate({ to: '/organizations' })}
-          className="p-2 rounded-full hover:bg-gray-100/80 transition-colors shrink-0"
-          aria-label="Go back"
-        >
-          <ArrowLeft className="h-5 w-5 text-foreground" />
-        </motion.button>
+      {/* Back button */}
+      <button
+        onClick={handleBack}
+        className="p-1.5 rounded-full hover:bg-gray-100 transition-colors shrink-0"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+      </button>
 
-        {/* Avatar with pulsing ring */}
-        <div className="relative shrink-0">
-          {isConnected && (
-            <motion.div
-              animate={{ scale: [1, 1.35, 1], opacity: [0.5, 0, 0.5] }}
-              transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-              className="absolute inset-0 rounded-full bg-green-400/50"
-            />
+      {/* Avatar + online dot */}
+      <div className="relative shrink-0">
+        <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center ring-1 ring-gray-100">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={name || 'Chat'} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-sm font-bold text-gray-500">{initial}</span>
           )}
-          <Avatar className="h-10 w-10 border-2 border-primary/10 shadow-md relative">
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 via-violet-500 to-pink-500 text-white text-base font-semibold">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
-
-          {/* Online dot */}
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={isConnected ? 'on' : 'off'}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              className={cn(
-                'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white shadow-sm',
-                isConnected ? 'bg-green-500' : 'bg-gray-400',
-              )}
-            />
-          </AnimatePresence>
         </div>
+        {/* Online / Offline dot */}
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={isConnected ? 'on' : 'off'}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
+              isConnected ? 'bg-green-500' : 'bg-gray-300'
+            }`}
+          />
+        </AnimatePresence>
+      </div>
 
-        {/* Name & status */}
-        <div className="flex-1 min-w-0">
-          <h2 className="truncate text-sm font-semibold leading-tight text-gray-900">{title}</h2>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <AnimatePresence mode="wait">
-              {isConnected ? (
-                <motion.div
-                  key="on"
-                  initial={{ opacity: 0, x: -4 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 4 }}
-                  className="flex items-center gap-1"
-                >
-                  <Wifi className="h-3 w-3 text-green-500" />
-                  <span className="text-xs text-green-600 font-medium">Online</span>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="off"
-                  initial={{ opacity: 0, x: -4 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 4 }}
-                  className="flex items-center gap-1"
-                >
-                  <WifiOff className="h-3 w-3 text-gray-400" />
-                  <span className="text-xs text-gray-500">Offline</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+      {/* Name + status */}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-gray-900 truncate leading-tight">{name || 'Chat'}</p>
+        <AnimatePresence mode="wait">
+          {isConnected ? (
+            <motion.p
+              key="on"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-xs text-green-500 font-medium leading-tight"
+            >
+              Active now
+            </motion.p>
+          ) : (
+            <motion.p
+              key="off"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-xs text-gray-400 leading-tight"
+            >
+              Offline
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Action icons */}
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Voice call"
+        >
+          <Phone className="w-5 h-5 text-gray-800" strokeWidth={1.8} />
+        </button>
+        <button
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Video call"
+        >
+          <Video className="w-5 h-5 text-gray-800" strokeWidth={1.8} />
+        </button>
       </div>
     </motion.header>
   )

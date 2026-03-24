@@ -18,18 +18,18 @@ function SmartAIRecoveryCard() {
       {/* Header badges */}
       <div className="flex items-center gap-2 mb-4">
         <span className="text-white text-[10px] font-black px-3 py-1 rounded-full tracking-wide uppercase"
-          style={{ background: 'linear-gradient(135deg,#4F46E5,#6366F1)' }}>
+          style={{ background: 'linear-gradient(135deg,var(--brand-700),var(--brand-600))' }}>
           New
         </span>
-        <span className="text-indigo-500 text-[11px] font-bold uppercase tracking-widest">
+        <span className="text-brand-500 text-[11px] font-bold uppercase tracking-widest">
           Beta Feature
         </span>
       </div>
 
       <div className="flex items-start gap-3 mb-3">
         <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: 'rgba(99,102,241,0.10)' }}>
-          <Sparkles className="w-5 h-5 text-indigo-500" />
+          style={{ background: 'var(--brand-50)' }}>
+          <Sparkles className="w-5 h-5 text-brand-500" />
         </div>
         <div>
           <h2 className="text-xl lg:text-2xl font-black text-[#111] leading-snug tracking-tight">Smart AI Recovery</h2>
@@ -129,22 +129,22 @@ function SmartAIRecoveryCard() {
           <rect width="400" height="250" fill="url(#mapgrid)" opacity="0.06" />
         </svg>
         {/* Map pins */}
-        <MapPin className="absolute text-indigo-500 drop-shadow-lg w-5 h-5" style={{ top: '15%', left: '12%' }} />
-        <MapPin className="absolute text-indigo-300 w-4 h-4" style={{ top: '38%', left: '58%' }} />
-        <MapPin className="absolute text-indigo-500 drop-shadow-lg w-5 h-5" style={{ top: '58%', left: '76%' }} />
-        <MapPin className="absolute text-indigo-300 w-4 h-4" style={{ top: '68%', left: '28%' }} />
+        <MapPin className="absolute text-brand-500 drop-shadow-lg w-5 h-5" style={{ top: '15%', left: '12%' }} />
+        <MapPin className="absolute text-brand-300 w-4 h-4" style={{ top: '38%', left: '58%' }} />
+        <MapPin className="absolute text-brand-500 drop-shadow-lg w-5 h-5" style={{ top: '58%', left: '76%' }} />
+        <MapPin className="absolute text-brand-300 w-4 h-4" style={{ top: '68%', left: '28%' }} />
 
         {/* Pulse ring */}
         <div className="absolute" style={{ top: '10%', left: '7%' }}>
-          <div className="w-8 h-8 rounded-full bg-indigo-400/20 animate-ping" />
+          <div className="w-8 h-8 rounded-full bg-brand-400/20 animate-ping" />
         </div>
 
         {/* Center pill */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="bg-white border border-[#E8E8E4] rounded-full px-5 py-2.5 flex items-center gap-2.5 shadow-md">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500" />
             </span>
             <span className="text-xs font-bold text-[#111]">Scanning Area...</span>
           </div>
@@ -157,7 +157,7 @@ function SmartAIRecoveryCard() {
         </div>
       </div>
 
-      <button className="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-600 text-sm font-bold transition-colors duration-200 group mt-auto">
+      <button className="flex items-center gap-1.5 text-brand-500 hover:text-brand-600 text-sm font-bold transition-colors duration-200 group mt-auto">
         Learn about AI Matching
         <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
       </button>
@@ -172,7 +172,7 @@ function ConnectAndRecoverCard() {
         <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
           <Lock className="w-5 h-5 text-emerald-600" />
         </div>
-        <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-500 text-xs font-bold px-3 py-1 rounded-full">
+        <div className="flex items-center gap-1.5 bg-brand-50 text-brand-500 text-xs font-bold px-3 py-1 rounded-full">
           <CheckCircle className="w-3 h-3" />
           End-to-end encrypted
         </div>
@@ -198,11 +198,11 @@ function ConnectAndRecoverCard() {
             <div key={msg.id} className="flex items-end gap-2 justify-end">
               {/* Sent messages → Indigo */}
               <div className="rounded-2xl rounded-br-md px-3.5 py-2.5 max-w-[80%] shadow-sm"
-                style={{ background: 'linear-gradient(135deg,#4F46E5,#6366F1)' }}>
+                style={{ background: 'linear-gradient(135deg,var(--brand-700),var(--brand-600))' }}>
                 <p className="text-xs text-white font-medium">{msg.text}</p>
               </div>
               <div className="w-7 h-7 rounded-full border-2 border-white shadow-sm flex-shrink-0"
-                style={{ background: 'linear-gradient(135deg,#6366F1,#4F46E5)' }} />
+                style={{ background: 'linear-gradient(135deg,var(--brand-600),var(--brand-700))' }} />
             </div>
           )
         )}

@@ -27,15 +27,15 @@ function QRCodeMark() {
 
   return (
     <div
-      className="w-56 lg:w-72 mx-auto rounded-[32px] flex flex-col items-center justify-center overflow-hidden shadow-2xl shadow-black/20"
+      className="w-40 lg:w-52 mx-auto rounded-[24px] flex flex-col items-center justify-center overflow-hidden shadow-2xl shadow-black/20"
       style={{
         backgroundColor: COLORS[colorIdx],
-        padding: '20px 20px 14px',
+        padding: '14px 14px 10px',
         transition: 'background-color 0.7s ease-in-out',
       }}
     >
       <img src="/qr-code.svg" alt="Backtrack QR code" className="w-full h-auto block" />
-      <span className="text-[14px] lg:text-[16px] font-black tracking-[0.2em] text-white uppercase mt-3">
+      <span className="text-[11px] lg:text-[13px] font-black tracking-[0.2em] text-white uppercase mt-2">
         BACKTRACK
       </span>
     </div>
@@ -46,13 +46,13 @@ function QRCodeMark() {
 function AppStoreButton() {
   return (
     <button
-      className="flex items-center gap-4 text-white hover:scale-[1.02] active:scale-[0.97] transition-all duration-150 rounded-full px-8 py-5 shadow-lg shadow-black/20"
+      className="min-w-[180px] flex items-center justify-center gap-3 text-white hover:scale-[1.02] active:scale-[0.97] transition-all duration-150 rounded-full px-6 py-3.5 shadow-lg shadow-black/20"
       style={{ background: 'var(--btn-dark-gradient)' }}
       aria-label="Download on the App Store"
     >
-      <AppleIcon className="w-7 h-7 shrink-0 fill-white" aria-hidden="true" />
+      <AppleIcon className="w-5 h-5 shrink-0 fill-white" aria-hidden="true" />
       <div className="flex flex-col items-start leading-none gap-1">
-        <span className="text-[11px] font-medium text-white/60 uppercase tracking-widest">Download on the</span>
+        <span className="text-[10px] font-medium text-white/60 tracking-widest">Download on the</span>
         <span className="text-[18px] font-bold tracking-tight">App Store</span>
       </div>
     </button>
@@ -63,13 +63,13 @@ function AppStoreButton() {
 function GooglePlayButton() {
   return (
     <button
-      className="flex items-center gap-4 text-white hover:scale-[1.02] active:scale-[0.97] transition-all duration-150 rounded-full px-8 py-5 shadow-lg shadow-black/20"
+      className="min-w-[180px] flex items-center justify-center gap-3 text-white hover:scale-[1.02] active:scale-[0.97] transition-all duration-150 rounded-full px-6 py-3.5 shadow-lg shadow-black/20"
       style={{ background: 'var(--btn-dark-gradient)' }}
       aria-label="Get it on Google Play"
     >
-      <GooglePlayIcon className="w-7 h-7 shrink-0 fill-white" aria-hidden="true" />
+      <GooglePlayIcon className="w-5 h-5 shrink-0 fill-white" aria-hidden="true" />
       <div className="flex flex-col items-start leading-none gap-1">
-        <span className="text-[11px] font-medium text-white/60 uppercase tracking-widest">Get it on</span>
+        <span className="text-[10px] font-medium text-white/60 uppercase tracking-widest">Get it on</span>
         <span className="text-[18px] font-bold tracking-tight">Google Play</span>
       </div>
     </button>
@@ -79,19 +79,19 @@ function GooglePlayButton() {
 /* ─── Main section ─── */
 export function DownloadCtaSection() {
   return (
-    <section className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="px-5 py-16 w-full max-w-2xl mx-auto flex flex-col items-center text-center gap-10">
+    <section id="download-cta" className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="px-5 py-10 w-full max-w-xl mx-auto flex flex-col items-center text-center gap-7">
 
         {/* QR / brand mark */}
         <QRCodeMark />
 
         {/* Headline */}
-        <h2 className="text-3xl lg:text-5xl font-black text-[#111] leading-snug max-w-lg tracking-tight">
+        <h2 className="text-2xl lg:text-4xl font-black text-[#111] leading-snug max-w-lg tracking-tight">
           The universal solution to protect and recover what matters.
         </h2>
 
         {/* Subline */}
-        <p className="text-[#777] text-base max-w-sm leading-relaxed -mt-4 font-medium">
+        <p className="text-[#777] text-sm max-w-sm leading-relaxed -mt-3 font-medium">
           Join thousands who trust Backtrack to keep their belongings safe — worldwide.
         </p>
 

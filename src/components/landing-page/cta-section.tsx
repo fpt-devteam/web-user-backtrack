@@ -34,9 +34,9 @@ export function CTASection() {
         <div className="relative overflow-hidden rounded-[2rem] p-7 lg:p-12 shadow-2xl shadow-black/15"
           style={{ background: 'linear-gradient(135deg,#0F172A 0%,#1E3A5F 60%,#1E1B4B 100%)' }}>
 
-          {/* Subtle indigo glow top-right */}
+          {/* Subtle brand glow top-right */}
           <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full blur-3xl pointer-events-none"
-            style={{ background: 'radial-gradient(circle,rgba(99,102,241,0.25) 0%,transparent 70%)' }} />
+            style={{ background: 'radial-gradient(circle,oklch(0.609 0.126 221.7 / 0.25) 0%,transparent 70%)' }} />
 
           {/* Fine noise texture overlay */}
           <div className="absolute inset-0 rounded-[2rem] pointer-events-none opacity-[0.03]"
@@ -51,7 +51,7 @@ export function CTASection() {
             {/* Left: text + QR badge */}
             <div className="lg:flex-1">
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/70 text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-wider">
-                <QrCode className="w-3.5 h-3.5 text-indigo-300" />
+                <QrCode className="w-3.5 h-3.5 text-brand-300" />
                 Your Item's Digital Identity
               </div>
               <h2 className="text-2xl lg:text-5xl font-black text-white mb-3 leading-tight tracking-tighter">

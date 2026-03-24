@@ -12,11 +12,16 @@ function ConversationDetail() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white">
+      {/* Header — pinned at top */}
       <ConversationHeader conversationId={conversationId} />
-      <div className="flex-1 min-h-0 bg-[#F7F7F7]">
+
+      {/* Message body — scrollable, fills remaining space */}
+      <div className="flex-1 min-h-0 bg-white">
         <MessageList conversationId={conversationId} />
       </div>
-      <div className="shrink-0 border-t border-[#f0f0f0] bg-white">
+
+      {/* Input — pinned at bottom */}
+      <div className="shrink-0 border-t border-gray-100 bg-white">
         <MessageInput conversationId={conversationId} />
       </div>
     </div>
