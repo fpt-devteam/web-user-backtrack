@@ -24,11 +24,11 @@ export function useGetOrgs() {
   });
 }
 
-export function useGetOrgById(id: string) {
+export function useGetOrgById(id: string, enabled = true) {
   const { data, isLoading, error } = useQuery({
     queryKey: orgKeys.detail(id),
     queryFn: () => orgService.getOrgById(id),
-    enabled: !!id,
+    enabled: !!id && enabled,
     staleTime: 1000 * 60 * 5,
   });
 

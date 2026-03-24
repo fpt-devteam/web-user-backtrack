@@ -92,7 +92,7 @@ function NewChatPage() {
       >
         <div className="flex items-center gap-3 px-4 py-4">
           <button
-            onClick={() => navigate({ to: '/org/$id', params: { id: orgId } })}
+            onClick={() => navigate({ to: '/organizations/$id', params: { id: orgId } })}
             className="p-2 -ml-1 rounded-xl hover:bg-[#f5f5f5] transition-colors duration-200 shrink-0"
             aria-label="Go back"
           >

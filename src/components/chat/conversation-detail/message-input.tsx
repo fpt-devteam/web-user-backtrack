@@ -1,9 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Send, Loader2, WifiOff } from 'lucide-react'
+import { Send, Loader2, WifiOff, Smile, Image } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -18,17 +16,18 @@ const messageSchema = z.object({
 type MessageFormValues = z.infer<typeof messageSchema>
 
 interface MessageInputProps {
-  /** Pass for existing conversations */
   conversationId?: string
-  /** Pass for new chat with org (lazy creation) */
   orgId?: string
+  /** DM socket-first: send without a pre-created conversation */
+  recipientId?: string
   onSend?: () => void
 }
 
 const TYPING_DEBOUNCE_MS = 1500
 
-export function MessageInput({ conversationId, orgId, onSend }: MessageInputProps) {
-  const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, isConnected } = useSocket()
+export function MessageInput({ conversationId, orgId, recipientId, onSend }: MessageInputProps) {
+  const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, isConnected } =
+    useSocket()
   const navigate = useNavigate()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -43,30 +42,47 @@ export function MessageInput({ conversationId, orgId, onSend }: MessageInputProp
   const watchContent = form.watch('content')
   const hasText = !!watchContent?.trim()
 
-  // Auto-resize textarea
+  /* ── Auto-resize textarea ── */
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
-    }
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`
   }, [watchContent])
 
-  // Auto-focus
+  /* ── Auto-focus ── */
   useEffect(() => { textareaRef.current?.focus() }, [])
 
-  // Listen for lazy-creation success
+  /* ── Lazy conversation creation ── */
   useEffect(() => {
-    const unsub = onMessageSendSuccess((data) => {
+    return onMessageSendSuccess((data) => {
       setIsSending(false)
       if (data.isNewConversation && data.conversationId) {
-        navigate({ to: '/chat/conversation/$id', params: { id: data.conversationId }, replace: true })
+        navigate({
+          to: '/chat/conversation/$id',
+          params: { id: data.conversationId },
+          replace: true,
+        })
       }
       onSend?.()
     })
-    return unsub
   }, [onMessageSendSuccess, navigate, onSend])
 
-  // Typing indicator
+  useEffect(() => {
+    return onMessageSendSupportSuccess((data) => {
+      setIsSending(false)
+      if (data.isNewConversation && data.conversationId) {
+        navigate({
+          to: '/chat/conversation/$id',
+          params: { id: data.conversationId },
+          replace: true,
+        })
+      }
+      onSend?.()
+    })
+  }, [onMessageSendSupportSuccess, navigate, onSend])
+
+  /* ── Typing ── */
   const stopTyping = useCallback(() => {
     if (isTypingRef.current && conversationId) {
       sendTypingStop(conversationId)
@@ -87,28 +103,27 @@ export function MessageInput({ conversationId, orgId, onSend }: MessageInputProp
 
   useEffect(() => () => stopTyping(), [stopTyping])
 
+  /* ── Submit ── */
   const onSubmit = useCallback(
     (values: MessageFormValues) => {
       if (isSending || !isConnected) return
       setIsSending(true)
       stopTyping()
-
       if (conversationId) {
         sendMessage({ conversationId, type: 'text', content: values.content })
       } else if (orgId) {
         sendMessage({ orgId, type: 'text', content: values.content })
+      } else if (recipientId) {
+        sendMessage({ recipientId, type: 'text', content: values.content })
       }
-
       form.reset()
       requestAnimationFrame(() => {
-        if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto'
-          textareaRef.current.focus()
-        }
+        if (textareaRef.current) { textareaRef.current.style.height = 'auto'; textareaRef.current.focus() }
+        // Only clear spinner immediately for existing conversation (no redirect)
         if (conversationId) setIsSending(false)
       })
     },
-    [isSending, isConnected, conversationId, orgId, sendMessage, stopTyping, form],
+    [isSending, isConnected, conversationId, orgId, recipientId, sendMessage, stopTyping, form],
   )
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -122,7 +137,7 @@ export function MessageInput({ conversationId, orgId, onSend }: MessageInputProp
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="bg-white/80 backdrop-blur-sm">
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         {/* Disconnection banner */}
         <AnimatePresence>
           {!isConnected && (
@@ -130,75 +145,116 @@ export function MessageInput({ conversationId, orgId, onSend }: MessageInputProp
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25 }}
+              transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
               <div className="flex items-center justify-center gap-2 py-2 bg-amber-50 border-b border-amber-100">
                 <WifiOff className="h-3.5 w-3.5 text-amber-500" />
-                <p className="text-xs text-amber-700 font-medium">Reconnecting…</p>
+                <p className="text-xs text-amber-600 font-medium">Reconnecting…</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="px-3 py-3">
-          <div className="flex items-end gap-2">
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      ref={textareaRef}
-                      placeholder="Type a message…"
-                      disabled={isDisabled}
-                      onKeyDown={handleKeyDown}
-                      onChange={(e) => { field.onChange(e); handleTyping() }}
-                      className={cn(
-                        'min-h-[44px] max-h-[120px] resize-none rounded-2xl',
-                        'bg-gray-50/80 border-gray-200/80 placeholder:text-gray-400',
-                        'focus-visible:ring-2 focus-visible:ring-violet-400/60 focus-visible:border-violet-300',
-                        'transition-all duration-200',
-                      )}
-                      rows={1}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Send button with animated appearance */}
-            <motion.div
-              animate={hasText && !isDisabled ? { scale: 1, opacity: 1 } : { scale: 0.85, opacity: 0.45 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-            >
-              <Button
-                type="submit"
-                size="icon"
-                disabled={isDisabled || !hasText}
-                className={cn(
-                  'h-11 w-11 rounded-full shrink-0 shadow-md transition-colors duration-200',
-                  hasText && !isDisabled
-                    ? 'bg-gradient-to-br from-blue-500 via-violet-600 to-purple-600 hover:brightness-110 shadow-violet-500/30'
-                    : 'bg-gray-200',
-                )}
+        {/* Input row */}
+        <div className="flex items-end gap-2 px-3 py-3">
+          {/* Left icons (emoji + image) — hidden once text is present */}
+          <AnimatePresence>
+            {!hasText && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-1 shrink-0 overflow-hidden"
               >
-                <AnimatePresence mode="wait">
-                  {isSending ? (
-                    <motion.span key="loading" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                      <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                    </motion.span>
-                  ) : (
-                    <motion.span key="send" initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }}>
-                      <Send className="h-4.5 w-4.5" />
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </Button>
-            </motion.div>
-          </div>
+                <button
+                  type="button"
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Emoji"
+                >
+                  <Smile className="w-5 h-5 text-gray-500" strokeWidth={1.8} />
+                </button>
+                <button
+                  type="button"
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Image"
+                >
+                  <Image className="w-5 h-5 text-gray-500" strokeWidth={1.8} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Textarea pill */}
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormControl>
+                  <textarea
+                    value={field.value}
+                    name={field.name}
+                    onBlur={field.onBlur}
+                    ref={textareaRef}
+                    placeholder="Message…"
+                    disabled={isDisabled}
+                    onKeyDown={handleKeyDown}
+                    onChange={(e) => { field.onChange(e); handleTyping() }}
+                    rows={1}
+                    className={cn(
+                      'w-full resize-none rounded-[22px] px-4 py-2.5',
+                      'bg-gray-100 border-0 outline-none ring-0',
+                      'text-sm text-gray-900 placeholder-gray-400 leading-relaxed',
+                      'min-h-[40px] max-h-[120px]',
+                      'transition-all duration-150',
+                      'disabled:opacity-50',
+                    )}
+                    style={{ scrollbarWidth: 'none' }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          {/* Send / Like button */}
+          <AnimatePresence mode="wait">
+            {hasText ? (
+              /* Send button — appears when there's text */
+              <motion.button
+                key="send"
+                type="submit"
+                disabled={isDisabled}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+                className="shrink-0 p-2 rounded-full text-[#0095f6] hover:text-[#1877f2] transition-colors disabled:opacity-40"
+                aria-label="Send"
+              >
+                {isSending ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <Send className="w-6 h-6" strokeWidth={2} />
+                )}
+              </motion.button>
+            ) : (
+              /* Like button — shown when input is empty */
+              <motion.button
+                key="like"
+                type="button"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+                className="shrink-0 p-2 rounded-full text-[#0095f6] hover:text-[#1877f2] transition-colors text-xl"
+                aria-label="Like"
+              >
+                👍
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
       </form>
     </Form>

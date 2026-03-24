@@ -4,8 +4,6 @@ import type { ApiResponse } from '@/types/api-response.type';
 import type {
   Conversation,
   Message,
-  CreateConversationRequest,
-  CreateConversationResponse
 } from '@/types/chat.type';
 import type { CursorPagedResponse } from '@/types/pagination.type';
 
@@ -58,22 +56,4 @@ export const chatService = {
     };
   },
 
-  async sendMessage(conversationId: string, content: string): Promise<Message> {
-    console.log('Sending message to conversation:', conversationId, 'Content:', content);
-    const { data } = await privateClient.post<ApiResponse<Message>>(
-      `/api/chat/messages/${conversationId}`,
-      { content }
-    );
-    if (!data.success) throw new Error(data.error?.message ?? 'Failed to send message');
-    return data.data;
-  },
-
-  async createConversation(request: CreateConversationRequest): Promise<CreateConversationResponse> {
-    const { data } = await privateClient.post<ApiResponse<CreateConversationResponse>>(
-      '/api/chat/conversations',
-      request
-    );
-    if (!data.success) throw new Error(data.error?.message ?? 'Failed to create conversation');
-    return data.data;
-  },
 };

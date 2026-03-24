@@ -9,36 +9,71 @@ export function OrgListSection() {
   const items = [...orgs, ...orgs]
 
   return (
-    <section className="py-10 border-y border-[#f0f0f0]">
-      {/* Heading + link */}
-      <div className="flex items-center justify-between px-6 mb-8">
-        <p className="text-xs font-semibold text-[#bbb] uppercase tracking-[0.2em]">
-          Trusted SafeDrop Centres
+    <section className="py-16 min-h-screen flex flex-col items-center justify-center gap-12"
+      style={{ backgroundColor: 'var(--background)', borderTop: '1px solid #E8E8E4', borderBottom: '1px solid #E8E8E4' }}>
+
+      {/* Big heading */}
+      <div className="px-6 text-center space-y-3">
+        <p className="text-sm font-bold text-[#bbb] uppercase tracking-[0.25em]">Trusted SafeDrop Centres</p>
+        <h2 className="text-3xl lg:text-5xl font-black text-[#111] tracking-tight">
+          A global network of{' '}
+          <span
+            style={{
+              backgroundImage: 'linear-gradient(135deg,var(--brand-700),var(--brand-600))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            safe drop
+          </span>
+          {' '}partners
+        </h2>
+        <p className="text-[#888] text-base lg:text-md max-w-lg mx-auto leading-relaxed">
+          Drop off or pick up lost items at thousands of verified partner locations worldwide.
         </p>
-        <Link
-          to="/organizations"
-          className="flex items-center gap-1.5 text-xs font-bold text-[#0099BB] hover:text-[#007A99] transition-colors duration-200"
-        >
-          View all
-          <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
       </div>
 
-      {/* Marquee */}
-      <div
-        className="overflow-hidden w-full"
+      {/* Marquee rows */}
+      <div className="w-full space-y-6">
+
+        {/* Row 2 — right to left */}
+        <div
+          className="overflow-hidden w-full"
+          style={{
+            maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+          }}
+        >
+          {isLoading ? <MarqueeSkeleton /> : <MarqueeTrack orgs={[...items].reverse()} reverse />}
+        </div>
+      </div>
+
+      {/* View all link */}
+      <Link
+        to="/organizations"
+        className="flex items-center gap-2 text-base font-bold transition-all duration-200 rounded-full px-8 py-3.5 border-2"
         style={{
-          maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+          color: 'var(--brand-primary)',
+          borderColor: 'var(--brand-primary)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--brand-primary)'
+          e.currentTarget.style.color = '#fff'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent'
+          e.currentTarget.style.color = 'var(--brand-primary)'
         }}
       >
-        {isLoading ? <MarqueeSkeleton /> : <MarqueeTrack orgs={items} />}
-      </div>
+        View all partners
+        <ChevronRight className="w-4 h-4" />
+      </Link>
     </section>
   )
 }
 
-function MarqueeTrack({ orgs }: { orgs: any[] }) {
+function MarqueeTrack({ orgs, reverse }: { orgs: any[]; reverse?: boolean }) {
   const trackRef = useRef<HTMLDivElement>(null)
 
   const pause = () => {
@@ -51,7 +86,10 @@ function MarqueeTrack({ orgs }: { orgs: any[] }) {
   return (
     <div
       ref={trackRef}
-      className="flex items-center gap-16 w-max animate-[marquee_25s_linear_infinite] py-2"
+      className={`flex items-center gap-16 w-max py-3 ${reverse
+        ? 'animate-[marquee-reverse_30s_linear_infinite]'
+        : 'animate-[marquee_25s_linear_infinite]'
+        }`}
       onMouseEnter={pause}
       onMouseLeave={resume}
     >
@@ -60,10 +98,20 @@ function MarqueeTrack({ orgs }: { orgs: any[] }) {
           key={`${org.id}-${i}`}
           to="/chat/new/$orgId"
           params={{ orgId: org.id }}
-          className="flex items-center gap-3 group shrink-0"
+          className="flex flex-col items-center gap-2 group shrink-0 w-72"
         >
-          <Building2 className="w-6 h-6 text-[#ccc] group-hover:text-[#888] transition-colors duration-200 shrink-0" />
-          <span className="text-xl font-bold text-[#bbb] group-hover:text-[#444] transition-colors duration-200 whitespace-nowrap">
+          {org.logoUrl ? (
+            <img
+              src={org.logoUrl}
+              alt={org.name}
+              className="w-72 h-72 rounded-2xl object-contain opacity-60 group-hover:opacity-100 transition-opacity duration-200"
+            />
+          ) : (
+            <div className="w-72 h-72 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#E8E8E4' }}>
+              <Building2 className="w-8 h-8 text-[#ccc] group-hover:text-brand-400 transition-colors duration-200" />
+            </div>
+          )}
+          <span className="text-xs font-semibold text-[#aaa] group-hover:text-[#444] transition-colors duration-200 text-center leading-tight break-words w-full">
             {org.name}
           </span>
         </Link>
@@ -74,13 +122,13 @@ function MarqueeTrack({ orgs }: { orgs: any[] }) {
 
 function MarqueeSkeleton() {
   return (
-    <div className="flex items-center gap-12 w-max px-4">
+    <div className="flex items-center gap-14 w-max px-4">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-2 shrink-0">
-          <div className="w-6 h-6 rounded bg-[#ebebeb] animate-pulse" />
+        <div key={i} className="flex items-center gap-3 shrink-0">
+          <div className="w-9 h-9 rounded-xl animate-pulse" style={{ backgroundColor: '#E8E8E4' }} />
           <div
-            className="h-5 rounded bg-[#ebebeb] animate-pulse"
-            style={{ width: `${80 + (i % 3) * 24}px` }}
+            className="h-7 rounded animate-pulse"
+            style={{ width: `${100 + (i % 3) * 30}px`, backgroundColor: '#E8E8E4' }}
           />
         </div>
       ))}

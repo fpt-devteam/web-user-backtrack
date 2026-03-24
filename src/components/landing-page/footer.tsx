@@ -4,16 +4,17 @@ const NAV_LINKS = ['How it works', 'Premium', 'Download', 'Privacy', 'Terms'] as
 
 export function Footer() {
   return (
-    <footer className="border-t border-blue-100 bg-white/60 backdrop-blur-sm">
+    <footer style={{ borderTop: '1px solid #E8E8E4', backgroundColor: 'var(--background)' }}>
       <div className="px-5 lg:px-10 py-8 lg:py-10 w-full max-w-md lg:max-w-screen-xl mx-auto">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
           {/* Logo + tagline */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              {/* Cyan logo mark — Moneda style geometric circle */}
-              <div className="w-6 h-6 rounded-full bg-[#00D2FE] flex items-center justify-center">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#111]" />
+              {/* Indigo logo mark */}
+              <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                style={{ background: 'linear-gradient(135deg,var(--brand-700),var(--brand-600))' }}>
+                <div className="w-2.5 h-2.5 rounded-full bg-white" />
               </div>
               <span className="text-[#111] font-black text-lg tracking-tight">Backtrack</span>
             </div>
@@ -25,7 +26,7 @@ export function Footer() {
             {NAV_LINKS.map((link) => (
               <button
                 key={link}
-                className="text-sm text-[#777] hover:text-[#00D2FE] font-medium transition-colors duration-200"
+                className="text-sm text-[#777] hover:text-brand-primary font-medium transition-colors duration-200"
               >
                 {link}
               </button>
@@ -38,7 +39,16 @@ export function Footer() {
               {[Twitter, Github, Instagram].map((Icon, i) => (
                 <button
                   key={i}
-                  className="w-8 h-8 rounded-full border border-[#e5e5e5] flex items-center justify-center text-[#aaa] hover:text-[#00D2FE] hover:border-[#00D2FE]/50 transition-all duration-200"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[#aaa] transition-all duration-200"
+                  style={{ border: '1px solid #E8E8E4' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--brand-primary)'
+                    e.currentTarget.style.borderColor = 'oklch(0.789 0.154 211.5 / 0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#aaa'
+                    e.currentTarget.style.borderColor = '#E8E8E4'
+                  }}
                 >
                   <Icon className="w-3.5 h-3.5" />
                 </button>
