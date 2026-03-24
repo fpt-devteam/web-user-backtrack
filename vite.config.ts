@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import svgr from 'vite-plugin-svgr'
 
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { fileURLToPath, URL } from 'node:url'
@@ -16,6 +17,7 @@ export default defineConfig({
     }),
     viteReact(),
     tailwindcss(),
+    svgr(),
   ],
   server: {
     allowedHosts: ["1c4a3e3506fe.ngrok-free.app", "c5b2fb5076ce.ngrok-free.app"],
