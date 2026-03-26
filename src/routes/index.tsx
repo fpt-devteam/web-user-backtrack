@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { BacktrackHeader } from '@/components/shared/backtrack-header'
+
 import { HeroSection } from '@/components/landing-page/hero-section'
 import { OrgListSection } from '@/components/landing-page/org-list-section'
 import { CTASection } from '@/components/landing-page/cta-section'
@@ -16,7 +16,7 @@ export const Route = createFileRoute('/')({
 function LandingPage() {
   return (
     <div className="min-h-screen">
-      <BacktrackHeader />
+
       <main>
         <HeroSection />
         <ProductShowcaseSection />

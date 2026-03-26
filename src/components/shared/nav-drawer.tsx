@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { User, Star, QrCode, Download, Info, HelpCircle, ChevronRight, Menu, X } from 'lucide-react'
+import { User, Star, QrCode, Download, Info, HelpCircle, ChevronRight, Menu, X, BadgeDollarSign, Headset, MessageCircle } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import {
   Sheet,
@@ -80,6 +80,18 @@ const SIGNED_IN_PRIMARY_ITEMS: PrimaryMenuItem[] = [
 const SECONDARY_MENU_ITEMS: SecondaryMenuItem[] = [
   { icon: Info, label: 'How it Works' },
   { icon: HelpCircle, label: 'Help Center' },
+]
+
+interface QuickLinkItem {
+  icon: React.ElementType
+  label: string
+  to: string
+}
+
+const QUICK_LINKS: QuickLinkItem[] = [
+  { icon: BadgeDollarSign, label: 'Pricing',  to: '/premium'  },
+  { icon: Headset,         label: 'Support',  to: '/support'  },
+  { icon: MessageCircle,  label: 'Messager', to: '/messager' },
 ]
 
 // ── Sub-components ────────────────────────────────────────────
@@ -254,6 +266,22 @@ export function NavDrawer() {
               onClick={getClickHandler(item.title)}
             />
           ))}
+
+          {/* Quick nav links — mirrors the desktop header tabs */}
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {QUICK_LINKS.map(({ icon: Icon, label, to }) => (
+              <button
+                key={label}
+                onClick={() => { setOpen(false); navigate({ to }) }}
+                className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-2xl bg-gray-50 hover:bg-brand-50 hover:text-brand-700 transition-all duration-150 text-gray-600 group cursor-pointer"
+              >
+                <span className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-brand-100 transition-colors duration-150">
+                  <Icon className="w-4.5 h-4.5" />
+                </span>
+                <span className="text-[11px] font-bold tracking-tight">{label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Secondary menu + footer */}
