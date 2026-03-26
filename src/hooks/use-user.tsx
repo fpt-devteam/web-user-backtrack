@@ -1,8 +1,7 @@
 // src/features/user/hooks/useMyProfileQuery.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type {  Post, PublicUserProfile, UserProfile } from '@/types/user.type'
 import { userService } from '@/services/user.service'
-import type { UserProfile, PublicUserProfile, Post } from '@/types/user.type'
-import type { PagedResponse } from '@/types/pagination.type'
 
 export const userKeys = {
   all: ['user'] as const,
@@ -39,7 +38,7 @@ export const useGetPublicUserProfile = (userId: string, enabled: boolean = true)
 }
 
 export const useGetUserPosts = (userId: string, enabled: boolean = true) => {
-  return useQuery<PagedResponse<Post>, Error>({
+  return useQuery<Post[], Error>({
     queryKey: userKeys.posts(userId),
     queryFn: () => userService.getUserPosts(userId),
     staleTime: 60_000,

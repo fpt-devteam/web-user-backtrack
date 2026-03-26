@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Clock, XCircle, ArrowRight } from 'lucide-react'
-import { BacktrackHeader } from '@/components/shared/backtrack-header'
+
 
 export const Route = createFileRoute('/premium/success/')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -72,7 +72,7 @@ function PremiumSuccessPage() {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
       {/* Header */}
-      <BacktrackHeader />
+
       {/* Content */}
       <main className="flex-1 flex items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm flex flex-col items-center text-center gap-6">
