@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { formatDistanceToNow } from 'date-fns'
+import { CheckCircle, ChevronRight, MapPin, Megaphone, Shield, X } from 'lucide-react'
+import type { Post } from '@/types/user.type'
 import { useGetQrByPublicCode } from '@/hooks/use-qr'
 import { useGetPublicUserProfile, useGetUserPosts } from '@/hooks/use-user'
 import { StartChatButton } from '@/components/found-item/start-chat-button'
@@ -9,9 +12,7 @@ import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { InlineMessage } from '@/components/ui/inline-message'
 import { getErrorMessage } from '@/lib/utils'
-import type { Post } from '@/types/user.type'
-import { X, Shield, CheckCircle, Megaphone, ChevronRight } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+
 
 export const Route = createFileRoute('/profile/$public-code/')({
   component: OwnerProfilePage,
@@ -40,8 +41,8 @@ function OwnerProfilePage() {
     isLoading: isPostsLoading,
   } = useGetUserPosts(userId, !!userId)
 
-  const isLoading = isQrLoading || isProfileLoading || isPostsLoading
-  const posts = postsData?.items ?? []
+  const isLoading = isQrLoading || isProfileLoading
+  const posts = postsData ?? []
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -98,7 +99,7 @@ function OwnerProfilePage() {
                   <Avatar className="w-24 h-24 border-4 border-white shadow-md">
                     <AvatarImage src={profile?.avatarUrl ?? undefined} />
                     <AvatarFallback className="text-2xl font-semibold bg-gray-200 text-gray-600">
-                      {(profile?.displayName ?? '?')[0]?.toUpperCase()}
+                      {(profile?.displayName ?? '?')[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="absolute bottom-0 right-0 w-7 h-7 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -132,7 +133,21 @@ function OwnerProfilePage() {
               )}
 
               {/* Posts Section */}
-              {posts.length > 0 && (
+              {isPostsLoading ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-bold text-gray-900">Is this what you found?</h3>
+                    <span className="text-xs font-semibold text-blue-500 uppercase tracking-wide">
+                      Active Items
+                    </span>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="w-52 h-56 rounded-2xl bg-gray-200 shrink-0 animate-pulse" />
+                    ))}
+                  </div>
+                </div>
+              ) : posts.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-base font-bold text-gray-900">Is this what you found?</h3>
@@ -167,35 +182,50 @@ function OwnerProfilePage() {
 }
 
 function PostCard({ post }: { post: Post }) {
-  const lostAgo = formatDistanceToNow(new Date(post.eventTime), { addSuffix: false })
-  const imageUrl = post.imageUrls?.[0]
+  const navigate = useNavigate()
+  const timeAgo = formatDistanceToNow(new Date(post.eventTime), { addSuffix: true })
+  const imageUrl = post.images[0] ?? null
+  const isLost = post.postType === 'Lost'
 
   return (
-    <div className="min-w-[200px] max-w-[220px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 snap-start shrink-0">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate({ to: '/found/$id', params: { id: post.id } })}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate({ to: '/found/$id', params: { id: post.id } }) }}
+      className="min-w-[200px] max-w-[220px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100
+                 snap-start shrink-0 cursor-pointer hover:shadow-md hover:border-gray-200 transition-all duration-200
+                 focus:outline-none focus:ring-2 focus:ring-blue-400"
+    >
       {/* Image */}
       <div className="relative h-36 bg-gray-100">
         {imageUrl ? (
-          <img src={imageUrl} alt={post.itemName} className="w-full h-full object-cover" />
+          <img src={imageUrl} alt={post.itemName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+          <div className="w-full h-full flex items-center justify-center bg-gray-50">
             <span className="text-gray-400 text-xs">No image</span>
           </div>
         )}
-        <div className="absolute top-2 left-2 bg-gray-900/70 text-white text-xs font-medium px-2 py-1 rounded-full">
-          Lost {lostAgo} ago
+        <div className={`absolute top-2 left-2 text-white text-[11px] font-semibold px-2 py-0.5 rounded-full
+          ${isLost ? 'bg-rose-500/90' : 'bg-emerald-500/90'}`}>
+          {isLost ? 'Mất' : 'Tìm thấy'}
         </div>
       </div>
 
       {/* Info */}
       <div className="p-3">
-        <p className="font-semibold text-gray-900 text-sm leading-tight">{post.itemName}</p>
-        <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">{post.description}</p>
+        <p className="font-semibold text-gray-900 text-sm leading-tight truncate">{post.itemName}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{timeAgo}</p>
         {post.displayAddress && (
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-gray-400 truncate max-w-[140px]">{post.displayAddress}</span>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          <div className="flex items-center gap-1 mt-2">
+            <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
+            <span className="text-xs text-gray-400 truncate">{post.displayAddress}</span>
           </div>
         )}
+        <div className="flex items-center justify-end mt-2">
+          <span className="text-xs text-blue-500 font-medium">Xem chi tiết</span>
+          <ChevronRight className="w-3.5 h-3.5 text-blue-500" />
+        </div>
       </div>
     </div>
   )

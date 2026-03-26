@@ -33,10 +33,11 @@ export interface GeoPoint {
 export interface Post {
   id: string;
   author?: PostAuthor | null;
-  postType: string;
+  organization?: { id: string; name: string } | null;
+  postType: 'Lost' | 'Found' | string;
   itemName: string;
   description: string;
-  imageUrls: string[];
+  images: string[];
   location: GeoPoint;
   externalPlaceId?: string | null;
   displayAddress?: string | null;

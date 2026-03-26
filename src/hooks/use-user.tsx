@@ -39,7 +39,7 @@ export const useGetPublicUserProfile = (userId: string, enabled: boolean = true)
 }
 
 export const useGetUserPosts = (userId: string, enabled: boolean = true) => {
-  return useQuery<PagedResponse<Post>, Error>({
+  return useQuery<Post[], Error>({
     queryKey: userKeys.posts(userId),
     queryFn: () => userService.getUserPosts(userId),
     staleTime: 60_000,

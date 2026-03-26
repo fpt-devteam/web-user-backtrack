@@ -15,7 +15,8 @@
       "Bash(cd \"C:\\\\Users\\\\NHATTHANG\\\\FptUniversity\\\\SEP490\\\\web-user-backtrack\" && npx shadcn@latest add sheet --yes 2>&1)",
       "Bash(echo EXIT:$?:*)",
       "Bash(ls routes:*)",
-      "Bash(cd \"C:\\\\Users\\\\NHATTHANG\\\\FptUniversity\\\\SEP490\\\\web-user-backtrack\" && npx shadcn@latest add dialog --yes 2>&1)"
+      "Bash(cd \"C:\\\\Users\\\\NHATTHANG\\\\FptUniversity\\\\SEP490\\\\web-user-backtrack\" && npx shadcn@latest add dialog --yes 2>&1)",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"lost and found service organization directory civic trust\" --design-system -p \"Backtrack Org Detail\")"
     ]
   }
 }
