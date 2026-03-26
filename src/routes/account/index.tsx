@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { BacktrackHeader } from '@/components/shared/backtrack-header'
+
 import { ProfileHeader } from '@/components/account/profile-header'
 import { AccountMenu } from '@/components/account/account-menu'
 import { useAuth } from '@/hooks/use-auth'
@@ -24,7 +24,7 @@ function AccountPage() {
 
   return (
     <div className="min-h-screen">
-      <BacktrackHeader />
+
       <main className="max-w-5xl mx-auto px-5 py-6 lg:py-10 lg:px-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-8">
 

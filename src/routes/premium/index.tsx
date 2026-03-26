@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { usePlans, useCreateSubscription } from '@/hooks/use-subscription'
-import { BacktrackHeader } from '@/components/shared/backtrack-header'
+
 import { Skeleton } from '@/components/ui/skeleton'
 import { Check, Sparkles, ShieldCheck, RefreshCw, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -262,7 +262,7 @@ function PricingPage() {
 
   return (
     <div className="min-h-screen">
-      <BacktrackHeader />
+
 
       <main className="px-5 lg:px-10 py-14 lg:py-20 w-full max-w-4xl mx-auto">
 
