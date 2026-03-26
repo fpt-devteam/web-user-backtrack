@@ -1,7 +1,7 @@
 // src/features/user/hooks/useMyProfileQuery.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type {  Post, PublicUserProfile, UserProfile } from '@/types/user.type'
 import { userService } from '@/services/user.service'
-import type { UserProfile, PublicUserProfile, Post } from '@/types/user.type'
 
 export const userKeys = {
   all: ['user'] as const,
