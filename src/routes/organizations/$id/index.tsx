@@ -69,12 +69,12 @@ const fadeUpReduced: Variants = {
 
 /* ─────────────── mock found-items (no API yet) ─────────────── */
 const FOUND_ITEMS = [
-  { id: '1', icon: Key,      label: 'Chìa khóa',  category: 'Chìa khóa',  hoursAgo: 2,  blur: true  },
-  { id: '2', icon: Wallet,   label: 'Ví da',       category: 'Ví / Túi',   hoursAgo: 5,  blur: true  },
-  { id: '3', icon: Shirt,    label: 'Áo khoác',   category: 'Quần áo',    hoursAgo: 8,  blur: false },
-  { id: '4', icon: Umbrella, label: 'Dù',          category: 'Phụ kiện',   hoursAgo: 12, blur: false },
-  { id: '5', icon: Backpack, label: 'Balo',        category: 'Túi xách',   hoursAgo: 24, blur: true  },
-  { id: '6', icon: Package,  label: 'Hộp quà',    category: 'Khác',       hoursAgo: 36, blur: false },
+  { id: '1', icon: Key, label: 'Chìa khóa', category: 'Chìa khóa', hoursAgo: 2, blur: true },
+  { id: '2', icon: Wallet, label: 'Ví da', category: 'Ví / Túi', hoursAgo: 5, blur: true },
+  { id: '3', icon: Shirt, label: 'Áo khoác', category: 'Quần áo', hoursAgo: 8, blur: false },
+  { id: '4', icon: Umbrella, label: 'Dù', category: 'Phụ kiện', hoursAgo: 12, blur: false },
+  { id: '5', icon: Backpack, label: 'Balo', category: 'Túi xách', hoursAgo: 24, blur: true },
+  { id: '6', icon: Package, label: 'Hộp quà', category: 'Khác', hoursAgo: 36, blur: false },
 ]
 
 /* ─────────────── default values for fields not in API ─────────────── */
@@ -86,7 +86,7 @@ const DAY_LABELS: Record<string, string> = {
   Monday: 'Thứ 2', Tuesday: 'Thứ 3', Wednesday: 'Thứ 4',
   Thursday: 'Thứ 5', Friday: 'Thứ 6', Saturday: 'Thứ 7', Sunday: 'CN',
 }
-const DAY_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 /* ═══════════════════════════════════════════ */
 /*                  PAGE                       */
@@ -332,7 +332,7 @@ function formatBusinessHours(hours: BusinessHour[]) {
     const timeStr = `${h.openTime} – ${h.closeTime}`
     let j = i + 1
     while (j < sorted.length && !sorted[j].isClosed && `${sorted[j].openTime} – ${sorted[j].closeTime}` === timeStr) j++
-    const label = j - i === 1 ? DAY_LABELS[h.day] : `${DAY_LABELS[h.day]} – ${DAY_LABELS[sorted[j-1].day]}`
+    const label = j - i === 1 ? DAY_LABELS[h.day] : `${DAY_LABELS[h.day]} – ${DAY_LABELS[sorted[j - 1].day]}`
     groups.push({ label, time: timeStr })
     i = j
   }
@@ -369,11 +369,11 @@ function ContactCard({ org }: {
 
       {/* Location note — use API value or fall back to default */}
       <div className="flex items-start gap-3 px-5 py-3.5">
-        <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0 mt-0.5">
-          <Building2 className="w-4 h-4 text-violet-400" />
+        <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center shrink-0 mt-0.5">
+          <Building2 className="w-4 h-4 text-white" />
         </div>
         <div>
-          <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-widest mb-0.5">Vị trí cụ thể</p>
+          <p className="text-[10px] font-bold text-[#aaa] uppercase tracking-widest mb-0.5">Vị trí cụ thể</p>
           <p className="text-sm font-semibold text-[#111]">{org.locationNote ?? DEFAULT_LOCATION_NOTE}</p>
         </div>
       </div>
@@ -381,11 +381,11 @@ function ContactCard({ org }: {
       {/* Address */}
       {org.displayAddress && (
         <div className="flex items-start gap-3 px-5 py-3.5">
-          <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0 mt-0.5">
-            <MapPin className="w-4 h-4 text-rose-400" />
+          <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center shrink-0 mt-0.5">
+            <MapPin className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-widest mb-0.5">Địa chỉ</p>
+            <p className="text-[10px] font-bold text-[#aaa] uppercase tracking-widest mb-0.5">Địa chỉ</p>
             <p className="text-sm font-semibold text-[#111] leading-snug">{org.displayAddress}</p>
           </div>
         </div>
@@ -393,8 +393,8 @@ function ContactCard({ org }: {
 
       {/* Business hours — from API */}
       <div className="flex items-start gap-3 px-5 py-3.5">
-        <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
-          <Clock className="w-4 h-4 text-amber-400" />
+        <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center shrink-0 mt-0.5">
+          <Clock className="w-4 h-4 text-white" />
         </div>
         <div className="flex-1">
           <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-widest mb-1">Giờ hoạt động</p>
@@ -403,9 +403,8 @@ function ContactCard({ org }: {
               {formatBusinessHours(org.businessHours).map((g, i) => (
                 <div key={i} className="flex justify-between items-center text-sm">
                   <span className="font-semibold text-[#444]">{g.label}</span>
-                  <span className={`font-bold text-xs ${
-                    g.time === 'Đóng cửa' ? 'text-red-400' : 'text-[#111]'
-                  }`}>{g.time}</span>
+                  {/* <span className={`font-bold text-xs ${g.time === 'Đóng cửa' ? 'text-red-400' : 'text-[#111]'
+                    }`}>{g.time}</span> */}
                 </div>
               ))}
             </div>
@@ -419,15 +418,15 @@ function ContactCard({ org }: {
       {/* Phone */}
       {org.phone && (
         <div className="flex items-start gap-3 px-5 py-3.5">
-          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
-            <Phone className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+          <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center shrink-0 mt-0.5">
+            <Phone className="w-4 h-4 text-white" aria-hidden="true" />
           </div>
           <div>
             <p className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-widest mb-0.5">Hotline</p>
             <a
               href={`tel:${org.phone}`}
               aria-label={`Gọi hotline ${org.phone}`}
-              className="text-sm font-bold text-[#0099BB] hover:underline cursor-pointer
+              className="text-sm font-bold text-[#111] hover:underline cursor-pointer
                          focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded"
             >
               {org.phone}
@@ -439,8 +438,8 @@ function ContactCard({ org }: {
       {/* Email */}
       {org.contactEmail && (
         <div className="flex items-start gap-3 px-5 py-3.5">
-          <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center shrink-0 mt-0.5">
-            <MessageCircle className="w-4 h-4 text-sky-400" aria-hidden="true" />
+          <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center shrink-0 mt-0.5">
+            <MessageCircle className="w-4 h-4 text-white" aria-hidden="true" />
           </div>
           <div>
             <p className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-widest mb-0.5">Email liên hệ</p>
@@ -504,19 +503,16 @@ function MapCard({ org }: { org: { location: { latitude: number; longitude: numb
 const CLAIM_STEPS = [
   {
     icon: CreditCard,
-    color: 'bg-blue-50 text-blue-500',
     title: 'Chuẩn bị giấy tờ tùy thân',
     desc: 'Mang theo CCCD, hộ chiếu hoặc bất kỳ giấy tờ định danh hợp lệ nào.',
   },
   {
     icon: QrCode,
-    color: 'bg-cyan-50 text-cyan-500',
     title: 'Cung cấp thông tin đồ vật',
     desc: 'Xuất trình mã QR từ hệ thống Backtrack hoặc mô tả chi tiết / hình ảnh đồ vật.',
   },
   {
     icon: PenLine,
-    color: 'bg-emerald-50 text-emerald-500',
     title: 'Ký xác nhận nhận lại',
     desc: 'Điền vào biên bản nhận tài sản để hoàn tất quy trình an toàn cho cả hai bên.',
   },
@@ -526,25 +522,26 @@ function ClaimGuideCard() {
   return (
     <div className="bg-white rounded-3xl shadow-[0_2px_16px_rgba(0,0,0,0.07)] px-5 py-5">
       <p className="text-[11px] font-black text-[#111] tracking-widest uppercase mb-4">Quy trình nhận lại đồ</p>
-      <div className="space-y-4">
+      <div className="space-y-0">
         {CLAIM_STEPS.map((step, i) => (
-          <div key={i} className="flex gap-3.5">
-            {/* Step number + icon */}
-            <div className="flex flex-col items-center">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${step.color}`}>
-                <step.icon className="w-4.5 h-4.5" />
+          <div key={i} className="flex gap-4">
+            {/* Step column */}
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-black shadow-sm">
+                {i + 1}
               </div>
               {i < CLAIM_STEPS.length - 1 && (
-                <div className="w-px flex-1 bg-[#f0f0f0] my-1.5" />
+                <div className="w-[1.5px] flex-1 my-1 bg-brand-muted" />
               )}
             </div>
             {/* Content */}
-            <div className="pb-4">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-black text-[#ccc] uppercase tracking-widest">Bước {i + 1}</span>
+            <div className="pb-5 pt-0.5">
+              <div className="flex items-center gap-2 mb-1">
+                <step.icon className="w-3.5 h-3.5 text-brand-primary" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-primary">Bước {i + 1}</span>
               </div>
-              <p className="text-sm font-black text-[#111] leading-snug">{step.title}</p>
-              <p className="text-xs text-[#888] mt-0.5 leading-relaxed">{step.desc}</p>
+              <p className="text-sm font-bold text-[#111] leading-snug">{step.title}</p>
+              <p className="text-xs text-[#777] mt-1 leading-relaxed">{step.desc}</p>
             </div>
           </div>
         ))}
@@ -559,19 +556,16 @@ function ClaimGuideCard() {
 const DEPOSIT_STEPS = [
   {
     icon: ClipboardList,
-    color: 'bg-violet-50 text-violet-500',
     title: 'Mô tả đồ vật tìm được',
     desc: 'Cung cấp thông tin chi tiết: loại đồ, màu sắc, đặc điểm nhận dạng hoặc địa điểm tìm thấy.',
   },
   {
     icon: Camera,
-    color: 'bg-rose-50 text-rose-500',
     title: 'Chụp ảnh & xác nhận tình trạng',
     desc: 'Chụp ảnh đồ vật ngay lúc nộp để đảm bảo minh bạch và tránh tranh chấp sau này.',
   },
   {
     icon: Handshake,
-    color: 'bg-amber-50 text-amber-500',
     title: 'Ký biên bản bàn giao',
     desc: 'Nhận phiếu xác nhận đã nộp đồ – bằng chứng pháp lý bảo vệ quyền lợi của bạn.',
   },
@@ -581,25 +575,26 @@ function DepositGuideCard() {
   return (
     <div className="bg-white rounded-3xl shadow-[0_2px_16px_rgba(0,0,0,0.07)] px-5 py-5">
       <p className="text-[11px] font-black text-[#111] tracking-widest uppercase mb-4">Quy trình nộp đồ</p>
-      <div className="space-y-4">
+      <div className="space-y-0">
         {DEPOSIT_STEPS.map((step, i) => (
-          <div key={i} className="flex gap-3.5">
-            {/* Step number + icon */}
-            <div className="flex flex-col items-center">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${step.color}`}>
-                <step.icon className="w-4.5 h-4.5" aria-hidden="true" />
+          <div key={i} className="flex gap-4">
+            {/* Step column */}
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-black shadow-sm">
+                {i + 1}
               </div>
               {i < DEPOSIT_STEPS.length - 1 && (
-                <div className="w-px flex-1 bg-[#f0f0f0] my-1.5" />
+                <div className="w-[1.5px] flex-1 my-1 bg-brand-muted" />
               )}
             </div>
             {/* Content */}
-            <div className="pb-4">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-black text-[#ccc] uppercase tracking-widest">Bước {i + 1}</span>
+            <div className="pb-5 pt-0.5">
+              <div className="flex items-center gap-2 mb-1">
+                <step.icon className="w-3.5 h-3.5 text-brand-primary" aria-hidden="true" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-primary">Bước {i + 1}</span>
               </div>
-              <p className="text-sm font-black text-[#111] leading-snug">{step.title}</p>
-              <p className="text-xs text-[#888] mt-0.5 leading-relaxed">{step.desc}</p>
+              <p className="text-sm font-bold text-[#111] leading-snug">{step.title}</p>
+              <p className="text-xs text-[#777] mt-1 leading-relaxed">{step.desc}</p>
             </div>
           </div>
         ))}

@@ -2,7 +2,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { userService } from '@/services/user.service'
 import type { UserProfile, PublicUserProfile, Post } from '@/types/user.type'
-import type { PagedResponse } from '@/types/pagination.type'
 
 export const userKeys = {
   all: ['user'] as const,

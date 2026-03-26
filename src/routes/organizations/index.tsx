@@ -55,10 +55,11 @@ function OrgListPage() {
   }, [orgs, query, activeIndustry])
 
   return (
-    <div className="min-h-screen bg-[#F8F7F4]">
+    <div className="min-h-screen bg-white">
 
       {/* ── Hero Header ── */}
-      <div className="relative bg-white overflow-hidden border-b border-[#efefef]">
+      {/* pb-10 gives space for the fade overlay to dissolve into the page bg */}
+      <div className="relative bg-white overflow-hidden">
         {/* Subtle grid backdrop */}
         <div className="absolute inset-0 bg-grid-pattern opacity-60 pointer-events-none" />
         {/* Cyan glow top-left */}
@@ -66,7 +67,7 @@ function OrgListPage() {
         {/* Cyan glow bottom-right */}
         <div className="absolute -bottom-16 -right-8 w-64 h-64 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-screen-xl mx-auto px-5 pt-10 pb-7">
+        <div className="relative max-w-screen-xl mx-auto px-5 pt-10 pb-12">
           {/* Eyebrow */}
           <p className="text-[10px] font-bold tracking-[0.18em] text-brand-600 uppercase mb-3 flex items-center gap-2">
             <span className="inline-block w-4 h-px bg-brand-200" />
@@ -157,10 +158,18 @@ function OrgListPage() {
             </div>
           )}
         </div>
+
+        {/* ── Fade-out overlay: dissolves hero bg into page bg (#F8F7F4) ── */}
+        <div
+          className="absolute bottom-0 inset-x-0 h-20 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to bottom, transparent, #ffffff)',
+          }}
+        />
       </div>
 
-      {/* ── Grid ── */}
-      <div className="max-w-screen-xl mx-auto px-4 pt-6 pb-14">
+      {/* ── Grid — negative top margin to overlap the hero fade zone ── */}
+      <div className="max-w-screen-xl mx-auto px-4 -mt-4 pt-2 pb-14">
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {Array.from({ length: 8 }).map((_, i) => <OrgSkeleton key={i} />)}
