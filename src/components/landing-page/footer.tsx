@@ -4,7 +4,7 @@ const NAV_LINKS = ['How it works', 'Premium', 'Download', 'Privacy', 'Terms'] as
 
 export function Footer() {
   return (
-    <footer style={{ borderTop: '1px solid #E8E8E4', backgroundColor: 'var(--background)' }}>
+    <footer style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--background)' }}>
       <div className="px-5 lg:px-10 py-8 lg:py-10 w-full max-w-md lg:max-w-screen-xl mx-auto">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
@@ -40,14 +40,14 @@ export function Footer() {
                 <button
                   key={i}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-[#aaa] transition-all duration-200"
-                  style={{ border: '1px solid #E8E8E4' }}
+                  style={{ border: '1px solid var(--border)' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = 'var(--brand-primary)'
-                    e.currentTarget.style.borderColor = 'oklch(0.789 0.154 211.5 / 0.4)'
+                    e.currentTarget.style.borderColor = 'var(--brand-ring)'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = '#aaa'
-                    e.currentTarget.style.borderColor = '#E8E8E4'
+                    e.currentTarget.style.borderColor = 'var(--border)'
                   }}
                 >
                   <Icon className="w-3.5 h-3.5" />

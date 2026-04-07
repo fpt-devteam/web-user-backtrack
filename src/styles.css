@@ -145,27 +145,27 @@ code {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   BRAND COLOR TOKENS  (Cyan core — #00D2FE direction)
+   BRAND COLOR TOKENS  (Rose-Red core — #F6475F direction)
    Change ONE section here → whole app re-themes automatically.
-   Scale follows Tailwind v4 oklch cyan palette.
+   Scale follows oklch rose palette centered on hue ≈ 15.
 ───────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Full cyan scale */
-  --brand-50:  oklch(0.984 0.019 200.9);
-  --brand-100: oklch(0.956 0.045 203.4);
-  --brand-200: oklch(0.917 0.080 205.0);
-  --brand-300: oklch(0.865 0.127 207.1);
-  --brand-400: oklch(0.789 0.154 211.5);
-  --brand-500: oklch(0.715 0.143 215.2);
-  --brand-600: oklch(0.609 0.126 221.7);
-  --brand-700: oklch(0.520 0.105 223.1);
-  --brand-800: oklch(0.450 0.085 224.3);
-  --brand-900: oklch(0.398 0.070 226.9);
-  --brand-950: oklch(0.302 0.056 229.7);
+  /* Full rose scale */
+  --brand-50:  oklch(0.987 0.013 17.5);
+  --brand-100: oklch(0.964 0.034 16.2);
+  --brand-200: oklch(0.931 0.067 15.7);
+  --brand-300: oklch(0.885 0.112 15.2);
+  --brand-400: oklch(0.820 0.155 14.8);
+  --brand-500: oklch(0.729 0.193 14.3);   /* ≈ #F6475F — logo colour */
+  --brand-600: oklch(0.630 0.210 14.0);
+  --brand-700: oklch(0.530 0.188 15.0);
+  --brand-800: oklch(0.430 0.155 15.5);
+  --brand-900: oklch(0.350 0.118 16.0);
+  --brand-950: oklch(0.220 0.072 16.5);
 
   /* Semantic aliases — use these in components */
-  --brand-primary:       var(--brand-600);   /* main CTA / buttons  */
-  --brand-primary-hover: var(--brand-700);   /* hover state         */
+  --brand-primary:       var(--brand-500);   /* main CTA / buttons  */
+  --brand-primary-hover: var(--brand-600);   /* hover state         */
   --brand-primary-light: var(--brand-50);    /* subtle tint bg      */
   --brand-primary-muted: var(--brand-100);   /* tag / badge bg      */
   --brand-primary-fg:    oklch(1 0 0);       /* text on primary bg  */
@@ -192,22 +192,22 @@ code {
   --secondary: var(--brand-100);
   --secondary-foreground: var(--brand-800);
   --muted: var(--brand-50);
-  --muted-foreground: oklch(0.52 0.060 277);
+  --muted-foreground: oklch(0.52 0.050 15);
   --accent: var(--brand-100);
   --accent-foreground: var(--brand-700);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: var(--brand-border);             /* indigo-200          */
+  --border: var(--brand-border);             /* rose-200            */
   --input: var(--brand-200);
-  --ring: var(--brand-ring);                 /* indigo-400          */
+  --ring: var(--brand-ring);                 /* rose-400            */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.600 0.118 184.704);
-  --chart-3: oklch(0.398 0.070 227.392);
+  --chart-3: oklch(0.398 0.070 15.0);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.080);
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.010 277);
+  --sidebar-foreground: oklch(0.141 0.010 15);
   --sidebar-primary: var(--brand-primary);
   --sidebar-primary-foreground: var(--brand-primary-fg);
   --sidebar-accent: var(--brand-50);
@@ -218,38 +218,38 @@ code {
 
 
 .dark {
-  --background: oklch(0.141 0.010 277);
+  --background: oklch(0.148 0.018 15);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.160 0.012 277);
+  --card: oklch(0.168 0.022 15);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.160 0.012 277);
+  --popover: oklch(0.168 0.022 15);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: var(--brand-500);             /* lighter indigo for dark bg */
+  --primary: var(--brand-400);             /* lighter rose for dark bg */
   --primary-foreground: oklch(1 0 0);
   --secondary: var(--brand-800);
   --secondary-foreground: var(--brand-100);
-  --muted: oklch(0.220 0.025 277);
-  --muted-foreground: oklch(0.650 0.070 277);
-  --accent: oklch(0.220 0.025 277);
+  --muted: oklch(0.228 0.030 15);
+  --muted-foreground: oklch(0.650 0.060 15);
+  --accent: oklch(0.228 0.030 15);
   --accent-foreground: var(--brand-200);
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.280 0.040 277);
-  --input: oklch(0.280 0.040 277);
-  --ring: var(--brand-500);
-  --chart-1: oklch(0.488 0.243 264.376);
+  --border: oklch(0.290 0.045 15);
+  --input: oklch(0.290 0.045 15);
+  --ring: var(--brand-400);
+  --chart-1: oklch(0.729 0.193 14.3);
   --chart-2: oklch(0.696 0.170 162.480);
   --chart-3: oklch(0.769 0.188 70.080);
   --chart-4: oklch(0.627 0.265 303.900);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.190 0.018 277);
+  --sidebar: oklch(0.190 0.025 15);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: var(--brand-500);
+  --sidebar-primary: var(--brand-400);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.220 0.025 277);
+  --sidebar-accent: oklch(0.228 0.030 15);
   --sidebar-accent-foreground: var(--brand-200);
-  --sidebar-border: oklch(0.280 0.040 277);
-  --sidebar-ring: var(--brand-500);
+  --sidebar-border: oklch(0.290 0.045 15);
+  --sidebar-ring: var(--brand-400);
 }
 
 @theme inline {

@@ -38,16 +38,16 @@ export function SignUpForm() {
     <>
       <form onSubmit={handleContinue} className="space-y-5">
         <div className="space-y-2">
-          <Label className="text-gray-500 font-medium text-sm">Email address</Label>
+          <Label className="text-muted-foreground font-medium text-sm">Email address</Label>
           <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="email"
               placeholder="hello@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="pl-11 h-14 rounded-2xl border-gray-200 bg-gray-50 text-base placeholder:text-gray-300 focus-visible:ring-blue-400"
+              className="pl-11 h-14 rounded-2xl border-border bg-muted/50 text-base placeholder:text-muted-foreground/50 focus-visible:ring-brand-400"
             />
           </div>
         </div>
@@ -55,7 +55,7 @@ export function SignUpForm() {
         <Button
           type="submit"
           disabled={checkEmail.isPending}
-          className="w-full h-14 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-base shadow-lg shadow-blue-200 active:scale-95 transition-all duration-200"
+          className="w-full h-14 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base shadow-lg shadow-brand-200 active:scale-95 transition-all duration-200"
         >
           {checkEmail.isPending ? 'Checking…' : 'Continue'}
         </Button>

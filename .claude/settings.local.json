@@ -16,7 +16,11 @@
       "Bash(echo EXIT:$?:*)",
       "Bash(ls routes:*)",
       "Bash(cd \"C:\\\\Users\\\\NHATTHANG\\\\FptUniversity\\\\SEP490\\\\web-user-backtrack\" && npx shadcn@latest add dialog --yes 2>&1)",
-      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"lost and found service organization directory civic trust\" --design-system -p \"Backtrack Org Detail\")"
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"lost and found service organization directory civic trust\" --design-system -p \"Backtrack Org Detail\")",
+      "Bash(rm '/home/catlinh/capstone/web-user-backtrack/src/routes/organizations/$id/index.tsx')",
+      "Bash(rmdir '/home/catlinh/capstone/web-user-backtrack/src/routes/organizations/$id')",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"marketplace service provider profile listing clean minimal\" --design-system -p \"Backtrack Org Detail\")",
+      "Bash(npx tsc:*)"
     ]
   }
 }

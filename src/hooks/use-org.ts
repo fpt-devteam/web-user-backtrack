@@ -1,4 +1,4 @@
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { orgService } from '@/services/org.service';
 import { toast } from '@/lib/toast';
 
@@ -29,6 +29,19 @@ export function useGetOrgById(id: string, enabled = true) {
     queryKey: orgKeys.detail(id),
     queryFn: () => orgService.getOrgById(id),
     enabled: !!id && enabled,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  if (error) toast.fromError(error);
+
+  return { data, isLoading };
+}
+
+export function useGetOrgBySlug(slug: string, enabled = true) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: orgKeys.detail(slug),
+    queryFn: () => orgService.getOrgBySlug(slug),
+    enabled: !!slug && enabled,
     staleTime: 1000 * 60 * 5,
   });
 

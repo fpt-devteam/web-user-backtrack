@@ -48,44 +48,44 @@ export function SignInForm() {
         open={notVerifiedOpen}
         onOpenChange={setNotVerifiedOpen}
       />
-      <h2 className="text-2xl lg:text-3xl font-extrabold text-gray-900 text-center mb-8">
+      <h2 className="text-2xl lg:text-3xl font-extrabold text-foreground text-center mb-8">
         Welcome back!
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Email */}
         <div className="space-y-2">
-          <Label className="text-gray-500 font-medium text-sm">Email</Label>
+          <Label className="text-muted-foreground font-medium text-sm">Email</Label>
           <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="email"
               placeholder="muhammad04@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="pl-11 h-14 rounded-2xl border-gray-200 bg-gray-50 text-base placeholder:text-gray-300 focus-visible:ring-blue-400"
+              className="pl-11 h-14 rounded-2xl border-border bg-muted/50 text-base placeholder:text-muted-foreground/50 focus-visible:ring-brand-400"
             />
           </div>
         </div>
 
         {/* Password */}
         <div className="space-y-2">
-          <Label className="text-gray-500 font-medium text-sm">Password</Label>
+          <Label className="text-muted-foreground font-medium text-sm">Password</Label>
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="pl-11 pr-12 h-14 rounded-2xl border-gray-200 bg-gray-50 text-base placeholder:text-gray-300 focus-visible:ring-blue-400"
+              className="pl-11 pr-12 h-14 rounded-2xl border-border bg-muted/50 text-base placeholder:text-muted-foreground/50 focus-visible:ring-brand-400"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
@@ -97,7 +97,7 @@ export function SignInForm() {
         <div className="flex justify-end -mt-1">
           <button
             type="button"
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Forget Password
           </button>
@@ -107,7 +107,7 @@ export function SignInForm() {
         <Button
           type="submit"
           disabled={signIn.isPending || checkEmailStatus.isPending}
-          className="w-full h-14 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-base shadow-lg shadow-blue-200 active:scale-95 transition-all duration-200"
+          className="w-full h-14 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base shadow-lg shadow-brand-200 active:scale-95 transition-all duration-200"
         >
           {(checkEmailStatus.isPending || signIn.isPending) ? 'Signing in…' : 'Sign in'}
         </Button>
@@ -115,7 +115,7 @@ export function SignInForm() {
         {/* Divider */}
         <div className="flex items-center gap-4 pt-1">
           <Separator className="flex-1" />
-          <span className="text-sm text-gray-400 whitespace-nowrap">Or continue with</span>
+          <span className="text-sm text-muted-foreground whitespace-nowrap">Or continue with</span>
           <Separator className="flex-1" />
         </div>
 
@@ -125,23 +125,23 @@ export function SignInForm() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={signInWithGoogle.isPending}
-            className="w-14 h-14 rounded-full bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 flex items-center justify-center shadow-sm transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-14 h-14 rounded-full bg-background border border-border hover:bg-muted/50 hover:border-brand-200 flex items-center justify-center shadow-sm transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
             aria-label="Sign in with Google"
           >
             {signInWithGoogle.isPending
-              ? <span className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+              ? <span className="w-5 h-5 border-2 border-border border-t-brand-500 rounded-full animate-spin" />
               : <GoogleIcon />
             }
           </button>
         </div>
 
         {/* Sign up link */}
-        <p className="text-center text-gray-500 text-sm pt-1">
+        <p className="text-center text-muted-foreground text-sm pt-1">
           Don't have an account?{' '}
           <button
             type="button"
             onClick={() => navigate({ to: '/sign-up' })}
-            className="text-blue-500 font-semibold hover:text-blue-600 transition-colors"
+            className="text-brand-500 font-semibold hover:text-brand-600 transition-colors"
           >
             Sign Up
           </button>

@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useGetOrgs } from '@/hooks/use-org'
-import { Skeleton } from '@/components/ui/skeleton'
-import { MapPin, Search, ShieldCheck, ArrowUpRight, Building2, X } from 'lucide-react'
-import { useState, useMemo } from 'react'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { ArrowUpRight, Building2, MapPin, Search, ShieldCheck, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import type { Org } from '@/types/org.type'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useGetOrgs } from '@/hooks/use-org'
 
 export const Route = createFileRoute('/organizations/')({
   component: OrgListPage,
@@ -11,7 +11,7 @@ export const Route = createFileRoute('/organizations/')({
 
 /* ─── helpers ─── */
 const INDUSTRY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  default: { bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-100' },
+  default: { bg: 'bg-brand-100', text: 'text-brand-700', border: 'border-brand-200' },
   Healthcare: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100' },
   Education: { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-100' },
   Retail: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-100' },
@@ -30,7 +30,7 @@ function OrgListPage() {
   const [query, setQuery] = useState('')
   const [activeIndustry, setActiveIndustry] = useState<string | null>(null)
 
-  const orgs: Org[] = data?.pages.flatMap((p) => p.items) ?? []
+  const orgs: Array<Org> = data?.pages.flatMap((p) => p.items) ?? []
 
   const industries = useMemo(() => {
     const set = new Set<string>()
@@ -62,8 +62,8 @@ function OrgListPage() {
       <div className="relative bg-white overflow-hidden">
         {/* Subtle grid backdrop */}
         <div className="absolute inset-0 bg-grid-pattern opacity-60 pointer-events-none" />
-        {/* Cyan glow top-left */}
-        <div className="absolute -top-24 -left-24 w-80 h-80 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Brand glow top-left */}
+        <div className="absolute -top-24 -left-24 w-80 h-80 bg-brand-100/40 rounded-full blur-3xl pointer-events-none" />
         {/* Cyan glow bottom-right */}
         <div className="absolute -bottom-16 -right-8 w-64 h-64 bg-brand-50 rounded-full blur-3xl pointer-events-none" />
 
@@ -81,7 +81,7 @@ function OrgListPage() {
               <h1 className="text-[2.2rem] sm:text-[2.6rem] font-black text-[#111827] leading-[1.05] tracking-tight">
                 SafeDrop{' '}
                 <span className="relative inline-block">
-                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-500">
+                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-brand-500">
                     Centres
                   </span>
                   <span className="absolute inset-x-0 bottom-0.5 h-[6px] bg-brand-100 -z-[1] rounded-sm" />
@@ -113,7 +113,7 @@ function OrgListPage() {
               placeholder="Search by name or location…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full bg-white rounded-2xl pl-11 pr-11 py-3.5 text-sm font-medium text-[#111] placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-cyan-400/30 border border-[#e8e8e8] hover:border-[#d5d5d5] focus:border-brand-300 transition-all duration-200 shadow-sm"
+              className="w-full bg-white rounded-2xl pl-11 pr-11 py-3.5 text-sm font-medium text-[#111] placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-brand-ring/30 border border-[#e8e8e8] hover:border-[#d5d5d5] focus:border-brand-300 transition-all duration-200 shadow-sm"
             />
             {query && (
               <button
@@ -147,7 +147,7 @@ function OrgListPage() {
                     onClick={() => setActiveIndustry(active ? null : ind)}
                     className={`shrink-0 text-[11px] font-bold px-3.5 py-1.5 rounded-full border transition-all duration-150 cursor-pointer ${
                       active
-                        ? `${style.bg} ${style.text} ${style.border} ring-2 ring-offset-1 ring-cyan-400/40`
+                        ? `${style.bg} ${style.text} ${style.border} ring-2 ring-offset-1 ring-brand-ring/40`
                         : `bg-white text-[#555] border-[#e5e7eb] hover:border-[#bbb]`
                     }`}
                   >
@@ -184,8 +184,8 @@ function OrgListPage() {
               {filtered.map((org, i) => (
                 <Link
                   key={org.id}
-                  to="/organizations/$id"
-                  params={{ id: org.id }}
+                  to="/organizations/$slug"
+                  params={{ slug: org.slug }}
                   className="group block h-full"
                   style={{ animationDelay: `${Math.min(i * 40, 320)}ms` }}
                 >
@@ -259,7 +259,7 @@ function OrgCard({ org }: { org: Org }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent pointer-events-none" />
 
         {/* Subtle brand accent on hover */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/0 via-transparent to-cyan-400/0 group-hover:from-cyan-500/10 group-hover:to-cyan-400/5 transition-all duration-300 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/0 via-transparent to-brand-400/0 group-hover:from-brand-500/10 group-hover:to-brand-400/5 transition-all duration-300 pointer-events-none" />
 
         {/* Status dot — bottom left */}
         <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5">
@@ -272,7 +272,7 @@ function OrgCard({ org }: { org: Org }) {
         </div>
 
         {/* Arrow — top right */}
-        <span className="absolute top-2.5 right-2.5 flex items-center justify-center w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-200 group-hover:bg-cyan-600 group-hover:shadow-md">
+        <span className="absolute top-2.5 right-2.5 flex items-center justify-center w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-200 group-hover:bg-brand-600 group-hover:shadow-md">
           <ArrowUpRight className="w-3.5 h-3.5 text-black/50 transition-colors duration-200 group-hover:text-white" />
         </span>
       </div>
@@ -311,13 +311,13 @@ function OrgCard({ org }: { org: Org }) {
         {/* Name + verified */}
         <div className="flex items-start gap-1.5 min-w-0 mt-0.5">
           <p
-            className="font-black text-[#111827] text-sm leading-snug line-clamp-2 flex-1 group-hover:text-cyan-700 transition-colors duration-200"
+            className="font-black text-[#111827] text-sm leading-snug line-clamp-2 flex-1 group-hover:text-brand-700 transition-colors duration-200"
             style={{ minHeight: '2.5rem' }}
           >
             {org.name}
           </p>
           <span title="Verified Drop Point" className="shrink-0 mt-0.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-500" />
+            <ShieldCheck className="w-3.5 h-3.5 text-brand-500" />
           </span>
         </div>
 

@@ -18,9 +18,9 @@ export const orgService = {
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch organisations');
     return data.data;
   },
-  async getOrgById(id: string): Promise<Org> {
+  async getOrgBySlug(slug: string): Promise<Org> {
     const { data } = await publicClient.get<ApiResponse<Org>>(
-      `/api/core/orgs/${id}/public`,
+      `/api/core/orgs/public/${slug}`,
     );
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch organisation');
     return data.data;
