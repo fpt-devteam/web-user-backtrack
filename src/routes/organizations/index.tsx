@@ -11,13 +11,17 @@ export const Route = createFileRoute('/organizations/')({
 
 /* ─── helpers ─── */
 const INDUSTRY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  default: { bg: 'bg-brand-100', text: 'text-brand-700', border: 'border-brand-200' },
-  Healthcare: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100' },
-  Education: { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-100' },
-  Retail: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-100' },
-  Hospitality: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-100' },
-  Transport: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-100' },
-  Government: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200' },
+  default: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Healthcare: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Education: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Retail: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Hospitality: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Transport: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Government: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  University: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Apartment: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Hotel: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
+  Airport: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
 }
 
 function getIndustryStyle(industry: string) {
@@ -28,15 +32,8 @@ function getIndustryStyle(industry: string) {
 function OrgListPage() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetOrgs()
   const [query, setQuery] = useState('')
-  const [activeIndustry, setActiveIndustry] = useState<string | null>(null)
 
   const orgs: Array<Org> = data?.pages.flatMap((p) => p.items) ?? []
-
-  const industries = useMemo(() => {
-    const set = new Set<string>()
-    orgs.forEach((o) => { if (o.industryType) set.add(o.industryType) })
-    return Array.from(set).sort()
-  }, [orgs])
 
   const filtered = useMemo(() => {
     let list = orgs
@@ -48,11 +45,23 @@ function OrgListPage() {
           o.displayAddress?.toLowerCase().includes(q),
       )
     }
-    if (activeIndustry) {
-      list = list.filter((o) => o.industryType === activeIndustry)
-    }
     return list
-  }, [orgs, query, activeIndustry])
+  }, [orgs, query])
+
+  // Group organizations by industry
+  const orgsByIndustry = useMemo(() => {
+    const groups: Record<string, Array<Org>> = {}
+    filtered.forEach((org) => {
+      const industry = org.industryType || 'Other'
+      if (!groups[industry]) {
+        groups[industry] = []
+      }
+      groups[industry].push(org)
+    })
+    return groups
+  }, [filtered])
+
+  const industries = Object.keys(orgsByIndustry).sort()
 
   return (
     <div className="min-h-screen bg-white">
@@ -69,14 +78,14 @@ function OrgListPage() {
 
         <div className="relative max-w-screen-xl mx-auto px-5 pt-10 pb-12">
           {/* Eyebrow */}
-          <p className="text-[10px] font-bold tracking-[0.18em] text-brand-600 uppercase mb-3 flex items-center gap-2">
+          <p className="text-[10px] font-bold tracking-[0.18em] text-brand-600 uppercase mb-3 flex items-center justify-center gap-2">
             <span className="inline-block w-4 h-px bg-brand-200" />
             Backtrack Network
             <span className="inline-block w-4 h-px bg-brand-200" />
           </p>
 
-          {/* Title row */}
-          <div className="flex items-end justify-between gap-4 flex-wrap">
+          {/* Title row - Centered */}
+          <div className="text-center">
             <div>
               <h1 className="text-[2.2rem] sm:text-[2.6rem] font-black text-[#111827] leading-[1.05] tracking-tight">
                 SafeDrop{' '}
@@ -95,61 +104,45 @@ function OrgListPage() {
                 )}
               </p>
             </div>
-
-            {/* Stats pill */}
-            {!isLoading && orgs.length > 0 && (
-              <div className="hidden sm:flex items-center gap-3 bg-brand-50 border border-brand-100 rounded-2xl px-4 py-2.5 shrink-0">
-                <Building2 className="w-4 h-4 text-brand-600" />
-                <span className="text-xs font-bold text-brand-700">{orgs.length} Partner{orgs.length !== 1 ? 's' : ''}</span>
-              </div>
-            )}
           </div>
 
-          {/* Search */}
-          <div className="relative mt-5">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#bbb] pointer-events-none" />
+          {/* Search - Centered and larger */}
+          <div className="relative mt-8 max-w-3xl mx-auto">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#bbb] pointer-events-none" />
             <input
               type="text"
               placeholder="Search by name or location…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full bg-white rounded-2xl pl-11 pr-11 py-3.5 text-sm font-medium text-[#111] placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-brand-ring/30 border border-[#e8e8e8] hover:border-[#d5d5d5] focus:border-brand-300 transition-all duration-200 shadow-sm"
+              className="w-full bg-white rounded-full pl-14 pr-14 py-4 text-base font-medium text-[#111] placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-brand-ring/30 border border-[#e8e8e8] hover:border-[#d5d5d5] focus:border-brand-300 transition-all duration-200 shadow-lg hover:shadow-xl"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-[#f0f0f0] hover:bg-[#e5e5e5] transition-colors cursor-pointer"
+                className="absolute right-5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-[#f0f0f0] hover:bg-[#e5e5e5] transition-colors cursor-pointer"
               >
-                <X className="w-3 h-3 text-[#888]" />
+                <X className="w-3.5 h-3.5 text-[#888]" />
               </button>
             )}
           </div>
 
-          {/* Industry filter chips */}
+          {/* Industry navigation chips - Centered */}
           {!isLoading && industries.length > 0 && (
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-1 scrollbar-none -mx-5 px-5">
-              <button
-                onClick={() => setActiveIndustry(null)}
-                className={`shrink-0 text-[11px] font-bold px-3.5 py-1.5 rounded-full border transition-all duration-150 cursor-pointer ${
-                  activeIndustry === null
-                    ? 'bg-[#111827] text-white border-[#111827]'
-                    : 'bg-white text-[#555] border-[#e5e7eb] hover:border-[#bbb]'
-                }`}
-              >
-                All
-              </button>
+            <div className="flex justify-center gap-2 mt-6 flex-wrap max-w-4xl mx-auto">
               {industries.map((ind) => {
                 const style = getIndustryStyle(ind)
-                const active = activeIndustry === ind
                 return (
                   <button
                     key={ind}
-                    onClick={() => setActiveIndustry(active ? null : ind)}
-                    className={`shrink-0 text-[11px] font-bold px-3.5 py-1.5 rounded-full border transition-all duration-150 cursor-pointer ${
-                      active
-                        ? `${style.bg} ${style.text} ${style.border} ring-2 ring-offset-1 ring-brand-ring/40`
-                        : `bg-white text-[#555] border-[#e5e7eb] hover:border-[#bbb]`
-                    }`}
+                    onClick={() => {
+                      const element = document.getElementById(`industry-${ind}`)
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }
+                    }}
+                    className={`text-xs font-semibold px-4 py-2.5 rounded-full border-0 transition-all duration-200 cursor-pointer
+                      ${style.bg} ${style.text} 
+                      hover:shadow-lg hover:scale-105 hover:brightness-110 active:scale-95`}
                   >
                     {ind}
                   </button>
@@ -168,34 +161,55 @@ function OrgListPage() {
         />
       </div>
 
-      {/* ── Grid — negative top margin to overlap the hero fade zone ── */}
-      <div className="max-w-screen-xl mx-auto px-4 -mt-4 pt-2 pb-14">
+      {/* ── Industry Sections — Each industry gets its own row ── */}
+      <div className="max-w-screen-xl mx-auto px-4 -mt-4 pt-8 pb-14 space-y-12">
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-            {Array.from({ length: 8 }).map((_, i) => <OrgSkeleton key={i} />)}
+          <div>
+            <Skeleton className="h-6 w-32 mb-4" />
+            <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-none">
+              {Array.from({ length: 6 }).map((_, i) => <OrgSkeleton key={i} />)}
+            </div>
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState hasQuery={!!query || !!activeIndustry} onReset={() => { setQuery(''); setActiveIndustry(null) }} />
+          <EmptyState hasQuery={!!query} onReset={() => setQuery('')} />
         ) : (
           <>
-            <div
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 items-stretch"
-            >
-              {filtered.map((org, i) => (
-                <Link
-                  key={org.id}
-                  to="/organizations/$slug"
-                  params={{ slug: org.slug }}
-                  className="group block h-full"
-                  style={{ animationDelay: `${Math.min(i * 40, 320)}ms` }}
-                >
-                  <OrgCard org={org} />
-                </Link>
-              ))}
-            </div>
+            {industries.map((industry) => {
+              const industryOrgs = orgsByIndustry[industry]
+              const industryStyle = getIndustryStyle(industry)
+              
+              return (
+                <div key={industry} id={`industry-${industry}`} className="space-y-4 scroll-mt-32">
+                  {/* Industry Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-semibold text-[#222]">
+                        {industry}
+                      </h2>
+                      <span className="text-[#717171] text-sm">→</span>
+                    </div>
+                  </div>
+
+                  {/* Horizontal scrolling cards for this industry */}
+                  <div className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none">
+                    {industryOrgs.map((org, i) => (
+                      <Link
+                        key={org.id}
+                        to="/organizations/$slug"
+                        params={{ slug: org.slug }}
+                        className="group block shrink-0 w-[280px] sm:w-[320px] snap-start"
+                        style={{ animationDelay: `${Math.min(i * 40, 320)}ms` }}
+                      >
+                        <OrgCard org={org} />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
 
             {/* Load more */}
-            {hasNextPage && !query && !activeIndustry && (
+            {hasNextPage && !query && (
               <button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
@@ -229,105 +243,97 @@ function OrgListPage() {
 function OrgCard({ org }: { org: Org }) {
   const hasCover = !!org.coverImageUrl
   const hasLogo = !!org.logoUrl
-  const industryStyle = getIndustryStyle(org.industryType ?? '')
   const isActive = org.status === 'Active'
 
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-[#f0f0f0] transition-all duration-250 group-hover:-translate-y-1.5 group-hover:shadow-[0_12px_36px_rgba(0,0,0,0.12)] group-hover:border-brand-100 h-full flex flex-col cursor-pointer">
-
-      {/* ── Cover zone ── */}
-      <div className="relative h-32 shrink-0 overflow-hidden bg-gradient-to-br from-[#f3f4f6] to-[#e9ebee]">
+    <div className="group block cursor-pointer">
+      {/* ── Image with heart ── */}
+      <div className="relative h-64 sm:h-72 rounded-2xl overflow-hidden bg-gradient-to-br from-[#f3f4f6] to-[#e9ebee] mb-3">
         {hasCover ? (
           <img
             src={org.coverImageUrl!}
-            alt=""
-            aria-hidden
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            alt={org.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={(e) => { e.currentTarget.style.display = 'none' }}
           />
         ) : hasLogo ? (
           <img
             src={org.logoUrl!}
-            alt=""
-            aria-hidden
-            className="w-full h-full object-cover opacity-20 blur-xs scale-110 transition-transform duration-500 group-hover:scale-[1.08]"
+            alt={org.name}
+            className="w-full h-full object-cover opacity-20 blur-xs scale-110"
             onError={(e) => { e.currentTarget.style.display = 'none' }}
           />
-        ) : null}
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Building2 className="w-16 h-16 text-[#d1d5db]" />
+          </div>
+        )}
 
-        {/* Always show gradient for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent pointer-events-none" />
+        {/* Gradient overlay for text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
-        {/* Subtle brand accent on hover */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/0 via-transparent to-brand-400/0 group-hover:from-brand-500/10 group-hover:to-brand-400/5 transition-all duration-300 pointer-events-none" />
+        {/* Heart icon - top right */}
+        <button
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 hover:bg-white backdrop-blur-sm shadow-sm transition-all duration-200 group-hover:scale-110"
+          aria-label="Add to favorites"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+        >
+          <svg className="w-4 h-4 text-[#222] fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
 
-        {/* Status dot — bottom left */}
-        <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5">
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-400' : 'bg-[#bbb]'}`}
-          />
-          <span className="text-[9px] font-bold text-white/80 uppercase tracking-wide">
+        {/* Status badge - bottom left */}
+        <div className="absolute bottom-3 left-3">
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+            isActive 
+              ? 'bg-emerald-500/90 text-white' 
+              : 'bg-gray-500/90 text-white'
+          } backdrop-blur-sm`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-gray-200'}`} />
             {isActive ? 'Active' : 'Inactive'}
           </span>
         </div>
-
-        {/* Arrow — top right */}
-        <span className="absolute top-2.5 right-2.5 flex items-center justify-center w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-200 group-hover:bg-brand-600 group-hover:shadow-md">
-          <ArrowUpRight className="w-3.5 h-3.5 text-black/50 transition-colors duration-200 group-hover:text-white" />
-        </span>
       </div>
 
-      {/* ── Floating logo avatar ── */}
-      <div className="relative px-3.5">
-        <div className="absolute -top-5 left-3.5 w-10 h-10 rounded-xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.14)] border border-[#efefef] overflow-hidden flex items-center justify-center">
-          {hasLogo ? (
-            <img
-              src={org.logoUrl!}
-              alt={org.name}
-              className="w-full h-full object-contain p-1"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null
-                if (fallback) fallback.classList.remove('hidden')
-              }}
-            />
-          ) : null}
-          <span className={`${hasLogo ? 'hidden' : ''} text-sm font-black text-[#9CA3AF]`}>
-            {org.name.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      </div>
-
-      {/* ── Body ── */}
-      <div className="px-3.5 pt-7 pb-4 flex flex-col flex-1 min-w-0 gap-1">
-
-        {/* Industry tag */}
-        {org.industryType && (
-          <span className={`self-start text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${industryStyle.bg} ${industryStyle.text} ${industryStyle.border}`}>
-            {org.industryType}
-          </span>
-        )}
-
-        {/* Name + verified */}
-        <div className="flex items-start gap-1.5 min-w-0 mt-0.5">
-          <p
-            className="font-black text-[#111827] text-sm leading-snug line-clamp-2 flex-1 group-hover:text-brand-700 transition-colors duration-200"
-            style={{ minHeight: '2.5rem' }}
-          >
+      {/* ── Content below image ── */}
+      <div className="space-y-1">
+        {/* Name and verified icon */}
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-[15px] text-[#222] line-clamp-1 group-hover:underline">
             {org.name}
-          </p>
-          <span title="Verified Drop Point" className="shrink-0 mt-0.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-brand-500" />
-          </span>
+          </h3>
+          <ShieldCheck className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" />
         </div>
+
+        {/* Industry type */}
+        {/* {org.industryType && (
+          <p className="text-sm text-[#717171]">
+            {org.industryType}
+          </p>
+        )} */}
 
         {/* Address */}
         {org.displayAddress && (
-          <p className="text-[11px] text-[#9CA3AF] flex items-start gap-1 font-medium" style={{ minHeight: '1.75rem' }}>
-            <MapPin className="w-3 h-3 shrink-0 mt-0.5 text-[#C8CDD6]" />
-            <span className="line-clamp-2">{org.displayAddress}</span>
+          <p className="text-sm text-[#717171] line-clamp-1 flex items-center gap-1">
+            <MapPin className="w-3.5 h-3.5 shrink-0" />
+            {org.displayAddress}
           </p>
         )}
+
+        {/* Stats - mimicking the price/rating style */}
+        <div className="flex items-center gap-2 pt-1">
+          <span className="text-sm text-[#222] font-medium">
+            120 items received
+          </span>
+          <span className="text-[#717171]">·</span>
+          <span className="text-sm text-[#222] font-medium flex items-center gap-1">
+            ★ 4.95
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -360,20 +366,15 @@ function EmptyState({ hasQuery, onReset }: { hasQuery: boolean; onReset: () => v
 /* ── Skeleton ── */
 function OrgSkeleton() {
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-[#f0f0f0]">
-      {/* Cover */}
-      <Skeleton className="h-32 w-full rounded-none" />
-      <div className="px-3.5 pt-7 pb-4 space-y-2">
-        {/* Tag */}
-        <Skeleton className="h-3.5 w-14 rounded-full" />
-        {/* Name row */}
-        <div className="flex items-start gap-1.5">
-          <Skeleton className="h-4 flex-1 rounded-lg" />
-          <Skeleton className="h-3.5 w-3.5 rounded-full shrink-0 mt-0.5" />
-        </div>
-        <Skeleton className="h-3 w-5/6 rounded-full" />
-        {/* Address second line */}
-        <Skeleton className="h-3 w-3/5 rounded-full" />
+    <div className="shrink-0 w-[280px] sm:w-[320px]">
+      {/* Image */}
+      <Skeleton className="h-64 sm:h-72 w-full rounded-2xl mb-3" />
+      {/* Content */}
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-3/4 rounded" />
+        <Skeleton className="h-3.5 w-1/2 rounded" />
+        <Skeleton className="h-3.5 w-full rounded" />
+        <Skeleton className="h-3.5 w-2/3 rounded" />
       </div>
     </div>
   )
