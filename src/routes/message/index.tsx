@@ -1,18 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { createFileRoute } from '@tanstack/react-router'
-import { useGetConversations } from '@/hooks/use-messager'
-import { useGetOrgById } from '@/hooks/use-org'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Edit, Search, Send } from 'lucide-react'
-import { motion, AnimatePresence, type Variants } from 'framer-motion'
+import { AnimatePresence,  motion } from 'framer-motion'
 import { useState } from 'react'
+import type {Variants} from 'framer-motion';
 import type { Conversation } from '@/types/chat.type'
+import { useGetOrgBySlug } from '@/hooks/use-org'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useGetConversations } from '@/hooks/use-messager'
 import { ConversationHeader } from '@/components/chat/conversation-detail/conversation-header'
 import { MessageList } from '@/components/chat/conversation-detail/message-list'
 import { MessageInput } from '@/components/chat/conversation-detail/message-input'
 import { cn } from '@/lib/utils'
 
-export const Route = createFileRoute('/messager/')({
+export const Route = createFileRoute('/message/')({
   component: MessagerPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    selectedId: typeof search.selectedId === 'string' ? search.selectedId : undefined,
+  }),
 })
 
 /* ── Motion variants ─────────────────────────────────────── */
@@ -52,20 +57,24 @@ type ConversationListItemProps = {
 }
 
 function ConversationListItem({ conv, index, isActive, onClick }: ConversationListItemProps) {
-  // Fetch org when orgId is present (support/org conversations have partner = null)
-  const { data: org } = useGetOrgById(conv.orgId ?? '')
+  // Fetch org when orgSlug is present but orgName is missing (legacy conversations)
+  const { data: org } = useGetOrgBySlug(conv.orgSlug ?? '', !conv.orgName)
 
   // Resolve display name:
+  //   - support conversation → orgName (stored) or org.name (fetched via slug)
   //   - direct conversation  → partner.displayName
-  //   - support conversation → org.name (fetched via orgId)
   //   - fallback             → 'Unknown'
   const displayName =
-    conv.partner?.displayName?.trim() ||
-    org?.name?.trim() ||
+    conv.orgName?.trim() ||
+    org?.name.trim() ||
+    conv.partner?.displayName.trim() ||
     'Unknown'
 
   // API returns avatarUrl (not avatar)
-  const avatarUrl = conv.partner?.avatarUrl?.trim() ?? conv.partner?.avatar?.trim()
+  const avatarUrl =
+    conv.orgLogoUrl?.trim() ??
+    conv.partner?.avatarUrl?.trim() ??
+    conv.partner?.avatar?.trim()
 
   // API returns lastMessage.content (not lastContent)
   const lastContent = conv.lastMessage?.content ?? conv.lastMessage?.lastContent
@@ -96,7 +105,8 @@ function ConversationListItem({ conv, index, isActive, onClick }: ConversationLi
               />
             ) : (
               <span className="text-xl font-bold text-gray-400">
-                {displayName[0]?.toUpperCase() ?? '?'}
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-condition
+                {displayName[0].toUpperCase() ?? '?'}
               </span>
             )}
           </div>
@@ -146,7 +156,8 @@ function ConversationListItem({ conv, index, isActive, onClick }: ConversationLi
 
 /* ── Page ────────────────────────────────────────────────── */
 function MessagerPage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const { selectedId: initialSelectedId } = Route.useSearch()
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null)
 
   const {
     data,
@@ -157,10 +168,11 @@ function MessagerPage() {
   } = useGetConversations()
 
   const conversations =
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     data?.pages.flatMap((p) => p.items ?? []).filter(Boolean) ?? []
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className="flex h-full bg-white overflow-hidden">
       {/* ═══════════════════════════════
           LEFT PANEL — conversation list
       ═══════════════════════════════ */}

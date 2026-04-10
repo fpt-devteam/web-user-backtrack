@@ -24,18 +24,6 @@ export function useGetOrgs() {
   });
 }
 
-export function useGetOrgById(id: string, enabled = true) {
-  const { data, isLoading, error } = useQuery({
-    queryKey: orgKeys.detail(id),
-    queryFn: () => orgService.getOrgById(id),
-    enabled: !!id && enabled,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  if (error) toast.fromError(error);
-
-  return { data, isLoading };
-}
 
 export function useGetOrgBySlug(slug: string, enabled = true) {
   const { data, isLoading, error } = useQuery({
@@ -45,7 +33,9 @@ export function useGetOrgBySlug(slug: string, enabled = true) {
     staleTime: 1000 * 60 * 5,
   });
 
-  if (error) toast.fromError(error);
+  if (error) {
+    toast.fromError(error);
+  }
 
   return { data, isLoading };
 }

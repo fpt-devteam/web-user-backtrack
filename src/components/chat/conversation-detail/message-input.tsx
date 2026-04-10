@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { useSocket } from '@/hooks/use-socket'
 import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
+import { chatService } from '@/services/chat.service'
 
 const messageSchema = z.object({
   content: z.string().min(1).trim(),
@@ -18,14 +19,16 @@ type MessageFormValues = z.infer<typeof messageSchema>
 interface MessageInputProps {
   conversationId?: string
   orgId?: string
-  /** DM socket-first: send without a pre-created conversation */
+  /** DM: send without a pre-created conversation */
   recipientId?: string
   onSend?: () => void
+  /** Called instead of navigating when a new conversation is lazily created */
+  onConversationCreated?: (conversationId: string) => void
 }
 
 const TYPING_DEBOUNCE_MS = 1500
 
-export function MessageInput({ conversationId, orgId, recipientId, onSend }: MessageInputProps) {
+export function MessageInput({ conversationId, orgId, recipientId, onSend, onConversationCreated }: MessageInputProps) {
   const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, isConnected } =
     useSocket()
   const navigate = useNavigate()
@@ -58,29 +61,37 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend }: Mes
     return onMessageSendSuccess((data) => {
       setIsSending(false)
       if (data.isNewConversation && data.conversationId) {
-        navigate({
-          to: '/chat/conversation/$id',
-          params: { id: data.conversationId },
-          replace: true,
-        })
+        if (onConversationCreated) {
+          onConversationCreated(data.conversationId)
+        } else {
+          navigate({
+            to: '/chat/conversation/$id',
+            params: { id: data.conversationId },
+            replace: true,
+          })
+        }
       }
       onSend?.()
     })
-  }, [onMessageSendSuccess, navigate, onSend])
+  }, [onMessageSendSuccess, navigate, onSend, onConversationCreated])
 
   useEffect(() => {
     return onMessageSendSupportSuccess((data) => {
       setIsSending(false)
       if (data.isNewConversation && data.conversationId) {
-        navigate({
-          to: '/chat/conversation/$id',
-          params: { id: data.conversationId },
-          replace: true,
-        })
+        if (onConversationCreated) {
+          onConversationCreated(data.conversationId)
+        } else {
+          navigate({
+            to: '/chat/conversation/$id',
+            params: { id: data.conversationId },
+            replace: true,
+          })
+        }
       }
       onSend?.()
     })
-  }, [onMessageSendSupportSuccess, navigate, onSend])
+  }, [onMessageSendSupportSuccess, navigate, onSend, onConversationCreated])
 
   /* ── Typing ── */
   const stopTyping = useCallback(() => {
@@ -105,25 +116,44 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend }: Mes
 
   /* ── Submit ── */
   const onSubmit = useCallback(
-    (values: MessageFormValues) => {
+    async (values: MessageFormValues) => {
       if (isSending || !isConnected) return
       setIsSending(true)
       stopTyping()
-      if (conversationId) {
-        sendMessage({ conversationId, type: 'text', content: values.content })
-      } else if (orgId) {
-        sendMessage({ orgId, type: 'text', content: values.content })
-      } else if (recipientId) {
-        sendMessage({ recipientId, type: 'text', content: values.content })
+
+      try {
+        let targetId = conversationId
+        let isSupport = false
+
+        if (!targetId && orgId) {
+          const conv = await chatService.createSupportConversation(orgId)
+          targetId = conv.conversationId
+          isSupport = true
+          onConversationCreated?.(targetId)
+        } else if (!targetId && recipientId) {
+          const conv = await chatService.createDirectConversation(recipientId)
+          targetId = conv.conversationId
+          onConversationCreated?.(targetId)
+          if (!onConversationCreated) {
+            navigate({ to: '/chat/conversation/$id', params: { id: targetId }, replace: true })
+          }
+        }
+
+        if (targetId) {
+          sendMessage({ conversationId: targetId, type: 'text', content: values.content, isSupport })
+        }
+      } catch (err) {
+        console.error('[MessageInput] failed to send:', err)
+        setIsSending(false)
       }
+
       form.reset()
       requestAnimationFrame(() => {
         if (textareaRef.current) { textareaRef.current.style.height = 'auto'; textareaRef.current.focus() }
-        // Only clear spinner immediately for existing conversation (no redirect)
         if (conversationId) setIsSending(false)
       })
     },
-    [isSending, isConnected, conversationId, orgId, recipientId, sendMessage, stopTyping, form],
+    [isSending, isConnected, conversationId, orgId, recipientId, sendMessage, stopTyping, form, navigate, onConversationCreated],
   )
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -1,5 +1,5 @@
 // src/hooks/use-chat.ts
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { chatService } from '@/services/chat.service';
 import { toast } from '@/lib/toast';
 
@@ -21,10 +21,11 @@ export function useGetConversations() {
 }
 
 export function useGetConversationById(id: string, enabled: boolean = true) {
+  const validId = !!id && id !== 'undefined'
   const { data, isLoading, error } = useQuery({
     queryKey: ['chat', 'conversation', id],
     queryFn: () => chatService.getConversationById(id),
-    enabled,
+    enabled: validId && enabled,
     staleTime: 1000 * 60, // 1 minute
   });
   if (error) {
@@ -49,7 +50,7 @@ export function useGetMessages(conversationId: string) {
     queryKey: chatKeys.messages(conversationId),
     queryFn: ({ pageParam }) =>
       chatService.getMessages(conversationId, pageParam),
-    enabled: !!conversationId,
+    enabled: !!conversationId && conversationId !== 'undefined',
     staleTime: 1000 * 30, // 30 seconds,
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,

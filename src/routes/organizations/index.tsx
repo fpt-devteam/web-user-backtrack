@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { ArrowUpRight, Building2, MapPin, Search, ShieldCheck, X } from 'lucide-react'
+import { Building2, MapPin, Search, ShieldCheck, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { Org } from '@/types/org.type'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -53,6 +53,7 @@ function OrgListPage() {
     const groups: Record<string, Array<Org>> = {}
     filtered.forEach((org) => {
       const industry = org.industryType || 'Other'
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!groups[industry]) {
         groups[industry] = []
       }
@@ -183,9 +184,9 @@ function OrgListPage() {
                   {/* Industry Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-semibold text-[#222]">
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${industryStyle.bg} ${industryStyle.text}`}>
                         {industry}
-                      </h2>
+                      </span>
                       <span className="text-[#717171] text-sm">→</span>
                     </div>
                   </div>

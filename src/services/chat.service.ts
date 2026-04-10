@@ -1,11 +1,11 @@
 // src/services/chat.service.ts
-import { privateClient } from '@/lib/api-client';
 import type { ApiResponse } from '@/types/api-response.type';
 import type {
   Conversation,
   Message,
 } from '@/types/chat.type';
 import type { CursorPagedResponse } from '@/types/pagination.type';
+import { privateClient } from '@/lib/api-client';
 
 export const chatService = {
   async getConversations(cursor?: string | null): Promise<CursorPagedResponse<Conversation>> {
@@ -28,27 +28,42 @@ export const chatService = {
 
   /**
    * Returns existing conversation with this org, or null if none exists yet.
-   * Fetches all conversation pages and matches by partner.id === orgId.
    */
   async getConversationByOrgId(orgId: string): Promise<Conversation | null> {
-    let cursor: string | null = null
-    do {
-      const page = await chatService.getConversations(cursor)
-      const found = page.items.find((c) => c.partner?.id === orgId)
-      if (found) return found
-      cursor = page.hasMore ? (page.nextCursor ?? null) : null
-    } while (cursor)
-    return null
+    const { data } = await privateClient.get<ApiResponse<Conversation | null>>(
+      '/api/chat/conversations/partner',
+      { params: { partnerId: orgId } }
+    )
+    if (!data.success) return null
+    return data.data
+  },
+
+  async createSupportConversation(orgId: string): Promise<Conversation> {
+    const { data } = await privateClient.post<ApiResponse<{ conversation: Conversation }>>(
+      '/api/chat/conversations/organization',
+      { orgId }
+    );
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to create conversation');
+    return data.data.conversation;
+  },
+
+  async createDirectConversation(recipientId: string): Promise<Conversation> {
+    const { data } = await privateClient.post<ApiResponse<{ conversation: Conversation }>>(
+      '/api/chat/conversations/direct',
+      { recipientId }
+    );
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to create conversation');
+    return data.data.conversation;
   },
 
   async getMessages(conversationId: string, cursor: string | null): Promise<CursorPagedResponse<Message>> {
     const url = `/api/chat/conversations/${conversationId}/messages` + (cursor ? `?cursor=${cursor}` : '');
     const { data } = await privateClient.get<ApiResponse<Record<string, unknown>>>(url);
-    if (!data.success) throw new Error((data.error as { message?: string })?.message ?? 'Failed to fetch messages');
+    if (!data.success) throw new Error((data.error as { message?: string }).message ?? 'Failed to fetch messages');
 
     // Backend returns { messages: [], nextCursor, hasMore } — normalize to CursorPagedResponse shape
-    const raw = data.data as Record<string, unknown>;
-    const items = (raw.messages ?? raw.items ?? []) as Message[];
+    const raw = data.data;
+    const items = (raw.messages ?? raw.items ?? []) as Array<Message>;
     return {
       items,
       nextCursor: (raw.nextCursor ?? raw.next_cursor ?? null) as string | null,

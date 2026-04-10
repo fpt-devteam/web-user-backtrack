@@ -1,42 +1,43 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
-import type { Variants } from 'framer-motion'
 import {
-  ArrowLeft,
-  MapPin,
-  MessageCircle,
-  Phone,
-  ShieldCheck,
   AlertTriangle,
-  Building2,
-  Clock,
-  CheckCircle2,
-  CreditCard,
-  QrCode,
-  PenLine,
-  Package,
-  Key,
-  Shirt,
-  Wallet,
-  Umbrella,
+  ArrowLeft,
   Backpack,
-  ClipboardList,
+  Building2,
   Camera,
-  Handshake,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
+  ClipboardList,
+  Clock,
+  CreditCard,
+  Handshake,
+  Key,
   Mail,
+  MapPin,
+  MessageCircle,
+  Package,
+  PenLine,
+  Phone,
+  QrCode,
+  ShieldCheck,
+  Shirt,
+  Umbrella,
+  Wallet,
 } from 'lucide-react'
 import { useState } from 'react'
+import type { Variants } from 'framer-motion'
+import type { BusinessHour } from '@/types/org.type'
 import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
-import { useGetOrgBySlug } from '@/hooks/use-org'
+import { orgKeys, useGetOrgBySlug  } from '@/hooks/use-org'
 import { useCreateUser } from '@/hooks/use-user'
+import { toast } from '@/lib/toast'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import type { BusinessHour } from '@/types/org.type'
 import { orgService } from '@/services/org.service'
-import { orgKeys } from '@/hooks/use-org'
+import {chatService} from '@/services/chat.service'
 
 export const Route = createFileRoute('/organizations/$slug/')({
   component: OrgDetailPage,
@@ -125,34 +126,40 @@ function getOpenStatus(hours: Array<BusinessHour> | null): { status: OpenStatus;
 function OrgDetailPage() {
   const { slug } = Route.useParams()
   const navigate = useNavigate()
-  const { profile, syncProfile } = useAuth()
-  const { data: org, isLoading } = useGetOrgBySlug(slug)
+
+  const { data: org, isLoading: isOrgLoading } = useGetOrgBySlug(slug)
+  const { profile, syncProfile, loading: isProfileLoading } = useAuth()
+
   const { mutateAsync: signInAnonymous, isPending: isSigningIn } = useSignInAnonymous()
   const { mutateAsync: createUser, isPending: isCreatingUser } = useCreateUser()
   const isAuthPending = isSigningIn || isCreatingUser
+
+  if (isOrgLoading || isProfileLoading) { return <OrgDetailSkeleton /> }
+  if (!org) {
+    navigate({ to: '/organizations' })
+    return null
+  }
+
+  const handleStartChat = async () => {
+    try {
+      if (!profile) {
+        await signInAnonymous()
+        await createUser()
+        await syncProfile()
+      }
+      const conversation = await chatService.createSupportConversation(org.id)
+      const convId = conversation.conversationId
+      if (!convId) throw new Error('No conversation ID returned from server')
+      navigate({ to: '/message', search: { selectedId: convId } as never })
+    } catch (err) {
+      toast.fromError(err)
+    }
+  }
 
   const prefersReduced =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const motionVariant = prefersReduced ? fadeUpReduced : fadeUp
-
-  const handleStartChat = async () => {
-    if (!profile) {
-      await signInAnonymous()
-      await createUser()
-      await syncProfile()
-    }
-    navigate({ to: '/chat/new/$orgId', params: { orgId: org?.id ?? '' } })
-  }
-
-  const handleReportLost = async () => {
-    if (!profile) {
-      await signInAnonymous()
-      await createUser()
-      await syncProfile()
-    }
-    navigate({ to: '/chat/new/$orgId', params: { orgId: org?.id ?? '' } })
-  }
 
   return (
     <div className="min-h-screen bg-[#F7F7F7] pb-8">
@@ -171,38 +178,34 @@ function OrgDetailPage() {
         </button>
       </div>
 
-      {isLoading && <OrgDetailSkeleton />}
+      {/* ── two-column grid ── */}
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-3
+                      grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-8 items-start">
 
-      {org && (
-        /* ── two-column grid ── */
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-3
-                        grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-8 items-start">
+        {/* ══ LEFT: Profile card ══ */}
+        <motion.div
+          custom={0} variants={motionVariant} initial="hidden" animate="show"
+          className="lg:sticky lg:top-6"
+        >
+          <OrgProfileCard
+            org={org}
+            onChat={handleStartChat}
+            isAuthPending={isAuthPending}
+          />
+        </motion.div>
 
-          {/* ══ LEFT: Profile card ══ */}
-          <motion.div
-            custom={0} variants={motionVariant} initial="hidden" animate="show"
-            className="lg:sticky lg:top-6"
-          >
-            <OrgProfileCard 
-              org={org} 
-              onChat={handleStartChat}
-              isAuthPending={isAuthPending}
-            />
-          </motion.div>
-
-          {/* ══ RIGHT: Found items + guides ══ */}
-          <motion.div
-            custom={1} variants={motionVariant} initial="hidden" animate="show"
-            className="flex flex-col gap-0"
-          >
-            <FoundItemsList />
-            <GuidesAccordion />
-            <PolicyRow />
-            <StatsRow prefersReduced={prefersReduced} />
-            <LocationSection org={org} />
-          </motion.div>
-        </div>
-      )}
+        {/* ══ RIGHT: Found items + guides ══ */}
+        <motion.div
+          custom={1} variants={motionVariant} initial="hidden" animate="show"
+          className="flex flex-col gap-0"
+        >
+          <FoundItemsList />
+          <GuidesAccordion />
+          <PolicyRow />
+          <StatsRow prefersReduced={prefersReduced} />
+          <LocationSection org={org} />
+        </motion.div>
+      </div>
 
       {/* ── sticky action bar ── */}
       {/* Removed - button now in profile card
@@ -770,71 +773,6 @@ function LocationSection({ org }: {
         </div>
       )}
     </div>
-  )
-}
-
-/* ═══════════════════════════════════════════ */
-/*   STICKY ACTION BAR                        */
-/* ═══════════════════════════════════════════ */
-function StickyActionBar({
-  orgName, isAuthPending, onChat, onReportLost, isLoading,
-}: {
-  orgName: string
-  isAuthPending: boolean
-  onChat: () => void
-  onReportLost: () => void
-  isLoading: boolean
-}) {
-  return (
-    <motion.div
-      initial={{ y: 80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.3, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-lg
-                 border-t border-[#ebebeb] px-4 pt-3 pb-7"
-    >
-      <div className="max-w-6xl mx-auto flex gap-3">
-        {/* Secondary: Chat — outlined, matches card border style */}
-        <Button
-          variant="outline"
-          onClick={onChat}
-          disabled={isAuthPending || isLoading}
-          aria-label={`Start a chat with ${orgName || 'this location'}`}
-          className="flex-[1.4] h-12 rounded-2xl text-[13px] font-black
-                     bg-brand-primary hover:bg-brand-hover
-                     text-white flex items-center justify-center gap-2 border-0
-                     shadow-[0_4px_16px_color-mix(in_srgb,var(--brand-primary)_35%,transparent)]
-                     transition-all duration-200
-                     focus:outline-none focus:ring-2 focus:ring-brand-ring focus:ring-offset-2 cursor-pointer"
-        >
-          {isAuthPending
-            ? <Spinner size="sm" />
-            : (
-              <>
-                <MessageCircle className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Chat with </span>
-                <span className="truncate max-w-[100px] sm:max-w-[160px]">{orgName || 'this location'}</span>
-              </>
-            )}
-        </Button>
-
-        {/* Primary: Report lost — brand color
-        <Button
-          onClick={onReportLost}
-          disabled={isAuthPending || isLoading}
-          aria-label="Report a lost item here"
-          className="flex-[1.4] h-12 rounded-2xl text-[13px] font-black
-                     bg-brand-primary hover:bg-brand-hover
-                     text-white flex items-center justify-center gap-2 border-0
-                     shadow-[0_4px_16px_color-mix(in_srgb,var(--brand-primary)_35%,transparent)]
-                     transition-all duration-200
-                     focus:outline-none focus:ring-2 focus:ring-brand-ring focus:ring-offset-2 cursor-pointer"
-        >
-          <AlertTriangle className="w-4 h-4" aria-hidden="true" />
-          Report a lost item here
-        </Button> */}
-      </div>
-    </motion.div>
   )
 }
 

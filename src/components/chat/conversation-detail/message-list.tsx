@@ -1,27 +1,27 @@
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useGetMessages, chatKeys } from '@/hooks/use-chat'
-import { useSocket } from '@/hooks/use-socket'
-import { useAuth } from '@/hooks/use-auth'
+import { Loader2 } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Message } from '@/types/chat.type'
 import type { CursorPagedResponse } from '@/types/pagination.type'
+import { chatKeys, useGetMessages } from '@/hooks/use-chat'
+import { useSocket } from '@/hooks/use-socket'
+import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 
 interface MessageListProps {
-  readonly conversationId: string
+  readonly conversationId?: string
 }
 
-export function MessageList({ conversationId }: MessageListProps) {
+export function MessageList({ conversationId = '' }: MessageListProps) {
   const { profile } = useAuth()
-  const { socket, joinConversation, leaveConversation, onMessageSendSuccess } = useSocket()
+  const { socket, joinConversation, leaveConversation, onMessageSendSuccess, onMessageSendSupportSuccess } = useSocket()
   const queryClient = useQueryClient()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [typingUserIds, setTypingUserIds] = useState<string[]>([])
-  const typingTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const [typingUserIds, setTypingUserIds] = useState<Array<string>>([])
+  const typingTimersRef = useRef<Record<string, ReturnType<typeof setTimeout> | undefined>>({})
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetMessages(conversationId)
@@ -41,19 +41,26 @@ export function MessageList({ conversationId }: MessageListProps) {
 
   /* ── Inject message into cache ── */
   const injectMessage = useCallback(
-    (message: Message) => {
-      if (message.conversationId !== conversationId) return
+    (message: Message, targetConversationId?: string) => {
+      const cid = targetConversationId || conversationId
+      if (!cid || message.conversationId !== cid) return
       queryClient.setQueryData<{
-        pages: CursorPagedResponse<Message>[]
-        pageParams: (string | null)[]
-      }>(chatKeys.messages(conversationId), (old) => {
-        if (!old) return old
+        pages: Array<CursorPagedResponse<Message>>
+        pageParams: Array<string | null>
+      }>(chatKeys.messages(cid), (old) => {
+        if (!old) {
+          // Seed the cache for a brand-new conversation — no prior fetch exists yet
+          return {
+            pages: [{ items: [message], nextCursor: null, hasMore: false }],
+            pageParams: [null],
+          }
+        }
         const first = old.pages[0]
-        if (first?.items.some((m) => m?.id === message.id)) return old
+        if (first.items.some((m) => m.id === message.id)) return old
         return {
           ...old,
           pages: [
-            { ...first, items: [message, ...(first?.items ?? []).filter(Boolean)] },
+            { ...first, items: [message, ...first.items] },
             ...old.pages.slice(1),
           ],
         }
@@ -63,12 +70,20 @@ export function MessageList({ conversationId }: MessageListProps) {
   )
 
   /* ── Socket lifecycle ── */
+  // Re-runs whenever socket connects/reconnects so the join is never missed.
+  // Also invalidates the messages cache so a fresh fetch runs after joining.
+  useEffect(() => {
+    if (!conversationId || !socket) return
+    joinConversation(conversationId)
+    queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) })
+    return () => { leaveConversation(conversationId) }
+  }, [conversationId, socket, joinConversation, leaveConversation, queryClient])
+
+  // Reset scroll-to-bottom flag when switching conversations
   useEffect(() => {
     if (!conversationId) return
-    joinConversation(conversationId)
     setIsInitialLoad(true)
-    return () => { leaveConversation(conversationId) }
-  }, [conversationId, joinConversation, leaveConversation])
+  }, [conversationId])
 
   useEffect(() => {
     if (!socket) return
@@ -77,20 +92,28 @@ export function MessageList({ conversationId }: MessageListProps) {
     return () => { socket.off('message:new', handle) }
   }, [socket, injectMessage])
 
+  // Add socket as dep so subscriptions are (re-)registered once socket is ready
   useEffect(() => {
+    if (!socket) return
     return onMessageSendSuccess((d) => {
-      if (d.conversationId === conversationId && d.message) injectMessage(d.message)
+      injectMessage(d.message, d.conversationId)
     })
-  }, [onMessageSendSuccess, conversationId, injectMessage])
+  }, [socket, onMessageSendSuccess, injectMessage])
 
-  const allMessages = (data?.pages.flatMap((p) => p.items) ?? []).filter(Boolean).reverse()
+  useEffect(() => {
+    if (!socket) return
+    return onMessageSendSupportSuccess((d) => {
+      injectMessage(d.message, d.conversationId)
+    })
+  }, [socket, onMessageSendSupportSuccess, injectMessage])
+
+  const allMessages = (data?.pages.flatMap((p) => p.items) ?? []).reverse()
 
   useEffect(() => {
     if (!data) return
     if (isInitialLoad) { scrollToBottom(); setIsInitialLoad(false); return }
     if (isNearBottom()) scrollToBottom()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allMessages.length])
+  }, [allMessages.length, data, isInitialLoad, isNearBottom, scrollToBottom])
 
   /* ── Typing indicators ── */
   useEffect(() => {
@@ -98,7 +121,8 @@ export function MessageList({ conversationId }: MessageListProps) {
     const handle = (d: { conversationId: string; userId: string; isTyping: boolean }) => {
       if (d.conversationId !== conversationId || d.userId === profile?.id) return
       const { userId, isTyping } = d
-      if (typingTimersRef.current[userId]) clearTimeout(typingTimersRef.current[userId])
+      const existing = typingTimersRef.current[userId]
+      if (existing) clearTimeout(existing)
       if (isTyping) {
         typingTimersRef.current[userId] = setTimeout(() => {
           delete typingTimersRef.current[userId]
@@ -113,7 +137,7 @@ export function MessageList({ conversationId }: MessageListProps) {
     socket.on('typing:user', handle)
     return () => {
       socket.off('typing:user', handle)
-      Object.values(typingTimersRef.current).forEach(clearTimeout)
+      Object.values(typingTimersRef.current).forEach((t) => { if (t) clearTimeout(t) })
     }
   }, [socket, conversationId, profile?.id])
 
@@ -177,17 +201,17 @@ export function MessageList({ conversationId }: MessageListProps) {
         {allMessages.map((message, index) => {
           const isMe = message.senderId === profile?.id
 
-          // Grouping: same sender, within 2 min of next message
-          const next = allMessages[index + 1]
-          const prev = allMessages[index - 1]
+          // Grouping: same sender, within 2 min of adjacent messages
+          const next = index + 1 < allMessages.length ? allMessages[index + 1] : undefined
+          const prev = index > 0 ? allMessages[index - 1] : undefined
           const isGroupedWithNext =
-            next &&
+            next !== undefined &&
             next.senderId === message.senderId &&
             Math.abs(
               new Date(next.createdAt).getTime() - new Date(message.createdAt).getTime(),
             ) < 2 * 60 * 1000
           const isGroupedWithPrev =
-            prev &&
+            prev !== undefined &&
             prev.senderId === message.senderId &&
             Math.abs(
               new Date(message.createdAt).getTime() - new Date(prev.createdAt).getTime(),

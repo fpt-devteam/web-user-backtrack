@@ -39,7 +39,7 @@ TanStackQueryProvider → AuthProvider → SocketProvider → StripeProvider →
 ```
 
 ### Routing (`src/routes/`)
-File-based routing via TanStack Router. Route tree is auto-generated into `src/routeTree.gen.ts` — do not edit that file manually. The root layout (`__root.tsx`) conditionally renders `<BacktrackHeader />` — `/sign-in` and `/sign-up` paths are excluded from the global header.
+File-based routing via TanStack Router. Route tree is auto-generated into `src/routeTree.gen.ts` — do not edit that file manually. The root layout (`__root.tsx`) conditionally renders `<BacktrackHeader />` — `/sign-in`, `/sign-up`, and `/chat` paths are excluded from the global header (`NO_HEADER_ROUTES`).
 
 ### Authentication (`src/hooks/use-auth.tsx`)
 Firebase Auth is the identity layer. `AuthProvider` listens to `onAuthStateChanged` and fetches the backend profile via `userService.getMe()` on login. Anonymous sign-in is supported — anonymous users are not fetched from the backend until they link credentials. Auth mutations (`useSignInWithEmailAndPassword`, `useSignInWithGoogle`, `useCreateAccount`, etc.) all live in `use-auth.tsx`.
@@ -53,7 +53,15 @@ Firebase Auth is the identity layer. `AuthProvider` listens to `onAuthStateChang
 TanStack Query hooks live in `src/hooks/use-*.tsx`. Each hook file corresponds to a service file. Query key factories (e.g. `userKeys`) are defined in the hook file and imported where cache invalidation is needed.
 
 ### Real-time (`src/hooks/use-socket.tsx`, `src/lib/socket.tsx`)
-Socket.IO connection is managed by `SocketProvider`. It auto-connects when a non-anonymous user is authenticated and disconnects on sign-out. The context exposes `joinConversation`, `leaveConversation`, and `sendMessage`.
+Socket.IO connection is managed by `SocketProvider`. It connects to `VITE_API_URL` at path `/chat/hub`, auto-connects when a non-anonymous user is authenticated, and disconnects on sign-out.
+
+The context exposes:
+- `joinConversation` / `leaveConversation` — room management
+- `sendMessage(payload)` — routes to `message:send` or `message:send:support` based on whether payload contains `orgId`
+- `sendTypingStart` / `sendTypingStop` — typing indicators
+- `onMessageSendSuccess` / `onMessageSendSupportSuccess` — event subscription callbacks (return unsubscribe functions)
+
+Conversation types: `"direct"` (user-to-user, has `partner`) and `"support"` (org-linked, has `orgId`/`orgName`/`orgSlug`).
 
 ### Path Alias
 `@/` maps to `src/`. Always use this alias for imports.

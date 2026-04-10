@@ -12,7 +12,7 @@ function NewDmPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-white">
+    <div className="flex h-full flex-col overflow-hidden bg-white">
 
       {/* ── Header ── */}
       <motion.header

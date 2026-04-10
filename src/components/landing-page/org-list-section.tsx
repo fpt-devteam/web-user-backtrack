@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { useGetOrgs } from '@/hooks/use-org'
 import { Building2, ChevronRight } from 'lucide-react'
 import { useRef } from 'react'
+import { useGetOrgs } from '@/hooks/use-org'
 
 export function OrgListSection() {
   const { data, isLoading } = useGetOrgs()
@@ -73,7 +73,7 @@ export function OrgListSection() {
   )
 }
 
-function MarqueeTrack({ orgs, reverse }: { orgs: any[]; reverse?: boolean }) {
+function MarqueeTrack({ orgs, reverse }: { orgs: Array<any>; reverse?: boolean }) {
   const trackRef = useRef<HTMLDivElement>(null)
 
   const pause = () => {
@@ -96,8 +96,8 @@ function MarqueeTrack({ orgs, reverse }: { orgs: any[]; reverse?: boolean }) {
       {orgs.map((org, i) => (
         <Link
           key={`${org.id}-${i}`}
-          to="/chat/new/$orgId"
-          params={{ orgId: org.id }}
+          to="/organizations/$slug"
+          params={{ slug: org.slug }}
           className="flex flex-col items-center gap-2 group shrink-0 w-72"
         >
           {org.logoUrl ? (

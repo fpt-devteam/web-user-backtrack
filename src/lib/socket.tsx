@@ -1,5 +1,6 @@
-import { io, type Socket } from 'socket.io-client';
+import {  io } from 'socket.io-client';
 import { auth } from './firebase';
+import type {Socket} from 'socket.io-client';
 
 const SOCKET_URL = import.meta.env.VITE_API_URL as string;
 const SOCKET_PATH = '/chat/hub';

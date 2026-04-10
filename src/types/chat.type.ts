@@ -34,6 +34,9 @@ export interface Conversation {
   type: 'direct' | 'support' | string;
   /** Present for "support" org conversations */
   orgId?: string | null;
+  orgName?: string | null;
+  orgSlug?: string | null;
+  orgLogoUrl?: string | null;
   /** "queue" | "active" | "resolved" | null */
   status?: string | null;
   assignedStaffId?: string | null;

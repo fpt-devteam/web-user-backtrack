@@ -13,28 +13,14 @@ import { useAuth } from '@/hooks/use-auth';
 import type { Message } from '@/types/chat.type';
 
 // ─── Payload types ────────────────────────────────────────────────────────────
-export interface SendToConversationPayload {
+export interface SendMessagePayload {
   conversationId: string;
   type?: string;
   content: string;
+  attachments?: unknown;
+  /** When true, routes to message:send:support instead of message:send */
+  isSupport?: boolean;
 }
-
-export interface SendToRecipientPayload {
-  recipientId: string;
-  type?: string;
-  content: string;
-}
-
-export interface SendToOrgPayload {
-  orgId: string;
-  type?: string;
-  content: string;
-}
-
-export type SendMessagePayload =
-  | SendToConversationPayload
-  | SendToRecipientPayload
-  | SendToOrgPayload;
 
 export interface MessageSendSuccessData {
   conversationId: string;
@@ -126,10 +112,10 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
   // ── Messaging ────────────────────────────────────────────────────────────────
   const sendMessage = useCallback((payload: SendMessagePayload) => {
-    const isOrg = 'orgId' in payload;
+    const { isSupport, ...rest } = payload;
     socketRef.current?.emit(
-      isOrg ? 'message:send:support' : 'message:send',
-      payload,
+      isSupport ? 'message:send:support' : 'message:send',
+      rest,
     );
   }, []);
 

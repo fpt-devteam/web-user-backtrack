@@ -1,20 +1,45 @@
-import { Skeleton } from '@/components/ui/skeleton'
-import { useGetConversationById } from '@/hooks/use-chat'
-import { useGetOrgById } from '@/hooks/use-org'
-import { useSocket } from '@/hooks/use-socket'
-import { ArrowLeft, Phone, Video } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowLeft, Phone, Video } from 'lucide-react'
+import type { InfiniteData } from '@tanstack/react-query'
+import type { Conversation } from '@/types/chat.type'
+import type { CursorPagedResponse } from '@/types/pagination.type'
+import { useGetConversationById } from '@/hooks/use-chat'
+import { messagerKeys } from '@/hooks/use-messager'
+import { useGetOrgBySlug } from '@/hooks/use-org'
+import { useSocket } from '@/hooks/use-socket'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type ConversationHeaderProps = {
-  readonly conversationId: string
+  readonly conversationId?: string
+  /** Fallback display data — used when there is no conversationId yet (new-chat flow) */
+  readonly fallback?: {
+    name: string
+    avatarUrl?: string | null
+  }
   /** Called when the user clicks the back/close button.
    *  If omitted, falls back to router.history.back() */
   readonly onClose?: () => void
 }
 
-export function ConversationHeader({ conversationId, onClose }: ConversationHeaderProps) {
-  const { data: conversation, isLoading } = useGetConversationById(conversationId)
+export function ConversationHeader({ conversationId, fallback, onClose }: ConversationHeaderProps) {
+  const queryClient = useQueryClient()
+
+  // Use cached list data first (populated when coming from messager page)
+  const cachedPages = queryClient.getQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
+    messagerKeys.conversations()
+  )
+  const cachedConversation = conversationId
+    ? cachedPages?.pages.flatMap((p) => p.items).find((c) => c.conversationId === conversationId)
+    : undefined
+
+  const { data: fetchedConversation, isLoading } = useGetConversationById(
+    conversationId ?? '',
+    !!conversationId && !cachedConversation,
+  )
+
+  const conversation = cachedConversation ?? fetchedConversation
   const { isConnected } = useSocket()
   const router = useRouter()
 
@@ -23,22 +48,27 @@ export function ConversationHeader({ conversationId, onClose }: ConversationHead
     else router.history.back()
   }
 
-  // Support conversations have partner = null; use org.name instead
-  const { data: org } = useGetOrgById(conversation?.orgId ?? '')
+  // Support conversations: use stored orgName first, fall back to slug lookup for legacy convs
+  const { data: org } = useGetOrgBySlug(conversation?.orgSlug ?? '', !conversation?.orgName)
 
+  // Resolve display name + avatar — prefer conversation data, then fallback prop
   const name =
-    conversation?.partner?.displayName?.trim() ||
-    org?.name?.trim() ||
+    conversation?.orgName?.trim() ||
+    org?.name.trim() ||
+    conversation?.partner?.displayName.trim() ||
+    fallback?.name ||
     ''
-  // API field is avatarUrl; fall back to logoUrl for org conversations
   const avatarUrl =
+    conversation?.orgLogoUrl?.trim() ??
     conversation?.partner?.avatarUrl?.trim() ??
     conversation?.partner?.avatar?.trim() ??
-    org?.logoUrl?.trim()
+    org?.logoUrl?.trim() ??
+    fallback?.avatarUrl ??
+    undefined
   const initial = (name || '?').charAt(0).toUpperCase()
 
-  /* ── Skeleton ── */
-  if (isLoading || !conversation) {
+  /* ── Skeleton — only when fetching, not when using fallback ── */
+  if (conversationId && (isLoading || !conversation) && !fallback) {
     return (
       <header className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white shrink-0">
         <div className="p-1.5 text-gray-400">

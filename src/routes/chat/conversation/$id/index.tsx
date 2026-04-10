@@ -11,7 +11,7 @@ function ConversationDetail() {
   const { id: conversationId } = Route.useParams()
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-white">
+    <div className="flex h-full flex-col overflow-hidden bg-white">
       {/* Header — pinned at top */}
       <ConversationHeader conversationId={conversationId} />
 

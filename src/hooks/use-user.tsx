@@ -2,6 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {  Post, PublicUserProfile, UserProfile } from '@/types/user.type'
 import { userService } from '@/services/user.service'
+import { toast } from '@/lib/toast'
 
 export const userKeys = {
   all: ['user'] as const,
@@ -24,6 +25,9 @@ export const useCreateUser = () => {
     mutationFn: () => userService.createUser(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.me() })
+    },
+    onError: (err) => {
+      toast.fromError(err)
     },
   })
 }

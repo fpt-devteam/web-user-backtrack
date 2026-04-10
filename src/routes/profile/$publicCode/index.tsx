@@ -14,12 +14,12 @@ import { InlineMessage } from '@/components/ui/inline-message'
 import { getErrorMessage } from '@/lib/utils'
 
 
-export const Route = createFileRoute('/profile/$public-code/')({
+export const Route = createFileRoute('/profile/$publicCode/')({
   component: OwnerProfilePage,
 })
 
 function OwnerProfilePage() {
-  const { 'public-code': publicCode } = Route.useParams()
+  const { publicCode } = Route.useParams()
   const navigate = useNavigate()
   const [safetyDismissed, setSafetyDismissed] = useState(false)
 

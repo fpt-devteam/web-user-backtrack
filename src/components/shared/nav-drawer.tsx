@@ -5,6 +5,8 @@ import {
   Sheet,
   SheetContent,
   SheetClose,
+  SheetTitle,
+  SheetDescription,
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -237,6 +239,9 @@ export function NavDrawer() {
         showCloseButton={false}
         className="w-[85%] sm:max-w-sm p-0 flex flex-col gap-0"
       >
+        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+        <SheetDescription className="sr-only">Main navigation drawer</SheetDescription>
+
         {/* Close button */}
         <SheetClose asChild>
           <Button
