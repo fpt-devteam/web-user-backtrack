@@ -29,15 +29,15 @@ function WordmarkLogo() {
   )
 }
 
-/* ── NEW badge ──────────────────────────────────────────────── */
-function NewBadge() {
-  return (
-    <span className="absolute -top-1 -right-2 text-[9px] font-black tracking-wide
-                     bg-[#1a73e8] text-white px-1 py-px rounded-full leading-none select-none">
-      NEW
-    </span>
-  )
-}
+// /* ── NEW badge ──────────────────────────────────────────────── */
+// function NewBadge() {
+//   return (
+//     <span className="absolute -top-1 -right-2 text-[9px] font-black tracking-wide
+//                      bg-[#1a73e8] text-white px-1 py-px rounded-full leading-none select-none">
+//       NEW
+//     </span>
+//   )
+// }
 
 /* ───────────────────────────────────────────────────────────── */
 export function BacktrackHeader() {
