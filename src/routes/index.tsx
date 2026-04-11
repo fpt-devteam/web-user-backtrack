@@ -6,7 +6,6 @@ import { CTASection } from '@/components/landing-page/cta-section'
 import { AiMatchingSection } from '@/components/landing-page/ai-matching-section'
 import { HowItWorksSection } from '@/components/landing-page/how-it-work-section'
 import { ProductShowcaseSection } from '@/components/landing-page/product-showcase-section'
-import { Footer } from '@/components/landing-page/footer'
 import { DownloadCtaSection } from '@/components/landing-page/download-cta-section'
 
 export const Route = createFileRoute('/')({
@@ -16,7 +15,6 @@ export const Route = createFileRoute('/')({
 function LandingPage() {
   return (
     <div className="min-h-screen">
-
       <main>
         <HeroSection />
         <ProductShowcaseSection />
@@ -26,7 +24,6 @@ function LandingPage() {
         <HowItWorksSection />
         <DownloadCtaSection />
       </main>
-      <Footer />
     </div>
   )
 }

@@ -1,18 +1,23 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { CheckCircle, ChevronRight, MapPin, Megaphone, Shield, X } from 'lucide-react'
+import {
+  ArrowLeft,
+  CheckCircle,
+  ChevronRight,
+  MapPin,
+  Megaphone,
+  Shield,
+  X,
+} from 'lucide-react'
 import type { Post } from '@/types/user.type'
 import { useGetQrByPublicCode } from '@/hooks/use-qr'
 import { useGetPublicUserProfile, useGetUserPosts } from '@/hooks/use-user'
 import { StartChatButton } from '@/components/found-item/start-chat-button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { InlineMessage } from '@/components/ui/inline-message'
 import { getErrorMessage } from '@/lib/utils'
-
 
 export const Route = createFileRoute('/profile/$publicCode/')({
   component: OwnerProfilePage,
@@ -23,143 +28,151 @@ function OwnerProfilePage() {
   const navigate = useNavigate()
   const [safetyDismissed, setSafetyDismissed] = useState(false)
 
-  const {
-    data: qrData,
-    isLoading: isQrLoading,
-    error: qrError,
-  } = useGetQrByPublicCode(publicCode)
-
+  const { data: qrData, isLoading: isQrLoading, error: qrError } = useGetQrByPublicCode(publicCode)
   const userId = qrData?.userId ?? ''
-
-  const {
-    data: profile,
-    isLoading: isProfileLoading,
-  } = useGetPublicUserProfile(userId, !!userId)
-
-  const {
-    data: postsData,
-    isLoading: isPostsLoading,
-  } = useGetUserPosts(userId, !!userId)
+  const { data: profile, isLoading: isProfileLoading } = useGetPublicUserProfile(userId, !!userId)
+  const { data: postsData, isLoading: isPostsLoading } = useGetUserPosts(userId, !!userId)
 
   const isLoading = isQrLoading || isProfileLoading
   const posts = postsData ?? []
+  const displayName = profile?.displayName ?? 'Unknown Owner'
+  const initial = displayName[0].toUpperCase()
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between sticky top-0 z-10">
+    <div className="min-h-screen bg-[#F7F7F7] flex flex-col">
+
+      {/* ── Sticky header ── */}
+      <header className="sticky top-0 z-20 bg-white border-b border-[#F0F0F0] px-4 h-14 flex items-center justify-between">
         <button
           onClick={() => navigate({ to: '/' })}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F5F5]
+                     transition-colors duration-150 cursor-pointer focus:outline-none
+                     focus-visible:ring-2 focus-visible:ring-brand-400"
+          aria-label="Go back"
         >
-          <X className="w-5 h-5 text-gray-600" />
+          <ArrowLeft className="w-5 h-5 text-[#222]" />
         </button>
-        <h1 className="text-base font-semibold text-gray-900">Owner Profile</h1>
-        <div className="w-7" />
-      </div>
+        <p className="text-sm font-bold text-[#111]">Owner Profile</p>
+        <div className="w-9" />
+      </header>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-32">
-        <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+      {/* ── Scrollable body ── */}
+      <div className="flex-1 overflow-y-auto pb-36">
+        <div className="max-w-md mx-auto px-4 py-5 space-y-4">
 
-          {/* Error State */}
+          {/* Error */}
           {qrError && !isQrLoading && (
             <InlineMessage variant="error" title="Profile Not Found">
               {getErrorMessage(qrError)}
             </InlineMessage>
           )}
 
-          {/* Safety Banner */}
+          {/* Safety banner */}
           {!safetyDismissed && (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
-              <Shield className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+            <div className="flex items-start gap-3 bg-[#EFF6FF] border border-[#BFDBFE]
+                            rounded-2xl px-4 py-3.5">
+              <Shield className="w-4.5 h-4.5 text-[#3B82F6] mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900">Safety First</p>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  Please meet in public places or use safe drop-off points when returning items.
+                <p className="text-sm font-bold text-[#1E3A5F]">Safety reminder</p>
+                <p className="text-xs text-[#3B82F6]/80 mt-0.5 leading-relaxed">
+                  Meet in public places or use verified drop-off points when returning items.
                 </p>
               </div>
               <button
                 onClick={() => setSafetyDismissed(true)}
-                className="p-0.5 rounded hover:bg-blue-100 transition-colors shrink-0"
+                className="text-[#93C5FD] hover:text-[#3B82F6] transition-colors cursor-pointer shrink-0 mt-0.5"
+                aria-label="Dismiss"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           )}
 
-          {/* Profile Section */}
+          {/* Profile card */}
           {isLoading ? (
             <ProfileSkeleton />
           ) : qrData && (
             <>
-              {/* Avatar + Name */}
-              <div className="flex flex-col items-center pt-2 pb-1 gap-3">
-                <div className="relative">
-                  <Avatar className="w-24 h-24 border-4 border-white shadow-md">
-                    <AvatarImage src={profile?.avatarUrl ?? undefined} />
-                    <AvatarFallback className="text-2xl font-semibold bg-gray-200 text-gray-600">
-                      {(profile?.displayName ?? '?')[0].toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute bottom-0 right-0 w-7 h-7 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-white fill-white" />
-                  </div>
+              {/* Avatar block */}
+              <div className="bg-white rounded-2xl border border-[#EBEBEB] overflow-hidden
+                              shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+
+                {/* Cover strip */}
+                <div className="h-24 bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 relative">
+                  <div
+                    className="absolute inset-0 opacity-20"
+                    style={{
+                      backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
+                      backgroundSize: '20px 20px',
+                    }}
+                  />
                 </div>
 
-                <div className="text-center">
-                  <h2 className="text-xl font-bold text-gray-900">
-                    {profile?.displayName ?? 'Unknown Owner'}
-                  </h2>
-                </div>
+                <div className="px-5 pb-5">
+                  {/* Avatar — overlaps cover */}
+                  <div className="flex items-end justify-between -mt-10 mb-3">
+                    <div className="relative">
+                      <Avatar className="w-20 h-20 border-4 border-white shadow-md ring-1 ring-[#E5E7EB]">
+                        <AvatarImage src={profile?.avatarUrl ?? undefined} />
+                        <AvatarFallback className="text-2xl font-black bg-brand-50 text-brand-600">
+                          {initial}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="absolute bottom-0.5 right-0.5 w-6 h-6 bg-[#22C55E] rounded-full
+                                       border-2 border-white flex items-center justify-center">
+                        <CheckCircle className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+                      </span>
+                    </div>
 
-                <Badge className="bg-green-50 text-green-600 border border-green-200 hover:bg-green-50 gap-1.5 px-3 py-1">
-                  <CheckCircle className="w-3.5 h-3.5 fill-green-500 text-white" />
-                  Verified Owner
-                </Badge>
-              </div>
-
-              {/* Owner's Note */}
-              {qrData.note && (
-                <Card className="p-4 border-l-4 border-l-blue-400">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Megaphone className="w-5 h-5 text-blue-500" />
-                    <span className="font-semibold text-gray-900">Owner's Note</span>
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                    "{qrData.note}"
-                  </p>
-                </Card>
-              )}
-
-              {/* Posts Section */}
-              {isPostsLoading ? (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-bold text-gray-900">Is this what you found?</h3>
-                    <span className="text-xs font-semibold text-blue-500 uppercase tracking-wide">
-                      Active Items
+                    {/* Verified badge */}
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F0FDF4] border border-[#BBF7D0]
+                                     rounded-full text-xs font-bold text-[#16A34A]">
+                      <CheckCircle className="w-3.5 h-3.5 text-[#22C55E]" />
+                      Verified Owner
                     </span>
                   </div>
+
+                  <h2 className="text-lg font-black text-[#111] tracking-tight">{displayName}</h2>
+                  <p className="text-xs text-[#888] mt-0.5 font-medium">Backtrack member</p>
+                </div>
+              </div>
+
+              {/* Owner's note */}
+              {qrData.note && (
+                <div className="bg-white rounded-2xl border border-[#EBEBEB] p-5
+                                shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-7 h-7 rounded-full bg-brand-50 flex items-center justify-center shrink-0">
+                      <Megaphone className="w-3.5 h-3.5 text-brand-600" />
+                    </span>
+                    <p className="text-sm font-bold text-[#111]">Message from owner</p>
+                  </div>
+                  <p className="text-sm text-[#444] leading-relaxed italic border-l-2 border-brand-200 pl-3">
+                    "{qrData.note}"
+                  </p>
+                </div>
+              )}
+
+              {/* Posts */}
+              {isPostsLoading ? (
+                <div>
+                  <p className="text-sm font-bold text-[#111] mb-3">Is this what you found?</p>
                   <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
                     {[1, 2].map((i) => (
-                      <div key={i} className="w-52 h-56 rounded-2xl bg-gray-200 shrink-0 animate-pulse" />
+                      <Skeleton key={i} className="w-48 h-56 rounded-2xl shrink-0" />
                     ))}
                   </div>
                 </div>
               ) : posts.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-bold text-gray-900">Is this what you found?</h3>
-                    <span className="text-xs font-semibold text-blue-500 uppercase tracking-wide">
-                      Active Items
+                    <p className="text-sm font-bold text-[#111]">Is this what you found?</p>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600">
+                      Active items
                     </span>
                   </div>
-
-                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
-                    {posts.map((post) => (
-                      <PostCard key={post.id} post={post} />
-                    ))}
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-none">
+                    {posts.map((post) => <PostCard key={post.id} post={post} />)}
                   </div>
                 </div>
               )}
@@ -168,11 +181,13 @@ function OwnerProfilePage() {
         </div>
       </div>
 
-      {/* Fixed Bottom Actions */}
+      {/* ── Fixed bottom CTA ── */}
       {qrData && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 pt-3 pb-6 space-y-2">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F0F0F0]
+                        px-4 pt-3 pb-7 space-y-2 z-20">
           <StartChatButton partnerId={qrData.userId} />
-          <button className="w-full text-xs text-gray-400 text-center hover:text-gray-600 transition-colors">
+          <button className="w-full text-xs text-[#bbb] text-center hover:text-[#888]
+                             transition-colors cursor-pointer">
             Report a problem with this QR code
           </button>
         </div>
@@ -181,6 +196,7 @@ function OwnerProfilePage() {
   )
 }
 
+/* ── Post card ── */
 function PostCard({ post }: { post: Post }) {
   const navigate = useNavigate()
   const timeAgo = formatDistanceToNow(new Date(post.eventTime), { addSuffix: true })
@@ -192,67 +208,74 @@ function PostCard({ post }: { post: Post }) {
       role="button"
       tabIndex={0}
       onClick={() => navigate({ to: '/found/$id', params: { id: post.id } })}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate({ to: '/found/$id', params: { id: post.id } }) }}
-      className="min-w-[200px] max-w-[220px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100
-                 snap-start shrink-0 cursor-pointer hover:shadow-md hover:border-gray-200 transition-all duration-200
-                 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ')
+          navigate({ to: '/found/$id', params: { id: post.id } })
+      }}
+      className="min-w-[190px] max-w-[210px] bg-white rounded-2xl overflow-hidden
+                 border border-[#EBEBEB] shadow-[0_2px_8px_rgba(0,0,0,0.06)]
+                 snap-start shrink-0 cursor-pointer
+                 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:border-[#D1D1D1]
+                 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
     >
       {/* Image */}
-      <div className="relative h-36 bg-gray-100">
+      <div className="relative h-32 bg-[#F5F5F5]">
         {imageUrl ? (
           <img src={imageUrl} alt={post.itemName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-50">
-            <span className="text-gray-400 text-xs">No image</span>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-[#ccc] text-xs">No image</span>
           </div>
         )}
-        <div className={`absolute top-2 left-2 text-white text-[11px] font-semibold px-2 py-0.5 rounded-full
+        <span className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full
           ${isLost ? 'bg-rose-500/90' : 'bg-emerald-500/90'}`}>
-          {isLost ? 'Mất' : 'Tìm thấy'}
-        </div>
+          {isLost ? 'Lost' : 'Found'}
+        </span>
       </div>
 
       {/* Info */}
       <div className="p-3">
-        <p className="font-semibold text-gray-900 text-sm leading-tight truncate">{post.itemName}</p>
-        <p className="text-xs text-gray-400 mt-0.5">{timeAgo}</p>
+        <p className="font-bold text-[#111] text-sm leading-tight truncate">{post.itemName}</p>
+        <p className="text-[11px] text-[#aaa] mt-0.5">{timeAgo}</p>
         {post.displayAddress && (
           <div className="flex items-center gap-1 mt-2">
-            <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
-            <span className="text-xs text-gray-400 truncate">{post.displayAddress}</span>
+            <MapPin className="w-3 h-3 text-[#aaa] shrink-0" />
+            <span className="text-[11px] text-[#aaa] truncate">{post.displayAddress}</span>
           </div>
         )}
-        <div className="flex items-center justify-end mt-2">
-          <span className="text-xs text-blue-500 font-medium">Xem chi tiết</span>
-          <ChevronRight className="w-3.5 h-3.5 text-blue-500" />
+        <div className="flex items-center justify-end mt-2.5 gap-0.5">
+          <span className="text-[11px] font-bold text-brand-600">View details</span>
+          <ChevronRight className="w-3 h-3 text-brand-600" />
         </div>
       </div>
     </div>
   )
 }
 
+/* ── Skeleton ── */
 function ProfileSkeleton() {
   return (
-    <>
-      <div className="flex flex-col items-center gap-3 pt-2">
-        <Skeleton className="w-24 h-24 rounded-full" />
-        <Skeleton className="h-6 w-36" />
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-7 w-32 rounded-full" />
-      </div>
-      <Card className="p-4">
-        <Skeleton className="h-5 w-32 mb-3" />
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-4 w-3/4" />
-      </Card>
-      <div>
-        <Skeleton className="h-5 w-44 mb-3" />
-        <div className="flex gap-3">
-          <Skeleton className="w-52 h-56 rounded-2xl shrink-0" />
-          <Skeleton className="w-52 h-56 rounded-2xl shrink-0" />
+    <div className="space-y-4">
+      <div className="bg-white rounded-2xl overflow-hidden border border-[#EBEBEB]">
+        <Skeleton className="h-24 w-full rounded-none" />
+        <div className="px-5 pb-5 -mt-10 space-y-2">
+          <Skeleton className="w-20 h-20 rounded-full border-4 border-white" />
+          <Skeleton className="h-5 w-36" />
+          <Skeleton className="h-3.5 w-24" />
         </div>
       </div>
-    </>
+      <div className="bg-white rounded-2xl border border-[#EBEBEB] p-5 space-y-2">
+        <Skeleton className="h-4 w-40 mb-3" />
+        <Skeleton className="h-3.5 w-full" />
+        <Skeleton className="h-3.5 w-4/5" />
+      </div>
+      <div>
+        <Skeleton className="h-4 w-44 mb-3" />
+        <div className="flex gap-3">
+          <Skeleton className="w-48 h-56 rounded-2xl shrink-0" />
+          <Skeleton className="w-48 h-56 rounded-2xl shrink-0" />
+        </div>
+      </div>
+    </div>
   )
 }

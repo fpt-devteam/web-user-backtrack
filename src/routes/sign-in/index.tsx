@@ -11,30 +11,29 @@ function SignInPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Back to home – absolute on mobile, top-left corner */}
+    <div className="min-h-screen flex">
+      {/* ── Back button ── */}
       <button
         type="button"
         onClick={() => navigate({ to: '/' })}
         aria-label="Back to home"
-        className="absolute top-4 left-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-sm transition-colors"
+        className="absolute top-5 left-5 z-30 w-9 h-9 flex items-center justify-center
+                   rounded-full bg-white border border-[#E5E7EB] shadow-sm
+                   hover:bg-[#F9FAFB] transition-colors duration-150 cursor-pointer
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
       >
-        <ArrowLeft className="w-4 h-4 text-gray-700" />
+        <ArrowLeft className="w-4 h-4 text-[#555]" />
       </button>
 
+      {/* ── Left: dark hero panel ── */}
       <SignInHero />
-      <div
-        className="
-          bg-white rounded-t-[2.5rem] -mt-6 relative z-10 flex-1
-          lg:mt-0 lg:rounded-none
-          lg:w-1/2 lg:flex lg:items-center lg:justify-center
-        "
-      >
-        <div className="w-full px-7 pt-10 pb-14 lg:max-w-md lg:px-0 lg:py-0">
+
+      {/* ── Right: form panel ── */}
+      <div className="flex-1 flex items-center justify-center bg-white px-6 py-16">
+        <div className="w-full max-w-[400px]">
           <SignInForm />
         </div>
       </div>
-
     </div>
   )
 }

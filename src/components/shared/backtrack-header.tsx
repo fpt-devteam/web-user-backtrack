@@ -74,21 +74,21 @@ export function BacktrackHeader() {
         scrolled ? 'shadow-[0_1px_12px_rgba(0,0,0,0.08)]' : 'border-b border-gray-100',
       ].join(' ')}
     >
-      <div className="max-w-screen-xl mx-auto px-5 lg:px-10 h-[72px] grid grid-cols-3 items-stretch">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-[72px] flex items-center justify-between gap-4">
 
         {/* ── LEFT — logo ───────────────────────────────────────── */}
         <button
           onClick={() => navigate({ to: '/' })}
-          className="justify-self-start self-center bg-transparent border-0 p-0 cursor-pointer
+          className="shrink-0 bg-transparent border-0 p-0 cursor-pointer
                      focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded-lg"
           aria-label="Go to homepage"
         >
           <WordmarkLogo />
         </button>
 
-        {/* ── CENTER — desktop tab nav ──────────────────────────── */}
+        {/* ── CENTER — tab nav (md+) ────────────────────────────── */}
         <nav
-          className="hidden lg:flex items-stretch justify-center"
+          className="hidden md:flex items-stretch justify-center flex-1"
           aria-label="Main navigation"
         >
           {NAV_LINKS.map(({ label, to, icon: Icon }) => {
@@ -99,40 +99,35 @@ export function BacktrackHeader() {
                 onClick={() => navigate({ to })}
                 aria-current={active ? 'page' : undefined}
                 className={[
-                  'relative flex flex-col items-center justify-center gap-1 px-5 cursor-pointer',
+                  'relative flex flex-col items-center justify-center gap-1 px-3 lg:px-5 h-16 sm:h-[72px] cursor-pointer',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
                   'transition-colors duration-150 group',
                   active ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900',
                 ].join(' ')}
               >
-                {/* icon + NEW badge wrapper */}
                 <span className="relative">
                   <Icon
                     className={[
                       'w-5 h-5 transition-colors duration-150',
-                      active
-                        ? 'text-gray-900'
-                        : 'text-gray-400 group-hover:text-gray-700',
+                      active ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-700',
                     ].join(' ')}
                     strokeWidth={active ? 2.2 : 1.8}
                     aria-hidden="true"
                   />
                 </span>
 
-                {/* label */}
                 <span
                   className={[
-                    'text-[12.5px] leading-none transition-all duration-150',
+                    'text-[11px] lg:text-[12.5px] leading-none transition-all duration-150',
                     active ? 'font-bold text-gray-900' : 'font-medium text-gray-500 group-hover:text-gray-800',
                   ].join(' ')}
                 >
                   {label}
                 </span>
 
-                {/* bottom underline — only on active */}
                 {active && (
                   <span
-                    className="absolute bottom-0 left-3 right-3 h-[2px] rounded-t-full bg-gray-900"
+                    className="absolute bottom-0 left-2 right-2 h-[2px] rounded-t-full bg-gray-900"
                     aria-hidden="true"
                   />
                 )}
@@ -141,43 +136,40 @@ export function BacktrackHeader() {
           })}
         </nav>
 
-        {/* ── RIGHT — CTA + avatar pill + hamburger ────────────── */}
-        <div className="hidden lg:flex items-center justify-end gap-3">
+        {/* ── RIGHT — CTA + avatar pill (md+) ──────────────────── */}
+        <div className="hidden md:flex items-center justify-end gap-2 lg:gap-3 shrink-0">
 
-          {/* "Get the App" text link */}
+          {/* "Get the App" — hide on md to save space, show lg+ */}
           <button
             onClick={handleGetApp}
-            className="text-sm font-semibold text-gray-700 hover:text-gray-900
+            className="hidden lg:block text-sm font-semibold text-gray-700 hover:text-gray-900
                        transition-colors duration-150 cursor-pointer
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded-lg px-2 py-1"
           >
             Get the App
           </button>
 
-          {/* Avatar + hamburger pill — opens account or drawer */}
+          {/* Avatar + menu pill */}
           <button
             onClick={() => navigate({ to: accountTo })}
-            className="flex items-center gap-2.5 border border-gray-300 rounded-full
-                       pl-3 pr-2 py-1.5 cursor-pointer
+            className="flex items-center gap-2 border border-gray-300 rounded-full
+                       pl-2.5 pr-1.5 py-1.5 cursor-pointer
                        hover:shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-shadow duration-200
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             aria-label={accountLabel}
           >
-            {/* hamburger lines */}
             <Menu className="w-4 h-4 text-gray-600" strokeWidth={2} aria-hidden="true" />
-
-            {/* avatar circle */}
-            <span className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center shrink-0">
+            <span className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-gray-800 flex items-center justify-center shrink-0">
               {avatarLetter
-                ? <span className="text-sm font-bold text-white leading-none">{avatarLetter}</span>
-                : <User className="w-4 h-4 text-white" strokeWidth={2} aria-hidden="true" />
+                ? <span className="text-xs lg:text-sm font-bold text-white leading-none">{avatarLetter}</span>
+                : <User className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-white" strokeWidth={2} aria-hidden="true" />
               }
             </span>
           </button>
         </div>
 
-        {/* ── MOBILE — hamburger ───────────────────────────────── */}
-        <div className="lg:hidden justify-self-end self-center">
+        {/* ── MOBILE — hamburger (below md) ────────────────────── */}
+        <div className="md:hidden shrink-0">
           <NavDrawer />
         </div>
 

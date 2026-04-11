@@ -12,6 +12,7 @@ import {
   getAuth, signInWithEmailAndPassword, EmailAuthProvider,
   linkWithCredential, createUserWithEmailAndPassword, sendEmailVerification,
   GoogleAuthProvider, signInWithPopup, linkWithPopup, signInWithCredential,
+  reauthenticateWithCredential, updatePassword,
   type AuthError,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase.ts'
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
           // createUser() then syncProfile() explicitly.
           const backendProfile = await userService.getMe();
           setProfile(backendProfile);
+          queryClient.setQueryData(userKeys.me(), backendProfile);
         } else if (!firebaseUser) {
           setProfile(null);
         }
@@ -60,6 +62,20 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     });
     return () => unsubscribe();
   }, [])
+
+  // Keep auth profile state in sync with TanStack Query cache so that
+  // mutations like useUpdateMe / useUploadAvatar are reflected immediately.
+  useEffect(() => {
+    return queryClient.getQueryCache().subscribe((event) => {
+      if (
+        event.type === 'updated' &&
+        JSON.stringify(event.query.queryKey) === JSON.stringify(userKeys.me())
+      ) {
+        const data = queryClient.getQueryData<UserProfile>(userKeys.me())
+        if (data) setProfile(data)
+      }
+    })
+  }, [queryClient])
 
   const syncProfile = async () => {
     try {
@@ -227,6 +243,24 @@ export function useSignOut() {
       toast.fromError(error);
     }
   });
+}
+
+export function useUpdatePassword() {
+  return useMutation({
+    mutationFn: async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
+      const user = auth.currentUser
+      if (!user || !user.email) throw new Error('No authenticated user')
+      const credential = EmailAuthProvider.credential(user.email, currentPassword)
+      await reauthenticateWithCredential(user, credential)
+      await updatePassword(user, newPassword)
+    },
+    onSuccess: () => {
+      toast.success('Password updated successfully')
+    },
+    onError: (error) => {
+      toast.fromError(error)
+    },
+  })
 }
 
 export function useCheckEmailStatus() {

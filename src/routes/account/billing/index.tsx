@@ -16,23 +16,26 @@ function BillingPage() {
   const { data: subscription, isLoading } = useMySubscription()
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-[#F7F7F7]">
       {/* Header */}
-      <header className="bg-white sticky top-0 z-20 border-b border-gray-100">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center">
+      <header className="bg-white sticky top-0 z-20 border-b border-[#F0F0F0]">
+        <div className="max-w-lg mx-auto px-4 h-14 flex items-center">
           <button
             onClick={() => navigate({ to: '/account' })}
-            className="p-1 -ml-1 text-blue-500 hover:text-blue-600 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F5F5]
+                       transition-colors duration-150 cursor-pointer -ml-1
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+            aria-label="Back to account"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 text-[#222]" />
           </button>
-          <h1 className="flex-1 text-center text-base font-bold text-gray-900 -ml-5">
+          <h1 className="flex-1 text-center text-sm font-bold text-[#111] -ml-9">
             Billing
           </h1>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-5 py-6 flex flex-col gap-3">
+      <main className="max-w-lg mx-auto px-4 py-6 flex flex-col gap-3">
         {isLoading ? (
           <SubscriptionSkeleton />
         ) : subscription ? (
