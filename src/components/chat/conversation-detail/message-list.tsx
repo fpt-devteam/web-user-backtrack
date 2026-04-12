@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -15,13 +15,24 @@ interface MessageListProps {
 
 export function MessageList({ conversationId = '' }: MessageListProps) {
   const { profile } = useAuth()
-  const { socket, joinConversation, leaveConversation, onMessageSendSuccess, onMessageSendSupportSuccess } = useSocket()
+  const {
+    socket,
+    joinConversation,
+    leaveConversation,
+    markConversationAsRead,
+    onMessageSendSuccess,
+    onMessageSendSupportSuccess,
+    onMessageSeen,
+    onConversationNew,
+  } = useSocket()
   const queryClient = useQueryClient()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [typingUserIds, setTypingUserIds] = useState<Array<string>>([])
   const typingTimersRef = useRef<Record<string, ReturnType<typeof setTimeout> | undefined>>({})
+  // Timestamp of when the other party last read our messages (for "Seen" receipt)
+  const [seenAt, setSeenAt] = useState<string | null>(null)
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetMessages(conversationId)
@@ -79,12 +90,32 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
     return () => { leaveConversation(conversationId) }
   }, [conversationId, socket, joinConversation, leaveConversation, queryClient])
 
-  // Reset scroll-to-bottom flag when switching conversations
+  // Reset per-conversation state when switching conversations
   useEffect(() => {
     if (!conversationId) return
     setIsInitialLoad(true)
+    setSeenAt(null)
   }, [conversationId])
 
+  /* ── Mark as read ── */
+  // Emit conversation:read when opening the conversation and whenever the tab
+  // regains visibility. Server resets unreadCount and sends message:seen to the
+  // other party; also emits conversation:unread { unreadCount: 0 } back to this
+  // user for multi-tab sync.
+  useEffect(() => {
+    if (!conversationId || !socket) return
+    markConversationAsRead(conversationId)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        markConversationAsRead(conversationId)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [conversationId, socket, markConversationAsRead])
+
+  /* ── Incoming messages ── */
   useEffect(() => {
     if (!socket) return
     const handle = (msg: Message) => injectMessage(msg)
@@ -92,7 +123,7 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
     return () => { socket.off('message:new', handle) }
   }, [socket, injectMessage])
 
-  // Add socket as dep so subscriptions are (re-)registered once socket is ready
+  // message:send:success — own message confirmed by server
   useEffect(() => {
     if (!socket) return
     return onMessageSendSuccess((d) => {
@@ -106,6 +137,25 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
       injectMessage(d.message, d.conversationId)
     })
   }, [socket, onMessageSendSupportSuccess, injectMessage])
+
+  // conversation:new — first message in a brand-new conversation started by the other party
+  useEffect(() => {
+    if (!socket) return
+    return onConversationNew((d) => {
+      injectMessage(d.message, d.conversationId)
+    })
+  }, [socket, onConversationNew, injectMessage])
+
+  /* ── Seen receipt ── */
+  // message:seen fires when the other party opens/reads our messages.
+  // We track seenAt so we can render a "Seen" label below our last read message.
+  useEffect(() => {
+    if (!socket) return
+    return onMessageSeen((d) => {
+      if (d.conversationId !== conversationId) return
+      setSeenAt(d.readAt)
+    })
+  }, [socket, conversationId, onMessageSeen])
 
   const allMessages = (data?.pages.flatMap((p) => p.items) ?? []).reverse()
 
@@ -146,6 +196,19 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
     if (!scrollContainerRef.current || isFetchingNextPage || !hasNextPage) return
     if (scrollContainerRef.current.scrollTop < 80) fetchNextPage()
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  /* ── Compute last-sent-message-id for "Seen" receipt ── */
+  let lastSentMsgId: string | undefined
+  if (seenAt) {
+    const seenDate = new Date(seenAt)
+    for (let i = allMessages.length - 1; i >= 0; i--) {
+      const m = allMessages[i]
+      if (m.senderId === profile?.id && new Date(m.createdAt) <= seenDate) {
+        lastSentMsgId = m.id
+        break
+      }
+    }
+  }
 
   /* ── Loading state ── */
   if (isLoading) {
@@ -238,30 +301,39 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
 
           // Row gap: normal gap between groups, tiny within a group
           const isNewGroup = !isGroupedWithPrev
+          const showSeen = isMe && lastSentMsgId === message.id
 
           return (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, scale: 0.9, y: 6 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-              className={cn(
-                'flex items-end gap-2',
-                isMe ? 'justify-end' : 'justify-start',
-                isNewGroup ? 'mt-3' : 'mt-0.5',
-              )}
-            >
-              {/* Messages bubble */}
-              <div
+            <Fragment key={message.id}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 32 }}
                 className={cn(
-                  'relative max-w-[65%] px-3.5 py-2 break-words text-sm leading-relaxed',
-                  isMe ? [radiusMe, 'bg-[#0095f6] text-white'] : [radiusThem, 'bg-gray-100 text-gray-900'],
+                  'flex items-end gap-2',
+                  isMe ? 'justify-end' : 'justify-start',
+                  isNewGroup ? 'mt-3' : 'mt-0.5',
                 )}
-                title={time}
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
-              </div>
-            </motion.div>
+                {/* Messages bubble */}
+                <div
+                  className={cn(
+                    'relative max-w-[65%] px-3.5 py-2 break-words text-sm leading-relaxed',
+                    isMe ? [radiusMe, 'bg-[#0095f6] text-white'] : [radiusThem, 'bg-gray-100 text-gray-900'],
+                  )}
+                  title={time}
+                >
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                </div>
+              </motion.div>
+
+              {/* Seen receipt — shown below the last message the other party has read */}
+              {showSeen && (
+                <div className="flex justify-end pr-1 -mt-0.5">
+                  <span className="text-[10px] text-gray-400">Seen</span>
+                </div>
+              )}
+            </Fragment>
           )
         })}
       </div>

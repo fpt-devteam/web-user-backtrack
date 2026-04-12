@@ -9,6 +9,7 @@ import { useSocket } from '@/hooks/use-socket'
 import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import { chatService } from '@/services/chat.service'
+import { toast } from '@/lib/toast'
 
 const messageSchema = z.object({
   content: z.string().min(1).trim(),
@@ -29,7 +30,7 @@ interface MessageInputProps {
 const TYPING_DEBOUNCE_MS = 1500
 
 export function MessageInput({ conversationId, orgId, recipientId, onSend, onConversationCreated }: MessageInputProps) {
-  const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, isConnected } =
+  const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, onMessageSendError, isConnected } =
     useSocket()
   const navigate = useNavigate()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -92,6 +93,14 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
       onSend?.()
     })
   }, [onMessageSendSupportSuccess, navigate, onSend, onConversationCreated])
+
+  /* ── Send error ── */
+  useEffect(() => {
+    return onMessageSendError((err) => {
+      setIsSending(false)
+      toast.error(err.message ?? 'Failed to send message')
+    })
+  }, [onMessageSendError])
 
   /* ── Typing ── */
   const stopTyping = useCallback(() => {
