@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Check, Sparkles, ShieldCheck, RefreshCw } from 'lucide-react'
+import type { SubscriptionPlan } from '@/types/subscription.type'
 import { usePlans, useCreateSubscription } from '@/hooks/use-subscription'
 
 import { Skeleton } from '@/components/ui/skeleton'
-import { Check, Sparkles, ShieldCheck, RefreshCw, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/lib/toast'
 import { classifyApiError, getApiErrorMessage } from '@/lib/api-error'
 import { auth } from '@/lib/firebase'
-import type { SubscriptionPlan } from '@/types/subscription.type'
 
 export const Route = createFileRoute('/premium/')({
   component: PricingPage,
