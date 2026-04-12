@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { MessageInput } from '@/components/chat/conversation-detail/message-input'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, User2 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { MessageInput } from '@/components/chat/conversation-detail/message-input'
+import { useGetConversationByPartnerId } from '@/hooks/use-chat'
+import { useAuth } from '@/hooks/use-auth'
 
 export const Route = createFileRoute('/chat/new/dm/$partnerId/')(
   { component: NewDmPage }
@@ -10,6 +13,29 @@ export const Route = createFileRoute('/chat/new/dm/$partnerId/')(
 function NewDmPage() {
   const { partnerId } = Route.useParams()
   const navigate = useNavigate()
+  const { profile } = useAuth()
+
+  const [createdConversationId, setCreatedConversationId] = useState<string | undefined>()
+
+  const { data: existingConversation, isLoading: isCheckingConversation } =
+    useGetConversationByPartnerId(partnerId, !!profile && !!partnerId)
+
+  // If an existing DM conversation is found, redirect directly to it
+  useEffect(() => {
+    if (existingConversation?.conversationId) {
+      navigate({
+        to: '/chat/conversation/$id',
+        params: { id: existingConversation.conversationId },
+        replace: true,
+      })
+    }
+  }, [existingConversation?.conversationId, navigate])
+
+  const activeConversationId = createdConversationId ?? existingConversation?.conversationId
+
+  // Wait while checking for an existing conversation
+  const shouldWait = (!!profile && !!partnerId && isCheckingConversation) || !!existingConversation?.conversationId
+  if (shouldWait) return null
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-white">
@@ -61,7 +87,11 @@ function NewDmPage() {
         transition={{ delay: 0.18, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="border-t border-[#f0f0f0] bg-white shrink-0"
       >
-        <MessageInput recipientId={partnerId} />
+        <MessageInput
+          conversationId={activeConversationId}
+          recipientId={activeConversationId ? undefined : partnerId}
+          onConversationCreated={setCreatedConversationId}
+        />
       </motion.div>
     </div>
   )

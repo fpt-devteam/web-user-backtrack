@@ -21,7 +21,8 @@
       "Bash(rmdir '/home/catlinh/capstone/web-user-backtrack/src/routes/organizations/$id')",
       "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"marketplace service provider profile listing clean minimal\" --design-system -p \"Backtrack Org Detail\")",
       "Bash(npx tsc:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(grep '$postId')"
     ]
   }
 }

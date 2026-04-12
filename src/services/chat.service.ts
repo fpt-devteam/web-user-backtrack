@@ -38,6 +38,18 @@ export const chatService = {
     return data.data
   },
 
+  /**
+   * Returns existing direct conversation with a user, or null if none exists yet.
+   */
+  async getConversationByPartnerId(partnerId: string): Promise<Conversation | null> {
+    const { data } = await privateClient.get<ApiResponse<Conversation | null>>(
+      '/api/chat/conversations/partner',
+      { params: { partnerId } }
+    )
+    if (!data.success) return null
+    return data.data
+  },
+
   async createSupportConversation(orgId: string): Promise<Conversation> {
     const { data } = await privateClient.post<ApiResponse<{ conversation: Conversation }>>(
       '/api/chat/conversations/organization',
@@ -47,10 +59,10 @@ export const chatService = {
     return data.data.conversation;
   },
 
-  async createDirectConversation(recipientId: string): Promise<Conversation> {
+  async createDirectConversation(memberId: string): Promise<Conversation> {
     const { data } = await privateClient.post<ApiResponse<{ conversation: Conversation }>>(
       '/api/chat/conversations/direct',
-      { recipientId }
+      { memberId }
     );
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to create conversation');
     return data.data.conversation;

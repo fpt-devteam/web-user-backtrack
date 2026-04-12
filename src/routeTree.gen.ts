@@ -16,6 +16,7 @@ import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
 import { Route as MessageIndexRouteImport } from './routes/message/index'
 import { Route as HelpIndexRouteImport } from './routes/help/index'
+import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as DownloadIndexRouteImport } from './routes/download/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProfilePublicCodeIndexRouteImport } from './routes/profile/$publicCode/index'
@@ -23,6 +24,7 @@ import { Route as PremiumSuccessIndexRouteImport } from './routes/premium/succes
 import { Route as PremiumCheckoutIndexRouteImport } from './routes/premium/checkout/index'
 import { Route as OrganizationsSlugIndexRouteImport } from './routes/organizations/$slug/index'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
+import { Route as FeedPostIdIndexRouteImport } from './routes/feed/$postId/index'
 import { Route as AccountBillingIndexRouteImport } from './routes/account/billing/index'
 import { Route as ChatNewSlugIndexRouteImport } from './routes/chat/new/$slug/index'
 import { Route as ChatConversationIdIndexRouteImport } from './routes/chat/conversation/$id/index'
@@ -63,6 +65,11 @@ const HelpIndexRoute = HelpIndexRouteImport.update({
   path: '/help/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedIndexRoute = FeedIndexRouteImport.update({
+  id: '/feed/',
+  path: '/feed/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DownloadIndexRoute = DownloadIndexRouteImport.update({
   id: '/download/',
   path: '/download/',
@@ -98,6 +105,11 @@ const FoundIdIndexRoute = FoundIdIndexRouteImport.update({
   path: '/found/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedPostIdIndexRoute = FeedPostIdIndexRouteImport.update({
+  id: '/feed/$postId/',
+  path: '/feed/$postId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountBillingIndexRoute = AccountBillingIndexRouteImport.update({
   id: '/account/billing/',
   path: '/account/billing/',
@@ -123,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
   '/download/': typeof DownloadIndexRoute
+  '/feed/': typeof FeedIndexRoute
   '/help/': typeof HelpIndexRoute
   '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
@@ -130,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
   '/account/billing/': typeof AccountBillingIndexRoute
+  '/feed/$postId/': typeof FeedPostIdIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
   '/organizations/$slug/': typeof OrganizationsSlugIndexRoute
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
@@ -143,6 +157,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
   '/download': typeof DownloadIndexRoute
+  '/feed': typeof FeedIndexRoute
   '/help': typeof HelpIndexRoute
   '/message': typeof MessageIndexRoute
   '/organizations': typeof OrganizationsIndexRoute
@@ -150,6 +165,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
   '/account/billing': typeof AccountBillingIndexRoute
+  '/feed/$postId': typeof FeedPostIdIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
   '/organizations/$slug': typeof OrganizationsSlugIndexRoute
   '/premium/checkout': typeof PremiumCheckoutIndexRoute
@@ -164,6 +180,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
   '/download/': typeof DownloadIndexRoute
+  '/feed/': typeof FeedIndexRoute
   '/help/': typeof HelpIndexRoute
   '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
@@ -171,6 +188,7 @@ export interface FileRoutesById {
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
   '/account/billing/': typeof AccountBillingIndexRoute
+  '/feed/$postId/': typeof FeedPostIdIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
   '/organizations/$slug/': typeof OrganizationsSlugIndexRoute
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
@@ -186,6 +204,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account/'
     | '/download/'
+    | '/feed/'
     | '/help/'
     | '/message/'
     | '/organizations/'
@@ -193,6 +212,7 @@ export interface FileRouteTypes {
     | '/sign-in/'
     | '/sign-up/'
     | '/account/billing/'
+    | '/feed/$postId/'
     | '/found/$id/'
     | '/organizations/$slug/'
     | '/premium/checkout/'
@@ -206,6 +226,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/download'
+    | '/feed'
     | '/help'
     | '/message'
     | '/organizations'
@@ -213,6 +234,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/account/billing'
+    | '/feed/$postId'
     | '/found/$id'
     | '/organizations/$slug'
     | '/premium/checkout'
@@ -226,6 +248,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account/'
     | '/download/'
+    | '/feed/'
     | '/help/'
     | '/message/'
     | '/organizations/'
@@ -233,6 +256,7 @@ export interface FileRouteTypes {
     | '/sign-in/'
     | '/sign-up/'
     | '/account/billing/'
+    | '/feed/$postId/'
     | '/found/$id/'
     | '/organizations/$slug/'
     | '/premium/checkout/'
@@ -247,6 +271,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   DownloadIndexRoute: typeof DownloadIndexRoute
+  FeedIndexRoute: typeof FeedIndexRoute
   HelpIndexRoute: typeof HelpIndexRoute
   MessageIndexRoute: typeof MessageIndexRoute
   OrganizationsIndexRoute: typeof OrganizationsIndexRoute
@@ -254,6 +279,7 @@ export interface RootRouteChildren {
   SignInIndexRoute: typeof SignInIndexRoute
   SignUpIndexRoute: typeof SignUpIndexRoute
   AccountBillingIndexRoute: typeof AccountBillingIndexRoute
+  FeedPostIdIndexRoute: typeof FeedPostIdIndexRoute
   FoundIdIndexRoute: typeof FoundIdIndexRoute
   OrganizationsSlugIndexRoute: typeof OrganizationsSlugIndexRoute
   PremiumCheckoutIndexRoute: typeof PremiumCheckoutIndexRoute
@@ -315,6 +341,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HelpIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feed/': {
+      id: '/feed/'
+      path: '/feed'
+      fullPath: '/feed/'
+      preLoaderRoute: typeof FeedIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/download/': {
       id: '/download/'
       path: '/download'
@@ -364,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FoundIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feed/$postId/': {
+      id: '/feed/$postId/'
+      path: '/feed/$postId'
+      fullPath: '/feed/$postId/'
+      preLoaderRoute: typeof FeedPostIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/billing/': {
       id: '/account/billing/'
       path: '/account/billing'
@@ -399,6 +439,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   DownloadIndexRoute: DownloadIndexRoute,
+  FeedIndexRoute: FeedIndexRoute,
   HelpIndexRoute: HelpIndexRoute,
   MessageIndexRoute: MessageIndexRoute,
   OrganizationsIndexRoute: OrganizationsIndexRoute,
@@ -406,6 +447,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInIndexRoute: SignInIndexRoute,
   SignUpIndexRoute: SignUpIndexRoute,
   AccountBillingIndexRoute: AccountBillingIndexRoute,
+  FeedPostIdIndexRoute: FeedPostIdIndexRoute,
   FoundIdIndexRoute: FoundIdIndexRoute,
   OrganizationsSlugIndexRoute: OrganizationsSlugIndexRoute,
   PremiumCheckoutIndexRoute: PremiumCheckoutIndexRoute,

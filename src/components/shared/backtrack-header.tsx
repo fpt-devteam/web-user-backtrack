@@ -4,6 +4,7 @@ import {
   Building2,
   Menu,
   MessageCircle,
+  PackageSearch,
   Sparkles,
   User,
 } from 'lucide-react'
@@ -12,6 +13,7 @@ import { useAuth } from '@/hooks/use-auth'
 
 /* ── nav link manifest ──────────────────────────────────────── */
 const NAV_LINKS = [
+  { label: 'Feed',       to: '/feed',       icon: PackageSearch },
   { label: 'Pricing',       to: '/premium',       icon: Sparkles },
   { label: 'Message',       to: '/message',       icon: MessageCircle  },
   { label: 'Organizations', to: '/organizations', icon: Building2 },
@@ -96,7 +98,7 @@ export function BacktrackHeader() {
             return (
               <button
                 key={to}
-                onClick={() => navigate({ to })}
+                onClick={() => navigate({ to: to as string })}
                 aria-current={active ? 'page' : undefined}
                 className={[
                   'relative flex flex-col items-center justify-center gap-1 px-3 lg:px-5 h-16 sm:h-[72px] cursor-pointer',
