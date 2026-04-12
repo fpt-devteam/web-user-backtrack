@@ -23,6 +23,14 @@ export const useGetQrByPublicCode = (publicCode: string, enabled: boolean = true
     refetch,
     isFetching,
   }
+}
 
+export const useGetPublicQrProfile = (publicCode: string, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ['qr', 'public-profile', publicCode],
+    queryFn: () => qrService.getPublicQrProfile(publicCode),
+    staleTime: 60_000,
+    enabled: enabled && !!publicCode,
+  });
 }
 

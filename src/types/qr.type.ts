@@ -6,3 +6,13 @@ export interface QRCodeDetails {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface PublicQrProfile {
+  publicCode: string;
+  userId: string;
+  note: string | null;
+  displayName: string;
+  avatarUrl: string | null;
+  email: string | null;
+  phone: string | null;
+}
