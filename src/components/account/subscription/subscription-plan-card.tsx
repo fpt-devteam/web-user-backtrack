@@ -7,8 +7,8 @@ export function formatDate(date: Date) {
 }
 
 export const PLAN_META: Record<string, { name: string; price: string; period: string }> = {
-  Monthly: { name: 'Monthly Premium', price: '$4.99', period: '/month' },
-  Yearly: { name: 'Annual Premium', price: '$49.00', period: '/year' },
+  Monthly: { name: 'Monthly Premium', price: '$1.99', period: '/month' },
+  Yearly: { name: 'Annual Premium', price: '$19.99', period: '/year' },
 }
 
 const STATUS_BADGE: Record<
@@ -43,10 +43,10 @@ export function SubscriptionPlanCard({ sub }: { sub: SubscriptionInfo }) {
     : `Renews on ${formatDate(sub.currentPeriodEnd)}`
 
   return (
-    <div className="bg-white rounded-3xl p-5">
+    <div className="bg-white rounded-3xl p-5 border border-[#EBEBEB] shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
       {/* Plan name + status */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="font-bold text-lg text-gray-900">{meta.name}</span>
+        <span className="font-bold text-lg text-[#222]">{meta.name}</span>
         {badge && (
           <span
             className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.bg} ${badge.text}`}
@@ -59,27 +59,27 @@ export function SubscriptionPlanCard({ sub }: { sub: SubscriptionInfo }) {
 
       {/* Price */}
       <div className="flex items-baseline gap-1 mb-3">
-        <span className="text-4xl font-extrabold text-gray-900">{meta.price}</span>
-        <span className="text-base text-gray-400">{meta.period}</span>
+        <span className="text-4xl font-extrabold text-[#111]">{meta.price}</span>
+        <span className="text-base text-[#999]">{meta.period}</span>
       </div>
 
       {/* Renewal / cancel date */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-5">
-        <CalendarDays className="w-4 h-4 shrink-0 text-gray-400" />
+      <div className="flex items-center gap-2 text-sm text-[#666] mb-5">
+        <CalendarDays className="w-4 h-4 shrink-0 text-[#999]" />
         <span>{renewLabel}</span>
       </div>
 
       {/* Payment method */}
-      <div className="border-t border-gray-100 pt-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+      <div className="border-t border-[#F0F0F0] pt-4">
+        <p className="text-xs font-semibold text-[#999] uppercase tracking-wide mb-3">
           Payment Method
         </p>
         <button className="w-full flex items-center gap-3 group">
-          <div className="px-2 py-1 rounded-md border border-gray-200 bg-gray-50">
-            <span className="text-xs font-bold text-blue-700">VISA</span>
+          <div className="px-2 py-1 rounded-md border border-[#EBEBEB] bg-[#F9F9F9]">
+            <span className="text-xs font-bold text-brand-600">VISA</span>
           </div>
-          <span className="flex-1 text-sm text-gray-700 text-left">Manage payment method</span>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+          <span className="flex-1 text-sm text-[#444] text-left">Manage payment method</span>
+          <ChevronRight className="w-4 h-4 text-[#999] group-hover:text-[#444] transition-colors" />
         </button>
       </div>
     </div>

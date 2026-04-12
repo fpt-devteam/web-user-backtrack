@@ -15,9 +15,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 
 /* Pages without header */
-const NO_HEADER_ROUTES = ['/sign-in', '/sign-up', '/chat']
+const NO_HEADER_ROUTES = ['/sign-in', '/sign-up', '/chat', '/premium/success']
 /* Pages without footer (message is a full-height chat UI) */
-const NO_FOOTER_ROUTES = ['/sign-in', '/sign-up', '/chat', '/message']
+const NO_FOOTER_ROUTES = ['/sign-in', '/sign-up', '/chat', '/message', '/premium/checkout', '/premium/success']
 
 function Root() {
   const { loading: authLoading } = useAuth()

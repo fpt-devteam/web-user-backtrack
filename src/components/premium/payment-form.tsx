@@ -50,15 +50,15 @@ function PaymentFormInner({ planPrice }: Readonly<PaymentFormInnerProps>) {
       <Button
         type="submit"
         disabled={!stripe || !elements || isProcessing}
-        className="w-full h-14 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-base shadow-lg shadow-blue-200 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
+        className="w-full h-14 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base shadow-lg shadow-brand-200 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
       >
         <Sparkles className="w-4 h-4" />
         {isProcessing ? 'Processing…' : `Pay ${planPrice}`}
       </Button>
 
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-[#999]">
         Secured by{' '}
-        <span className="font-semibold text-gray-500">Stripe</span>. Your payment info is encrypted.
+        <span className="font-semibold text-[#555]">Stripe</span>. Your payment info is encrypted.
       </p>
     </form>
   )
@@ -79,7 +79,7 @@ export function PaymentForm({ clientSecret, planPrice }: Readonly<PaymentFormPro
         appearance: {
           theme: 'stripe',
           variables: {
-            colorPrimary: '#3b82f6',
+            colorPrimary: '#F6475F',
             borderRadius: '12px',
             fontFamily: 'inherit',
           },

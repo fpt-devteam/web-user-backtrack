@@ -1,5 +1,5 @@
 export type CreateSubscriptionRequest = {
-  priceId: string;
+  planId: string;
 };
 
 export interface SubscriptionPlan {
@@ -7,15 +7,30 @@ export interface SubscriptionPlan {
   name: string;
   price: number;
   currency: string;
-  providerPriceId: string;
+  billingInterval: 'Monthly' | 'Yearly';
+  subscriberType: string;
   features: string[];
-  createdAt: string;
-  updatedAt: string;
 }
 
-export type CreateSubscriptionResponse = {
+export interface CreateSubscriptionResponse {
+  id: string;
+  subscriberType: string;
+  userId: string;
+  planId: string;
+  planSnapshot: {
+    name: string;
+    price: number;
+    currency: string;
+    billingInterval: string;
+    features: string[];
+  };
+  status: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+  createdAt: string;
   clientSecret: string;
-};
+}
 
 export const SubscriptionPlanType = {
   Monthly: 'Monthly',
@@ -41,3 +56,22 @@ export type SubscriptionInfo = {
   status: OngoingSubscriptionStatusType;
   cancelAtPeriodEnd: boolean;
 };
+
+export interface PaymentItem {
+  id: string;
+  subscriptionId: string;
+  subscriberType: string;
+  userId: string;
+  providerInvoiceId: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paymentDate: string;
+  createdAt: string;
+  invoiceUrl?: string;
+}
+
+export interface PaymentHistory {
+  total: number;
+  items: PaymentItem[];
+}

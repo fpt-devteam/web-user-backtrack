@@ -30,6 +30,14 @@ export function useCancelSubscription() {
   });
 }
 
+export function usePaymentHistory() {
+  return useQuery({
+    queryKey: ['subscription', 'payments'],
+    queryFn: () => subscriptionService.getPaymentHistory(),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
 export function usePlans() {
   return useQuery({
     queryKey: ['subscription', 'plans'],

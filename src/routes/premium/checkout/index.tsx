@@ -10,6 +10,7 @@ interface CheckoutState {
   planLabel: string
   planPrice: string
   planPeriod: string
+  features: string[]
 }
 
 function readCheckoutState(): CheckoutState | null {
@@ -27,7 +28,6 @@ export const Route = createFileRoute('/premium/checkout/')({
 
 function CheckoutPage() {
   const navigate = useNavigate()
-  const { profile } = useAuth()
   const state = readCheckoutState()
 
   if (!state) {
@@ -40,47 +40,12 @@ function CheckoutPage() {
     planLabel = 'Premium',
     planPrice = '',
     planPeriod = '',
+    features = [],
   } = state
 
-  const avatarSrc = profile?.avatarUrl
-  const avatarInitial = (profile?.displayName ?? profile?.email ?? 'U')[0].toUpperCase()
-
   return (
-    <div className="min-h-screen">
-      {/* Checkout header */}
-      <header className="bg-white border-b border-gray-100">
-        <div className="flex items-center justify-between max-w-6xl mx-auto px-5 lg:px-10 py-4">
-          <button
-            onClick={() => navigate({ to: '/' })}
-            className="bg-transparent border-0 p-0 cursor-pointer shrink-0"
-          >
-            <BacktrackLogo width={120} height={28} />
-          </button>
-          {avatarSrc ? (
-            <img
-              src={avatarSrc}
-              alt="Account"
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
-              {avatarInitial}
-            </div>
-          )}
-        </div>
-      </header>
-      {/* Row 2: title + change plan */}
-      <div className="flex items-center justify-between max-w-6xl mx-auto px-5 lg:px-10 py-4">
-        <h1 className="text-2xl font-extrabold text-gray-900">Checkout</h1>
-        <button
-          onClick={() => navigate({ to: '/premium' })}
-          className="text-sm text-blue-500 underline underline-offset-2 hover:text-blue-700 transition-colors"
-        >
-          Change plan
-        </button>
-      </div>
-
-      <main className="max-w-6xl mx-auto px-5 pb-12 lg:px-10 lg:pb-16 pt-6">
+    <div className="min-h-screen pt-8 lg:pt-12">
+      <main className="max-w-6xl mx-auto px-5 pb-12 lg:px-10 lg:pb-16 pt-2">
 
         {/* Layout: stacked mobile | side-by-side desktop */}
         <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
@@ -90,12 +55,13 @@ function CheckoutPage() {
               planLabel={planLabel}
               planPrice={planPrice}
               planPeriod={planPeriod}
+              features={features}
             />
           </div>
 
           {/* Payment form — left on desktop */}
           <div className="lg:order-1 bg-white rounded-3xl px-6 py-7">
-            <h2 className="text-base font-bold text-gray-900 mb-5">Payment details</h2>
+            <h2 className="text-base font-bold text-[#222] mb-5">Payment details</h2>
             <PaymentForm
               clientSecret={clientSecret}
               planLabel={planLabel}

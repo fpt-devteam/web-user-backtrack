@@ -1,17 +1,19 @@
 import { useState } from 'react'
+import type React from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { HelpCircle, LogOut, QrCode, WalletCardsIcon } from 'lucide-react'
+import { HelpCircle, LogOut, QrCode, CreditCard } from 'lucide-react'
 import { AboutTab } from '@/components/account/about-tab'
-import { SectionCard } from '@/components/account/section-card'
 import { SettingsTab } from '@/components/account/settings-tab'
+import { QrTab } from '@/components/account/qr-tab'
 import { SubscriptionCard } from '@/components/account/subscription/subscription-card'
+import { PaymentHistory } from '@/components/account/subscription/payment-history'
 import { useAuth } from '@/hooks/use-auth'
 
 export const Route = createFileRoute('/account/')({
   component: AccountPage,
 })
 
-type Tab = 'about' | 'membership' | 'settings' | 'support'
+type Tab = 'about' | 'billing' | 'qr' | 'settings' | 'support'
 
 function getInitials(name?: string | null, email?: string | null) {
   if (name) return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -39,11 +41,12 @@ function AccountPage() {
   const isAdmin     = profile.globalRole === 'PlatformSuperAdmin'
   const roleLabel   = isAdmin ? 'Admin' : 'Member'
 
-  const SIDEBAR_TABS: Array<{ id: Tab; label: string; initial: string }> = [
-    { id: 'about',      label: 'About me',   initial: initials },
-    { id: 'membership', label: 'Membership', initial: 'M'      },
-    { id: 'settings',   label: 'Settings',   initial: 'S'      },
-    { id: 'support',    label: 'Support',    initial: '?'      },
+  const SIDEBAR_TABS: Array<{ id: Tab; label: string; icon?: React.ElementType; initial?: string }> = [
+    { id: 'about',    label: 'About me',   initial: initials },
+    { id: 'billing',  label: 'Billing',    icon: CreditCard  },
+    { id: 'qr',       label: 'My QR Code', icon: QrCode      },
+    { id: 'settings', label: 'Settings',   initial: 'S'      },
+    { id: 'support',  label: 'Support',    initial: '?'      },
   ]
 
   return (
@@ -58,7 +61,7 @@ function AccountPage() {
             </h1>
 
             <nav className="flex flex-col gap-1">
-              {SIDEBAR_TABS.map(({ id, label, initial }) => {
+              {SIDEBAR_TABS.map(({ id, label, icon: Icon, initial }) => {
                 const active = tab === id
                 return (
                   <button
@@ -71,10 +74,13 @@ function AccountPage() {
                     ].join(' ')}
                   >
                     <span className={[
-                      'w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-sm font-bold',
+                      'w-9 h-9 rounded-full shrink-0 flex items-center justify-center',
                       active ? 'bg-[#222] text-white' : 'bg-[#EBEBEB] text-[#555]',
                     ].join(' ')}>
-                      {initial}
+                      {Icon
+                        ? <Icon className="w-4 h-4" strokeWidth={1.8} />
+                        : <span className="text-sm font-bold">{initial}</span>
+                      }
                     </span>
                     <span className={[
                       'text-[15px]',
@@ -120,23 +126,19 @@ function AccountPage() {
               />
             )}
 
-            {tab === 'membership' && (
+            {tab === 'billing' && (
               <section>
                 <h2 className="text-[1.75rem] font-extrabold text-[#222] tracking-tight mb-8">
-                  Membership
+                  Billing
                 </h2>
                 <div className="flex flex-col gap-4">
                   <SubscriptionCard />
-                  <SectionCard
-                    items={[
-                      { icon: QrCode,          label: 'My QR Codes', description: 'Digital Backtrack profile'       },
-                      { icon: WalletCardsIcon, label: 'Billing',     description: 'Payment methods and invoices',
-                        onClick: () => navigate({ to: '/account/billing' }) },
-                    ]}
-                  />
+                  <PaymentHistory />
                 </div>
               </section>
             )}
+
+            {tab === 'qr' && <QrTab />}
 
             {tab === 'settings' && (
               <SettingsTab profile={profile} />
@@ -147,12 +149,20 @@ function AccountPage() {
                 <h2 className="text-[1.75rem] font-extrabold text-[#222] tracking-tight mb-8">
                   Support
                 </h2>
-                <SectionCard
-                  items={[
-                    { icon: HelpCircle, label: 'Help Center', description: 'FAQs and contact support',
-                      onClick: () => navigate({ to: '/help' }) },
-                  ]}
-                />
+                <div className="bg-white rounded-2xl border border-[#DDDDDD] shadow-[0_2px_8px_rgba(0,0,0,0.05)] overflow-hidden">
+                  <button
+                    onClick={() => navigate({ to: '/help' })}
+                    className="group w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-[#F9F9F9] transition-colors duration-150"
+                  >
+                    <span className="w-10 h-10 rounded-xl bg-[#F3F4F6] group-hover:bg-[#E9EAEC] flex items-center justify-center shrink-0 transition-colors duration-150">
+                      <HelpCircle className="w-5 h-5 text-[#555]" strokeWidth={1.8} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[15px] font-semibold text-[#111] leading-tight">Help Center</p>
+                      <p className="text-xs text-[#aaa] mt-0.5">FAQs and contact support</p>
+                    </div>
+                  </button>
+                </div>
               </section>
             )}
 

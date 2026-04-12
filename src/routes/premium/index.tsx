@@ -65,20 +65,20 @@ function PlanCard({
   isPending: boolean
 }) {
   const monthlyEquiv = isYearly ? (plan.price / 12).toFixed(2) : null
-  const savings = isYearly ? (4.99 * 12 - plan.price).toFixed(2) : null
+  const savings = isYearly ? (1.99 * 12 - plan.price).toFixed(2) : null
 
   return (
     <div
       className={cn(
         'relative flex flex-col rounded-3xl border bg-white p-7 lg:p-8 transition-all duration-200',
         isYearly
-          ? 'border-blue-300 shadow-[0_0_0_3px_rgba(59,130,246,0.12),0_20px_40px_-12px_rgba(59,130,246,0.18)]'
-          : 'border-gray-200 shadow-sm',
+          ? 'border-brand-300 shadow-[0_0_0_3px_color-mix(in_oklch,var(--brand-300)_30%,transparent),0_20px_40px_-12px_color-mix(in_oklch,var(--brand-500)_18%,transparent)]'
+          : 'border-[#EBEBEB] shadow-sm',
       )}
     >
       {/* Best value badge */}
       {isYearly && (
-        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand-500 to-brand-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
           Best Value · 2 months free
         </div>
       )}
@@ -86,41 +86,28 @@ function PlanCard({
       {/* Icon */}
       <div className="mb-5">
         {isYearly ? (
-          <YearlyIcon className={cn('w-12 h-12', isYearly ? 'text-blue-500' : 'text-gray-400')} />
+          <YearlyIcon className="w-12 h-12 text-brand-500" />
         ) : (
-          <MonthlyIcon className="w-12 h-12 text-gray-400" />
+          <MonthlyIcon className="w-12 h-12 text-[#888]" />
         )}
       </div>
 
       {/* Plan name + tagline */}
-      <h2 className="text-xl font-bold text-gray-900 mb-1">{plan.name}</h2>
-      <p className="text-sm text-gray-400 mb-6">
+      <h2 className="text-xl font-bold text-[#222] mb-1">{plan.name}</h2>
+      <p className="text-sm text-[#999] mb-6">
         {isYearly ? 'Best value — save more every year' : 'Flexible billing, cancel anytime'}
       </p>
 
       {/* Price */}
-      <div className="flex items-end gap-2 mb-2">
-        <span className="text-5xl font-extrabold text-gray-900 leading-none">
+      <div className="flex items-end gap-2 mb-8">
+        <span className="text-5xl font-extrabold text-[#111] leading-none">
           ${plan.price}
         </span>
-        <div className="pb-1 text-gray-400 text-sm leading-tight">
+        <div className="pb-1 text-[#999] text-sm leading-tight">
           {plan.currency.toUpperCase()} /{' '}
-          {isYearly ? 'year' : 'month'}
+          {plan.billingInterval.toLowerCase()}
         </div>
       </div>
-
-      {/* Per-month equivalent / savings note */}
-      {isYearly && monthlyEquiv && savings && (
-        <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3 mb-6 text-sm">
-          <Zap className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-          <span className="text-blue-700 leading-snug">
-            Just <strong>${monthlyEquiv}/mo</strong> — save{' '}
-            <strong className="text-blue-600">${savings}</strong> vs monthly billing.
-          </span>
-        </div>
-      )}
-
-      {!isYearly && <div className="mb-6" />}
 
       {/* CTA */}
       <button
@@ -129,25 +116,25 @@ function PlanCard({
         className={cn(
           'w-full py-4 rounded-2xl font-bold text-sm transition-all duration-200 active:scale-95 mb-7',
           isYearly
-            ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-200'
-            : 'bg-gray-900 hover:bg-gray-800 text-white',
+            ? 'bg-brand-500 hover:bg-brand-600 text-white shadow-lg shadow-brand-200'
+            : 'bg-[#111] hover:bg-[#222] text-white',
         )}
       >
         {isPending ? 'Processing…' : `Get ${plan.name} Plan`}
       </button>
 
       {/* Divider */}
-      <div className="border-t border-gray-100 mb-6" />
+      <div className="border-t border-[#F0F0F0] mb-6" />
 
       {/* Features */}
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+      <p className="text-xs font-semibold text-[#999] uppercase tracking-widest mb-4">
         {isYearly ? 'Everything in Monthly, plus:' : 'Included in this plan:'}
       </p>
       <ul className="space-y-3">
         {plan.features.map((feature) => (
           <li key={feature} className="flex items-start gap-3">
-            <Check className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-            <span className="text-sm text-gray-600 leading-snug">{feature}</span>
+            <Check className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+            <span className="text-sm text-[#555] leading-snug">{feature}</span>
           </li>
         ))}
       </ul>
@@ -159,7 +146,7 @@ function PlanCard({
 
 function PlanSkeleton() {
   return (
-    <div className="bg-white border border-gray-200 rounded-3xl p-7 lg:p-8 flex flex-col gap-4 shadow-sm">
+    <div className="bg-white border border-[#EBEBEB] rounded-3xl p-7 lg:p-8 flex flex-col gap-4 shadow-sm">
       <Skeleton className="w-12 h-12 rounded-xl" />
       <Skeleton className="w-24 h-6" />
       <Skeleton className="w-40 h-4" />
@@ -198,18 +185,21 @@ function PricingPage() {
 
     // ── Call API ───────────────────────────────────────────────────────────
     try {
-      const result = await createSubscription.mutateAsync({ priceId: plan.providerPriceId })
-      const period = plan.name.toLowerCase() === 'yearly' ? 'per year' : 'per month'
+      const response = await createSubscription.mutateAsync({ planId: plan.id })
+
+      // Save checkout state to session storage
       sessionStorage.setItem(
         'checkout',
         JSON.stringify({
-          clientSecret: result.clientSecret,
+          clientSecret: response.clientSecret,
           planId: plan.id,
           planLabel: plan.name,
           planPrice: `$${plan.price}`,
-          planPeriod: period,
+          planPeriod: `/ ${plan.billingInterval.toLowerCase()}`,
+          features: plan.features,
         }),
       )
+
       await navigate({ to: '/premium/checkout' })
     } catch (error) {
       const code = classifyApiError(error)
@@ -217,7 +207,6 @@ function PricingPage() {
 
       switch (code) {
         case 'unauthenticated':
-          // Token expired / refresh failed after retry
           toast.error('Your session has expired. Please sign in again.')
           navigate({ to: '/sign-in' })
           break
@@ -227,7 +216,6 @@ function PricingPage() {
           break
 
         case 'conflict':
-          // Already has an active subscription
           toast.info('You already have an active subscription.')
           navigate({ to: '/account' })
           break
@@ -255,27 +243,23 @@ function PricingPage() {
   }
 
   const sortedPlans = plans
-    ? [...plans].sort((a, _) =>
-      a.name.toLowerCase() === 'monthly' ? -1 : 1,
-    )
+    ? [...plans].sort((a) => a.billingInterval === 'Monthly' ? -1 : 1)
     : []
 
   return (
     <div className="min-h-screen">
-
-
       <main className="px-5 lg:px-10 py-14 lg:py-20 w-full max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="text-center mb-12 lg:mb-14">
-          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold px-4 py-2 rounded-full mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
+          <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 text-brand-600 text-xs font-semibold px-4 py-2 rounded-full mb-6">
+            <Sparkles className="w-3.5 h-3.5 text-brand-400" />
             Upgrade your Backtrack
           </div>
-          <h1 className="text-3xl lg:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+          <h1 className="text-3xl lg:text-5xl font-extrabold text-[#111] mb-4 leading-tight tracking-tight">
             Plans that grow with you
           </h1>
-          <p className="text-gray-400 text-base lg:text-lg max-w-md mx-auto">
+          <p className="text-[#999] text-base lg:text-lg max-w-md mx-auto">
             Start protecting what matters. Upgrade or cancel anytime.
           </p>
         </div>
@@ -292,7 +276,7 @@ function PricingPage() {
               <PlanCard
                 key={plan.id}
                 plan={plan}
-                isYearly={plan.name.toLowerCase() === 'yearly'}
+                isYearly={plan.billingInterval === 'Yearly'}
                 onSubscribe={handleSubscribe}
                 isPending={createSubscription.isPending}
               />
@@ -303,7 +287,7 @@ function PricingPage() {
         {/* Trust signals */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8">
           {TRUST.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-2 text-gray-400 text-xs">
+            <div key={label} className="flex items-center gap-2 text-[#999] text-xs">
               <Icon className="w-3.5 h-3.5" />
               <span>{label}</span>
             </div>
@@ -311,9 +295,9 @@ function PricingPage() {
         </div>
 
         {/* Terms */}
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-[#999] mt-6">
           By subscribing you agree to our{' '}
-          <button className="underline underline-offset-2 hover:text-gray-600 transition-colors">
+          <button className="underline underline-offset-2 hover:text-[#555] transition-colors">
             Terms and Conditions
           </button>
           .

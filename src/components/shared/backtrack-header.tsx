@@ -161,11 +161,24 @@ export function BacktrackHeader() {
             aria-label={accountLabel}
           >
             <Menu className="w-4 h-4 text-gray-600" strokeWidth={2} aria-hidden="true" />
-            <span className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-gray-800 flex items-center justify-center shrink-0">
-              {avatarLetter
-                ? <span className="text-xs lg:text-sm font-bold text-white leading-none">{avatarLetter}</span>
-                : <User className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-white" strokeWidth={2} aria-hidden="true" />
-              }
+            <span className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-gray-800 flex items-center justify-center shrink-0 overflow-hidden">
+              {profile?.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt={accountLabel}
+                  className="w-full h-full object-cover"
+                />
+              ) : avatarLetter ? (
+                <span className="text-xs lg:text-sm font-bold text-white leading-none">
+                  {avatarLetter}
+                </span>
+              ) : (
+                <User
+                  className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-white"
+                  strokeWidth={2}
+                  aria-hidden="true"
+                />
+              )}
             </span>
           </button>
         </div>

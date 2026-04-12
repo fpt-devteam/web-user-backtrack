@@ -22,7 +22,11 @@
       "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"marketplace service provider profile listing clean minimal\" --design-system -p \"Backtrack Org Detail\")",
       "Bash(npx tsc:*)",
       "Bash(python3:*)",
-      "Bash(grep '$postId')"
+      "Bash(grep '$postId')",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(/home/nhatthang/Fptu/web-user-backtrack/node_modules/.bin/tsc:*)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(sh:*)"
     ]
   }
 }
