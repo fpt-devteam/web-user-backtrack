@@ -2,12 +2,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Edit, Search, Send } from 'lucide-react'
 import { AnimatePresence,  motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type {Variants} from 'framer-motion';
 import type { Conversation } from '@/types/chat.type'
 import { useGetOrgBySlug } from '@/hooks/use-org'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useGetConversations } from '@/hooks/use-messager'
+import { useGetConversations, messagerKeys } from '@/hooks/use-messager'
 import { ConversationHeader } from '@/components/chat/conversation-detail/conversation-header'
 import { MessageList } from '@/components/chat/conversation-detail/message-list'
 import { MessageInput } from '@/components/chat/conversation-detail/message-input'
@@ -90,13 +91,13 @@ function ConversationListItem({ conv, index, isActive, onClick }: ConversationLi
         type="button"
         onClick={onClick}
         className={cn(
-          'w-full flex items-center gap-3 px-5 py-3 transition-colors duration-100 text-left',
-          isActive ? 'bg-gray-100' : 'hover:bg-gray-50',
+          'w-full flex items-center gap-3 px-5 py-3.5 border-b border-gray-200 transition-colors duration-100 text-left',
+          isActive ? 'bg-blue-50 border-l-4 border-l-blue-500' : 'hover:bg-gray-100 border-l-4 border-l-transparent',
         )}
       >
         {/* Avatar */}
         <div className="relative shrink-0">
-          <div className="w-[56px] h-[56px] rounded-full bg-gray-200 flex items-center justify-center overflow-hidden ring-1 ring-gray-100">
+          <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden ring-2 ring-gray-200">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -104,15 +105,14 @@ function ConversationListItem({ conv, index, isActive, onClick }: ConversationLi
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-xl font-bold text-gray-400">
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-condition
+              <span className="text-base font-bold text-gray-600">
                 {displayName[0].toUpperCase() ?? '?'}
               </span>
             )}
           </div>
           {/* Unread badge */}
           {conv.unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#0095f6] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow">
               {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
             </span>
           )}
@@ -120,34 +120,21 @@ function ConversationListItem({ conv, index, isActive, onClick }: ConversationLi
 
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <p
-            className={`text-sm leading-snug truncate ${
-              conv.unreadCount > 0
-                ? 'font-bold text-gray-900'
-                : 'font-semibold text-gray-800'
-            }`}
-          >
-            {displayName}
-          </p>
-          <div className="flex items-center gap-1 mt-0.5">
-            {lastContent ? (
-              <p
-                className={`text-xs truncate max-w-[170px] ${
-                  conv.unreadCount > 0
-                    ? 'font-semibold text-gray-900'
-                    : 'text-gray-400 font-normal'
-                }`}
-              >
-                {lastContent}
-              </p>
-            ) : null}
+          <div className="flex items-center justify-between gap-1 mb-0.5">
+            <p className={`text-sm truncate ${conv.unreadCount > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-800'}`}>
+              {displayName}
+            </p>
             {conv.lastMessage?.timestamp && (
               <span className="text-[11px] text-gray-400 shrink-0">
-                {lastContent ? ' · ' : ''}
                 {formatTimestamp(conv.lastMessage.timestamp)}
               </span>
             )}
           </div>
+          {lastContent && (
+            <p className={`text-xs truncate ${conv.unreadCount > 0 ? 'font-semibold text-gray-700' : 'text-gray-500'}`}>
+              {lastContent}
+            </p>
+          )}
         </div>
       </button>
     </motion.div>
@@ -158,6 +145,12 @@ function ConversationListItem({ conv, index, isActive, onClick }: ConversationLi
 function MessagerPage() {
   const { selectedId: initialSelectedId } = Route.useSearch()
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null)
+  const queryClient = useQueryClient()
+
+  // Always load fresh conversations when the page mounts
+  useEffect(() => {
+    void queryClient.invalidateQueries({ queryKey: messagerKeys.conversations() })
+  }, [queryClient])
 
   const {
     data,
@@ -176,32 +169,32 @@ function MessagerPage() {
       {/* ═══════════════════════════════
           LEFT PANEL — conversation list
       ═══════════════════════════════ */}
-      <aside className="w-[340px] flex-shrink-0 border-r border-gray-200 flex flex-col h-full">
+      <aside className="w-[320px] flex-shrink-0 border-r-2 border-gray-300 flex flex-col h-full bg-gray-50">
 
         {/* Header */}
-        <div className="px-5 pt-10 pb-3">
+        <div className="px-5 pt-6 pb-4 border-b-2 border-gray-300">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-lg font-bold text-gray-900 tracking-tight">
+            <span className="text-xl font-bold text-gray-900 tracking-tight">
               Messages
             </span>
             <button
-              className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-full hover:bg-gray-200 transition-colors"
               aria-label="New message"
             >
-              <Edit className="w-5 h-5 text-gray-800" strokeWidth={1.8} />
+              <Edit className="w-5 h-5 text-gray-700" strokeWidth={2} />
             </button>
           </div>
 
           {/* Search bar */}
           <div className="relative">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
               strokeWidth={2}
             />
             <input
               type="text"
-              placeholder="Search"
-              className="w-full bg-gray-100 rounded-full pl-9 pr-4 py-2 text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-0"
+              placeholder="Search conversations…"
+              className="w-full bg-white border-2 border-gray-300 rounded-xl pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-500 transition-colors"
             />
           </div>
         </div>
@@ -270,7 +263,7 @@ function MessagerPage() {
               </div>
 
               {/* Input */}
-              <div className="shrink-0 border-t border-gray-100">
+              <div className="shrink-0 border-t-2 border-gray-300 bg-white">
                 <MessageInput conversationId={selectedId} />
               </div>
             </motion.div>
@@ -296,12 +289,12 @@ function MessagerPage() {
 function ConversationListSkeleton() {
   return (
     <div>
-      {Array.from({ length: 7 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 px-5 py-3">
-          <Skeleton className="w-14 h-14 rounded-full shrink-0" />
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-200">
+          <Skeleton className="w-12 h-12 rounded-full shrink-0" />
           <div className="flex-1 space-y-2">
-            <Skeleton className="h-3.5 w-28 rounded-full" />
-            <Skeleton className="h-3 w-44 rounded-full" />
+            <Skeleton className="h-3.5 w-28 rounded" />
+            <Skeleton className="h-3 w-36 rounded" />
           </div>
         </div>
       ))}

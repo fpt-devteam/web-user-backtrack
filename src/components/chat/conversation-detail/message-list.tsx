@@ -9,6 +9,7 @@ import { useSocket } from '@/hooks/use-socket'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 
+
 interface MessageListProps {
   readonly conversationId?: string
 }
@@ -219,21 +220,23 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
     )
   }
 
-  /* ── Empty state ── */
+  /* ── Empty state with quick suggestions ── */
   if (!allMessages.length) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="flex h-full flex-col items-center justify-center gap-3 px-6"
+        className="flex h-full flex-col items-center justify-center gap-4 px-6"
       >
-        <div className="w-14 h-14 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
           <span className="text-2xl">👋</span>
         </div>
-        <p className="text-sm text-gray-400 text-center leading-relaxed">
-          No messages yet. Say hello!
-        </p>
+        <div className="text-center">
+          <p className="text-sm font-semibold text-gray-700">Start the conversation</p>
+          <p className="text-xs text-gray-400 mt-0.5">Send a message to get things started</p>
+        </div>
+        <p className="text-xs text-gray-400">Use the suggestions below to get started ↓</p>
       </motion.div>
     )
   }
@@ -242,7 +245,7 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
     <div
       ref={scrollContainerRef}
       onScroll={handleScroll}
-      className="flex flex-col h-full overflow-y-auto px-4 py-4"
+      className="flex flex-col h-full overflow-y-auto px-4 py-4 bg-gray-50/40"
       style={{ scrollbarWidth: 'none' }}
     >
       {/* Load-older spinner */}

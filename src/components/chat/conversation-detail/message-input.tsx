@@ -29,6 +29,14 @@ interface MessageInputProps {
 
 const TYPING_DEBOUNCE_MS = 1500
 
+const QUICK_SUGGESTIONS = [
+  'Hello! 👋',
+  'Is this item still available?',
+  'I found something that might be yours',
+  'Can we arrange a time to meet?',
+  'Could you describe it in more detail?',
+]
+
 export function MessageInput({ conversationId, orgId, recipientId, onSend, onConversationCreated }: MessageInputProps) {
   const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, onMessageSendError, isConnected } =
     useSocket()
@@ -190,6 +198,32 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
               <div className="flex items-center justify-center gap-2 py-2 bg-amber-50 border-b border-amber-100">
                 <WifiOff className="h-3.5 w-3.5 text-amber-500" />
                 <p className="text-xs text-amber-600 font-medium">Reconnecting…</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Quick suggestion chips — only shown when input is empty */}
+        <AnimatePresence>
+          {!hasText && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.18 }}
+              className="overflow-hidden"
+            >
+              <div className="flex gap-2 px-3 pt-2 pb-1 overflow-x-auto scrollbar-none">
+                {QUICK_SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => form.setValue('content', s, { shouldValidate: true })}
+                    className="shrink-0 px-3 py-1.5 rounded-full bg-white border border-gray-300 text-xs text-gray-600 font-medium hover:bg-gray-50 hover:border-gray-400 transition-colors whitespace-nowrap"
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
             </motion.div>
           )}

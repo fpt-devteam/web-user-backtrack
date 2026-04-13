@@ -6,6 +6,7 @@ import {
   type ReactNode,
   useMemo,
 } from 'react';
+import type { User as FirebaseUser } from 'firebase/auth';
 import type { UserProfile } from '@/types/user.type';
 import {
   onAuthStateChanged, signOut, signInAnonymously,
@@ -24,6 +25,7 @@ import type { CheckEmailStatusRequest, SignInWithEmailAndPasswordInput } from '@
 import { authService } from '@/services/auth.service';
 
 interface AuthContextValue {
+  firebaseUser: FirebaseUser | null;
   profile: UserProfile | null;
   loading: boolean;
   logout: () => Promise<void>;
@@ -32,6 +34,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { readonly children: ReactNode }) {
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,20 +42,26 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
-        if (firebaseUser && !firebaseUser.isAnonymous) {
-          // Anonymous users have no backend profile yet — skip getMe() to
-          // avoid a 401. The caller (e.g. handleStartChat) must call
-          // createUser() then syncProfile() explicitly.
+        if (!user) {
+          // No session at all — sign in anonymously so every visitor has a
+          // valid Firebase token (needed for the chat socket and other calls).
+          await signInAnonymously(auth);
+          // onAuthStateChanged will fire again with the anonymous user.
+          return;
+        }
+
+        setFirebaseUser(user);
+
+        if (!user.isAnonymous) {
+          // Authenticated (non-anonymous) user — fetch backend profile.
           const backendProfile = await userService.getMe();
           setProfile(backendProfile);
           queryClient.setQueryData(userKeys.me(), backendProfile);
-        } else if (!firebaseUser) {
-          setProfile(null);
         }
-        // firebaseUser.isAnonymous → leave profile unchanged; let the
-        // downstream flow (createUser → syncProfile) set it.
+        // Anonymous user → firebaseUser is set but profile stays null.
+        // The socket can still connect using the anonymous Firebase token.
       } catch (error) {
         console.error('Error fetching user profile:', error);
         setProfile(null);
@@ -94,12 +103,13 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
 
   const value = useMemo<AuthContextValue>(() => {
     return {
+      firebaseUser,
       profile,
       loading,
       logout,
       syncProfile
     }
-  }, [profile, loading, logout, syncProfile])
+  }, [firebaseUser, profile, loading, logout, syncProfile])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
@@ -204,8 +214,26 @@ export function useSignInWithGoogle() {
 export function useCreateAccount() {
   return useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const { user } = await createUserWithEmailAndPassword(auth, email, password)
-      await sendEmailVerification(user)
+      const currentUser = auth.currentUser;
+      if (currentUser?.isAnonymous) {
+        // Upgrade anonymous session → real account (preserves anonymous data)
+        const credential = EmailAuthProvider.credential(email, password);
+        try {
+          const { user } = await linkWithCredential(currentUser, credential);
+          await sendEmailVerification(user);
+        } catch (err) {
+          const authErr = err as AuthError;
+          if (authErr.code === 'auth/email-already-in-use') {
+            // Email belongs to an existing account — sign out anonymous and
+            // create a new account normally; the user should sign in instead.
+            throw new Error('An account with this email already exists. Please sign in.')
+          }
+          throw err;
+        }
+      } else {
+        const { user } = await createUserWithEmailAndPassword(auth, email, password)
+        await sendEmailVerification(user)
+      }
     },
     onError: (error) => {
       toast.fromError(error)

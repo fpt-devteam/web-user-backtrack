@@ -72,7 +72,7 @@ const SocketContext = createContext<SocketContextValue | null>(null);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export function SocketProvider({ children }: { children: ReactNode }) {
-  const { profile } = useAuth();
+  const { firebaseUser, profile } = useAuth();
   const queryClient = useQueryClient();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -80,8 +80,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    if (!profile) {
-      // Tear down existing connection when user logs out
+    if (!firebaseUser) {
+      // No Firebase session yet — tear down any existing connection.
       destroyChatSocket();
       socketRef.current = null;
       setSocket(null);
@@ -180,7 +180,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     return () => {
       cleanup?.();
     };
-  }, [profile, queryClient]);
+  }, [firebaseUser, queryClient]);
 
   // ── Room management ──────────────────────────────────────────────────────────
   const joinConversation = useCallback((conversationId: string) => {
