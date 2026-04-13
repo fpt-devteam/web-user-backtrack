@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { messagerService } from '@/services/messager.service'
 import { chatService } from '@/services/chat.service'
 
@@ -8,8 +8,12 @@ export const messagerKeys = {
 }
 
 export function useCreateDirectConversation() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (recipientId: string) => chatService.createDirectConversation(recipientId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: messagerKeys.conversations() })
+    },
   })
 }
 

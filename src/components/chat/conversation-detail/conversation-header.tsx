@@ -40,8 +40,17 @@ export function ConversationHeader({ conversationId, fallback }: ConversationHea
     !!conversationId,
   )
 
-  // Prefer the detail fetch (complete data); fall back to cached list entry while loading
-  const conversation = fetchedConversation ?? cachedConversation
+  // Merge: detail fetch may lack partner/org fields that the list endpoint provides.
+  // Use detail as base but fill in partner/org from the cached list entry when missing.
+  const conversation = fetchedConversation
+    ? {
+        ...fetchedConversation,
+        partner: fetchedConversation.partner ?? cachedConversation?.partner,
+        orgName: fetchedConversation.orgName ?? cachedConversation?.orgName,
+        orgSlug: fetchedConversation.orgSlug ?? cachedConversation?.orgSlug,
+        orgLogoUrl: fetchedConversation.orgLogoUrl ?? cachedConversation?.orgLogoUrl,
+      }
+    : cachedConversation
   const { isConnected } = useSocket()
 
   // Support conversations: use stored orgName first, fall back to slug lookup for legacy convs

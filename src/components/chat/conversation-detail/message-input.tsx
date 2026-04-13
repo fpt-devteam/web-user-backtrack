@@ -7,8 +7,10 @@ import { useRef, useEffect, useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useSocket } from '@/hooks/use-socket'
 import { useNavigate } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { chatService } from '@/services/chat.service'
+import { messagerKeys } from '@/hooks/use-messager'
 import { toast } from '@/lib/toast'
 
 const messageSchema = z.object({
@@ -41,6 +43,7 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
   const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, onMessageSendError, isConnected } =
     useSocket()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isTypingRef = useRef(false)
@@ -146,10 +149,12 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
           const conv = await chatService.createSupportConversation(orgId)
           targetId = conv.conversationId
           isSupport = true
+          void queryClient.invalidateQueries({ queryKey: messagerKeys.conversations() })
           onConversationCreated?.(targetId)
         } else if (!targetId && recipientId) {
           const conv = await chatService.createDirectConversation(recipientId)
           targetId = conv.conversationId
+          void queryClient.invalidateQueries({ queryKey: messagerKeys.conversations() })
           onConversationCreated?.(targetId)
           if (!onConversationCreated) {
             navigate({ to: '/chat/conversation/$id', params: { id: targetId }, replace: true })
