@@ -1,15 +1,30 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertCircle, MapPin, Navigation, Package, PackageSearch, Search, X } from 'lucide-react'
-import type { Post, PostType } from '@/types/post.type'
+import type { Post, PostCategory, PostType } from '@/types/post.type'
 import { useGetFeed, useSearchPosts } from '@/hooks/use-post'
 import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/feed/')({
   component: FeedPage,
 })
+
+/* ── Constants ──────────────────────────────────────────────── */
+const CATEGORIES: Array<{ value: PostCategory; label: string }> = [
+  { value: 'Electronics', label: 'Electronics' },
+  { value: 'Clothing', label: 'Clothing' },
+  { value: 'Accessories', label: 'Accessories' },
+  { value: 'Documents', label: 'Documents' },
+  { value: 'Wallet', label: 'Wallet' },
+  { value: 'Suitcase', label: 'Suitcase' },
+  { value: 'Bags', label: 'Bags' },
+  { value: 'Keys', label: 'Keys' },
+  { value: 'Other', label: 'Other' },
+]
+
 
 /* ── Geolocation hook ───────────────────────────────────────── */
 function useGeolocation() {
@@ -81,12 +96,16 @@ function FeedPage() {
   }, [profile, signInAnonymous])
 
   const [postType, setPostType] = useState<PostType | null>(null)
+  const [category, setCategory] = useState<PostCategory | null>(null)
+  const [radiusInKm, setRadiusInKm] = useState<number>(10)
   const [searchInput, setSearchInput] = useState('')
   const debouncedSearch = useDebounce(searchInput, 420)
-  const isSearching = debouncedSearch.trim().length > 1
+  const hasText = debouncedSearch.trim().length > 1
+  // Use search endpoint when there's text OR a category filter selected
+  const useSearchMode = hasText || category !== null
   const { coords, error: geoError, loading: geoLoading } = useGeolocation()
 
-  /* Feed (infinite) */
+  /* Feed (infinite) — only when no text and no category filter */
   const {
     data: feedData,
     fetchNextPage,
@@ -96,17 +115,18 @@ function FeedPage() {
   } = useGetFeed({
     latitude: coords?.lat ?? 0,
     longitude: coords?.lng ?? 0,
+    radiusInKm,
     postType,
-    enabled: !geoLoading && !isSearching,
+    category,
+    enabled: !geoLoading && !useSearchMode,
   })
 
-  /* Search (single page) */
+  /* Search — fires on text OR category filter */
   const { data: searchData, isLoading: searchLoading } = useSearchPosts({
     query: debouncedSearch,
-    latitude: coords?.lat,
-    longitude: coords?.lng,
     postType,
-    enabled: isSearching,
+    category,
+    enabled: useSearchMode,
   })
 
   /* Infinite scroll sentinel */
@@ -123,11 +143,18 @@ function FeedPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const feedPosts: Array<Post> = feedData?.pages.flatMap((p) => p.items ?? []).filter((p): p is Post => p != null) ?? []
-  const posts = isSearching ? (searchData?.items ?? []) : feedPosts
-  const isLoading = isSearching ? searchLoading : (geoLoading || feedLoading)
-  const totalCount = isSearching ? (searchData?.totalCount ?? 0) : (feedData?.pages[0]?.totalCount ?? 0)
+  const posts = useSearchMode ? (searchData ?? []) : feedPosts
+  const isLoading = useSearchMode ? searchLoading : (geoLoading || feedLoading)
+  const totalCount = useSearchMode ? (searchData?.length ?? 0) : (feedData?.pages[0]?.totalCount ?? 0)
 
   const handleClearSearch = useCallback(() => setSearchInput(''), [])
+  const hasActiveFilters = postType !== null || category !== null || (!useSearchMode && radiusInKm !== 10)
+
+  const handleClearFilters = useCallback(() => {
+    setPostType(null)
+    setCategory(null)
+    setRadiusInKm(10)
+  }, [])
 
   return (
     <div className="min-h-screen bg-white">
@@ -136,7 +163,7 @@ function FeedPage() {
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pt-4 pb-3 space-y-3">
 
-          {/* Title + location */}
+          {/* Title + location + count */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-black text-[#111] tracking-tight leading-tight">Lost &amp; Found</h1>
@@ -147,11 +174,22 @@ function FeedPage() {
                 </p>
               )}
             </div>
-            {!geoLoading && !isSearching && totalCount > 0 && (
-              <span className="text-xs text-[#aaa] font-medium">
-                {totalCount.toLocaleString()} post{totalCount !== 1 ? 's' : ''}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="text-xs text-[#888] hover:text-[#111] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                  Clear filters
+                </button>
+              )}
+              {!geoLoading && !useSearchMode && totalCount > 0 && (
+                <span className="text-xs text-[#aaa] font-medium">
+                  {totalCount.toLocaleString()} post{totalCount !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Search bar */}
@@ -174,24 +212,74 @@ function FeedPage() {
             )}
           </div>
 
-          {/* Type filter tabs */}
-          <div className="flex gap-2">
+          {/* Type segmented control */}
+          <div className="inline-flex bg-gray-100 rounded-xl p-1 gap-0.5">
             {([null, 'Lost', 'Found'] as const).map((t) => (
               <button
                 key={t ?? 'all'}
                 onClick={() => setPostType(t)}
                 className={cn(
-                  'px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer border',
+                  'px-4 py-1.5 rounded-[9px] text-xs font-semibold transition-all duration-150 cursor-pointer',
                   postType === t
                     ? t === 'Lost'
-                      ? 'bg-red-500 text-white border-red-500'
+                      ? 'bg-red-500 text-white shadow-sm'
                       : t === 'Found'
-                        ? 'bg-emerald-500 text-white border-emerald-500'
-                        : 'bg-[#111] text-white border-[#111]'
-                    : 'bg-white text-[#555] border-[#e5e5e5] hover:border-[#999]',
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700',
                 )}
               >
                 {t ?? 'All'}
+              </button>
+            ))}
+          </div>
+
+          {/* Radius slider */}
+          {!useSearchMode && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-gray-400 shrink-0 flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                Radius
+              </span>
+              <Slider
+                min={1}
+                max={50}
+                step={1}
+                value={[radiusInKm]}
+                onValueChange={([v]) => setRadiusInKm(v)}
+                className="flex-1"
+              />
+              <span className="text-xs font-semibold text-gray-700 w-12 text-right shrink-0">
+                {radiusInKm} km
+              </span>
+            </div>
+          )}
+
+          {/* Category chips */}
+          <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+            <button
+              onClick={() => setCategory(null)}
+              className={cn(
+                'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer whitespace-nowrap',
+                category === null
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700',
+              )}
+            >
+              All categories
+            </button>
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setCategory(category === cat.value ? null : cat.value)}
+                className={cn(
+                  'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer whitespace-nowrap',
+                  category === cat.value
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700',
+                )}
+              >
+                {cat.label}
               </button>
             ))}
           </div>
@@ -216,12 +304,14 @@ function FeedPage() {
             {Array.from({ length: 8 }).map((_, i) => <PostSkeleton key={i} />)}
           </PostGrid>
         ) : posts.length === 0 ? (
-          <EmptyState isSearch={isSearching} query={debouncedSearch} onClear={handleClearSearch} />
+          <EmptyState isSearch={useSearchMode} hasText={hasText} query={debouncedSearch} onClear={handleClearSearch} />
         ) : (
           <>
-            {isSearching && (
+            {useSearchMode && (
               <p className="text-xs text-[#aaa] font-medium mb-4">
-                {searchData?.totalCount ?? 0} result{(searchData?.totalCount ?? 0) !== 1 ? 's' : ''} for &ldquo;{debouncedSearch}&rdquo;
+                {searchData?.length ?? 0} result{(searchData?.length ?? 0) !== 1 ? 's' : ''}
+                {hasText && <span> for &ldquo;{debouncedSearch}&rdquo;</span>}
+                {category && <span> in <strong>{category}</strong></span>}
               </p>
             )}
 
@@ -230,7 +320,7 @@ function FeedPage() {
             </PostGrid>
 
             {/* Infinite scroll sentinel (feed mode only) */}
-            {!isSearching && (
+            {!useSearchMode && (
               <>
                 <div ref={sentinelRef} className="h-1" />
                 {isFetchingNextPage && (
@@ -338,10 +428,12 @@ function PostSkeleton() {
 /* ── Empty state ────────────────────────────────────────────── */
 function EmptyState({
   isSearch,
+  hasText,
   query,
   onClear,
 }: {
   isSearch: boolean
+  hasText: boolean
   query: string
   onClear: () => void
 }) {
@@ -356,7 +448,9 @@ function EmptyState({
         </p>
         <p className="text-sm text-[#aaa] mt-1 max-w-xs">
           {isSearch
-            ? `No posts matched "${query}". Try different keywords.`
+            ? hasText
+              ? `No posts matched "${query}". Try different keywords.`
+              : 'No posts found in this category.'
             : 'There are no lost or found posts in your area. Check back later.'}
         </p>
       </div>

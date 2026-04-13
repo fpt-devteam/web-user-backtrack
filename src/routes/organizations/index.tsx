@@ -9,24 +9,6 @@ export const Route = createFileRoute('/organizations/')({
   component: OrgListPage,
 })
 
-/* ─── helpers ─── */
-const INDUSTRY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  default: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Healthcare: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Education: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Retail: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Hospitality: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Transport: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Government: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  University: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Apartment: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Hotel: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-  Airport: { bg: 'bg-[#FF385C]', text: 'text-white', border: 'border-[#FF385C]' },
-}
-
-function getIndustryStyle(industry: string) {
-  return INDUSTRY_COLORS[industry] ?? INDUSTRY_COLORS.default
-}
 
 /* ─── page ─── */
 function OrgListPage() {
@@ -107,22 +89,22 @@ function OrgListPage() {
             </div>
           </div>
 
-          {/* Search - Centered and larger */}
+          {/* Search */}
           <div className="relative mt-8 max-w-3xl mx-auto">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#bbb] pointer-events-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#bbb] pointer-events-none" />
             <input
               type="text"
               placeholder="Search by name or location…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full bg-white rounded-full pl-14 pr-14 py-4 text-base font-medium text-[#111] placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-brand-ring/30 border border-[#e8e8e8] hover:border-[#d5d5d5] focus:border-brand-300 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="w-full bg-[#f5f5f5] rounded-full pl-10 pr-10 py-2.5 text-sm font-medium text-[#111] placeholder:text-[#bbb] outline-none focus:ring-2 focus:ring-gray-200 border border-transparent focus:border-gray-200 transition-all duration-200"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-[#f0f0f0] hover:bg-[#e5e5e5] transition-colors cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-[#ddd] hover:bg-[#ccc] transition-colors cursor-pointer"
               >
-                <X className="w-3.5 h-3.5 text-[#888]" />
+                <X className="w-3 h-3 text-[#555]" />
               </button>
             )}
           </div>
@@ -130,25 +112,20 @@ function OrgListPage() {
           {/* Industry navigation chips - Centered */}
           {!isLoading && industries.length > 0 && (
             <div className="flex justify-center gap-2 mt-6 flex-wrap max-w-4xl mx-auto">
-              {industries.map((ind) => {
-                const style = getIndustryStyle(ind)
-                return (
-                  <button
-                    key={ind}
-                    onClick={() => {
-                      const element = document.getElementById(`industry-${ind}`)
-                      if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                      }
-                    }}
-                    className={`text-xs font-semibold px-4 py-2.5 rounded-full border-0 transition-all duration-200 cursor-pointer
-                      ${style.bg} ${style.text} 
-                      hover:shadow-lg hover:scale-105 hover:brightness-110 active:scale-95`}
-                  >
-                    {ind}
-                  </button>
-                )
-              })}
+              {industries.map((ind) => (
+                <button
+                  key={ind}
+                  onClick={() => {
+                    const element = document.getElementById(`industry-${ind}`)
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }
+                  }}
+                  className="px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer border bg-white text-[#555] border-[#e5e5e5] hover:border-[#999]"
+                >
+                  {ind}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -177,14 +154,13 @@ function OrgListPage() {
           <>
             {industries.map((industry) => {
               const industryOrgs = orgsByIndustry[industry]
-              const industryStyle = getIndustryStyle(industry)
-              
+
               return (
                 <div key={industry} id={`industry-${industry}`} className="space-y-4 scroll-mt-32">
                   {/* Industry Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${industryStyle.bg} ${industryStyle.text}`}>
+                      <span className="px-3 py-1 rounded-full text-sm font-bold bg-white text-[#555] border border-[#e5e5e5]">
                         {industry}
                       </span>
                       <span className="text-[#717171] text-sm">→</span>

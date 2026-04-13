@@ -1,5 +1,26 @@
 export type PostType = 'Lost' | 'Found'
 
+export type PostCategory =
+  | 'Electronics'
+  | 'Clothing'
+  | 'Accessories'
+  | 'Documents'
+  | 'Wallet'
+  | 'Suitcase'
+  | 'Bags'
+  | 'Keys'
+  | 'Other'
+
+export interface FeedFilters {
+  geo?: {
+    radiusInKm?: number | null
+  } | null
+  postType?: PostType | null
+  category?: PostCategory | null
+  authorId?: string | null
+  organizationId?: string | null
+}
+
 export interface PostLocation {
   latitude: number
   longitude: number
@@ -26,22 +47,16 @@ export interface Post {
 }
 
 export interface FeedRequest {
-  location: {
-    latitude: number
-    longitude: number
-  }
-  postType?: PostType | null
+  location: { latitude: number; longitude: number }
+  query: string
+  filters?: FeedFilters | null
   page?: number
   pageSize?: number
 }
 
 export interface SearchPostsRequest {
   query: string
-  location?: {
-    latitude: number
-    longitude: number
-  } | null
-  postType?: PostType | null
+  filters?: FeedFilters | null
   page?: number
   pageSize?: number
 }
@@ -59,6 +74,17 @@ export interface FeedApiPostItem {
   additionalDetails?: string | null
 }
 
+export interface FeedApiPostOrganization {
+  id: string
+  name: string
+  slug: string
+  location?: { latitude: number; longitude: number } | null
+  displayAddress?: string | null
+  phone?: string | null
+  industryType?: string | null
+  logoUrl?: string | null
+}
+
 export interface FeedApiPost {
   id: string
   author: {
@@ -66,15 +92,22 @@ export interface FeedApiPost {
     displayName: string
     avatarUrl?: string | null
   }
+  organization?: FeedApiPostOrganization | null
   postType: PostType
+  status?: string | null
   item: FeedApiPostItem
-  imageUrls?: string[] | null
+  imageUrls?: Array<string> | null
   location: { latitude: number; longitude: number }
   externalPlaceId?: string | null
   displayAddress?: string | null
   eventTime?: string | null
   createdAt: string
   distanceInMeters?: number | null
+  finderInfo?: {
+    finderName?: string | null
+    email?: string | null
+    phone?: string | null
+  } | null
 }
 
 export interface FeedApiResponse {

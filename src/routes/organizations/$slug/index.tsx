@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import {
   AlertTriangle,
   ArrowLeft,
-  Backpack,
   Building2,
   Camera,
   CheckCircle2,
@@ -13,7 +12,6 @@ import {
   Clock,
   CreditCard,
   Handshake,
-  Key,
   Mail,
   MapPin,
   MessageCircle,
@@ -22,13 +20,12 @@ import {
   Phone,
   QrCode,
   ShieldCheck,
-  Shirt,
-  Umbrella,
-  Wallet,
 } from 'lucide-react'
 import { useState } from 'react'
 import type { Variants } from 'framer-motion'
 import type { BusinessHour } from '@/types/org.type'
+import type { Post } from '@/types/post.type'
+import { useGetPostsByOrg } from '@/hooks/use-post'
 import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
 import { orgKeys, useGetOrgBySlug  } from '@/hooks/use-org'
 import { useCreateUser } from '@/hooks/use-user'
@@ -63,19 +60,6 @@ const fadeUpReduced: Variants = {
   show: { opacity: 1, transition: { duration: 0.2 } },
 }
 
-/* ─────────────── mock found-items ─────────────── */
-const FOUND_ITEMS = [
-  { id: '1', icon: Key,      label: 'Keys',           category: 'Keys',         hoursAgo: 2,  blur: true  },
-  { id: '2', icon: Wallet,   label: 'Leather wallet', category: 'Wallet / Bag', hoursAgo: 5,  blur: true  },
-  { id: '3', icon: Shirt,    label: 'Jacket',         category: 'Clothing',     hoursAgo: 8,  blur: false },
-  { id: '4', icon: Umbrella, label: 'Umbrella',       category: 'Accessories',  hoursAgo: 12, blur: false },
-  { id: '5', icon: Backpack, label: 'Backpack',       category: 'Bags',         hoursAgo: 24, blur: true  },
-  { id: '6', icon: Package,  label: 'Gift box',       category: 'Other',        hoursAgo: 36, blur: false },
-  { id: '7', icon: Phone,    label: 'iPhone 14',      category: 'Electronics',  hoursAgo: 48, blur: true  },
-  { id: '8', icon: Camera,   label: 'Camera',         category: 'Electronics',  hoursAgo: 52, blur: false },
-  { id: '9', icon: Key,      label: 'Car keys',       category: 'Keys',         hoursAgo: 60, blur: true  },
-  { id: '10', icon: Wallet,  label: 'Blue wallet',    category: 'Wallet / Bag', hoursAgo: 72, blur: false },
-]
 
 const DEFAULT_DESCRIPTION = 'Official lost and found intake and return point. We are committed to safeguarding belongings and returning them safely to their owners.'
 const DEFAULT_LOCATION_NOTE = 'Floor 1, Reception Desk'
@@ -199,7 +183,7 @@ function OrgDetailPage() {
           custom={1} variants={motionVariant} initial="hidden" animate="show"
           className="flex flex-col gap-0"
         >
-          <FoundItemsList />
+          <FoundItemsList orgId={org.id} />
           <GuidesAccordion />
           <PolicyRow />
           <StatsRow prefersReduced={prefersReduced} />
@@ -478,104 +462,83 @@ function OrgProfileCard({ org, onChat, isAuthPending }: {
 /* ═══════════════════════════════════════════ */
 /*   RIGHT: Found Items List (Airbnb-style)   */
 /* ═══════════════════════════════════════════ */
-function FoundItemsList() {
-  const [visibleCount, setVisibleCount] = useState(3)
-  const hasMore = visibleCount < FOUND_ITEMS.length
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget
-    const scrolledToBottom = 
-      target.scrollHeight - target.scrollTop - target.clientHeight < 50
-
-    if (scrolledToBottom && hasMore) {
-      setVisibleCount(prev => Math.min(prev + 2, FOUND_ITEMS.length))
-    }
-  }
+function FoundItemsList({ orgId }: { orgId: string }) {
+  const { data: posts, isLoading } = useGetPostsByOrg(orgId)
 
   return (
     <div className="bg-white rounded-2xl border border-[#DDDDDD] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
       {/* Header */}
       <div className="px-6 pt-6 pb-4 border-b border-[#f0f0f0]">
         <h2 className="text-lg font-black text-[#111]">Recently found items here</h2>
-        <p className="text-sm text-[#888] mt-1">Tap a card to describe and verify your item</p>
+        <p className="text-sm text-[#888] mt-1">Tap a card to see details</p>
       </div>
 
-      {/* Scrollable items container with fixed height */}
-      <div 
-        className="overflow-y-scroll px-5 py-4"
-        style={{ 
-          height: '550px'
-        }}
-        onScroll={handleScroll}
-      >
-        <div className="space-y-4">
-          {FOUND_ITEMS.slice(0, visibleCount).map((item) => (
-            <FoundItemCard key={item.id} item={item} />
-          ))}
-          
-          {hasMore && (
-            <div className="text-center py-5 text-sm text-[#888] font-medium">
-              ↓ Scroll for more items ↓
+      {/* Items */}
+      <div className="overflow-y-auto px-5 py-4 space-y-4" style={{ height: '550px' }}>
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-5 p-6 rounded-2xl border border-[#DDDDDD]">
+              <Skeleton className="w-28 h-28 rounded-2xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-3 w-1/3" />
+              </div>
             </div>
-          )}
-          
-          {!hasMore && FOUND_ITEMS.length > 3 && (
-            <div className="text-center py-4 text-sm text-[#999]">
-              All items loaded
-            </div>
-          )}
-        </div>
+          ))
+        ) : !posts?.length ? (
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
+            <Package className="w-10 h-10 text-[#ddd]" strokeWidth={1.5} />
+            <p className="text-sm text-[#aaa] font-medium">No items found at this location yet</p>
+          </div>
+        ) : (
+          posts.map((post) => <FoundItemCard key={post.id} post={post} />)
+        )}
       </div>
     </div>
   )
 }
 
-function FoundItemCard({ item }: { item: typeof FOUND_ITEMS[0] }) {
-  const [revealed, setRevealed] = useState(false)
+function FoundItemCard({ post }: { post: Post }) {
+  const navigate = useNavigate()
+  const timeAgo = (() => {
+    const diff = (Date.now() - new Date(post.createdAt).getTime()) / 1000
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+    return `${Math.floor(diff / 86400)}d ago`
+  })()
 
   return (
     <div
       role="button"
       tabIndex={0}
-      aria-label={item.blur && !revealed ? `${item.label} - tap to describe and view` : item.label}
-      className="bg-white rounded-2xl border border-[#DDDDDD] overflow-hidden 
+      aria-label={post.title}
+      className="bg-white rounded-2xl border border-[#DDDDDD] overflow-hidden
                  shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]
-                 transition-all duration-200 cursor-pointer focus:outline-none 
+                 transition-all duration-200 cursor-pointer focus:outline-none
                  focus:ring-2 focus:ring-brand-ring focus:ring-offset-2"
-      onClick={() => setRevealed(!revealed)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setRevealed(!revealed) }}
+      onClick={() => navigate({ to: '/feed/$postId', params: { postId: post.id } })}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate({ to: '/feed/$postId', params: { postId: post.id } }) }}
     >
       <div className="flex items-center gap-5 p-6">
-        {/* Thumbnail - Made Larger */}
-        <div className="relative shrink-0 w-28 h-28 rounded-2xl overflow-hidden bg-[#F3F4F6]
-                        flex items-center justify-center">
-          <div className={`w-full h-full flex items-center justify-center
-            ${item.blur && !revealed ? 'blur-sm' : ''} transition-all duration-300`}>
-            <item.icon className="w-12 h-12 text-[#9CA3AF]" strokeWidth={1.5} />
-          </div>
-          {item.blur && !revealed && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-              <div className="bg-white/90 text-xs font-bold text-[#111] px-3 py-1.5 rounded-lg
-                              flex items-center gap-1.5 leading-tight text-center">
-                <CheckCircle2 className="w-4 h-4 text-brand-primary" />
-                Describe to view
-              </div>
-            </div>
+        {/* Thumbnail */}
+        <div className="relative shrink-0 w-28 h-28 rounded-2xl overflow-hidden bg-[#F3F4F6] flex items-center justify-center">
+          {post.imageUrl ? (
+            <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+          ) : (
+            <Package className="w-12 h-12 text-[#9CA3AF]" strokeWidth={1.5} />
           )}
         </div>
 
-        {/* Info - Made Larger */}
+        {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className="text-base font-bold text-[#111] truncate">{item.label}</p>
-          <p className="text-sm text-[#888] mt-1">{item.category}</p>
-          <p className="text-sm text-brand-primary font-semibold mt-2">
-            {item.hoursAgo < 24
-              ? `${item.hoursAgo} hours ago`
-              : `${Math.floor(item.hoursAgo / 24)} days ago`}
-          </p>
+          <p className="text-base font-bold text-[#111] truncate">{post.title}</p>
+          {post.location?.displayAddress && (
+            <p className="text-sm text-[#888] mt-1 truncate">{post.location.displayAddress}</p>
+          )}
+          <p className="text-sm text-brand-primary font-semibold mt-2">{timeAgo}</p>
         </div>
 
-        {/* Right arrow - Made Larger */}
         <span className="text-[#ccc] text-2xl shrink-0">›</span>
       </div>
     </div>
