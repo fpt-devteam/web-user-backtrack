@@ -1,6 +1,6 @@
 import type { ApiResponse } from '@/types/api-response.type'
 import type { PagedResponse } from '@/types/pagination.type'
-import type { FeedApiPost, FeedApiResponse, FeedRequest, Post } from '@/types/post.type'
+import type { FeedApiPost, FeedApiResponse, FeedRequest, Post, SearchPostsRequest } from '@/types/post.type'
 import { privateClient } from '@/lib/api-client'
 
 function mapApiPost(apiPost: FeedApiPost): Post {
@@ -62,10 +62,10 @@ export const postService = {
     }
   },
 
-  async searchPosts(query: string): Promise<Array<Post>> {
+  async searchPosts(req: SearchPostsRequest): Promise<Array<Post>> {
     const { data } = await privateClient.post<ApiResponse<Array<FeedApiPost>>>(
       '/api/core/posts/search',
-      { query },
+      req,
     )
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to search posts')
     return data.data.map(mapApiPost)

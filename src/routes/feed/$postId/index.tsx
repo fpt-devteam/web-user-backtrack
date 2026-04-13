@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   ArrowLeft,
   Award,
@@ -25,10 +25,11 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { postKeys, useGetPost } from '@/hooks/use-post'
+import { postKeys, useGetPost, useSearchPosts } from '@/hooks/use-post'
 import { useCreateDirectConversation } from '@/hooks/use-messager'
 import { postService } from '@/services/post.service'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { Post, PostCategory } from '@/types/post.type'
 
 export const Route = createFileRoute('/feed/$postId/')({
   component: PostDetailPage,
@@ -241,6 +242,88 @@ function CalendarWidget({ iso, label }: { iso: string; label: string }) {
   )
 }
 
+/* ── Related posts ──────────────────────────────────────────── */
+function RelatedPostCard({ post }: { post: Post }) {
+  const isLost = post.postType === 'Lost'
+  return (
+    <Link
+      to="/feed/$postId"
+      params={{ postId: post.id }}
+      className="group shrink-0 w-44 block"
+    >
+      <div className="relative aspect-square rounded-xl overflow-hidden bg-[#f3f4f6] mb-2">
+        {post.imageUrl ? (
+          <img
+            src={post.imageUrl}
+            alt={post.title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Package className="w-8 h-8 text-[#d1d5db]" />
+          </div>
+        )}
+        <span className={cn(
+          'absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide',
+          isLost ? 'bg-red-500/90 text-white' : 'bg-emerald-500/90 text-white',
+        )}>
+          {post.postType}
+        </span>
+      </div>
+      <p className="text-sm font-semibold text-[#111] leading-snug line-clamp-2 group-hover:underline">
+        {post.title}
+      </p>
+      {post.location?.displayAddress && (
+        <p className="text-xs text-[#717171] mt-0.5 line-clamp-1 flex items-center gap-1">
+          <MapPin className="w-3 h-3 shrink-0" />
+          {post.location.displayAddress}
+        </p>
+      )}
+    </Link>
+  )
+}
+
+function RelatedPosts({ category, currentPostId }: { category: string; currentPostId: string }) {
+  const { data, isLoading } = useSearchPosts({
+    query: '',
+    category: category as PostCategory,
+    enabled: true,
+  })
+
+  const related = data?.filter((p) => p.id !== currentPostId).slice(0, 10) ?? []
+
+  if (!isLoading && related.length === 0) return null
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-[#111] mb-4">
+        More in <span className="capitalize">{category}</span>
+      </h2>
+
+      <div className="overflow-hidden">
+        {isLoading ? (
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="shrink-0 w-44">
+                <Skeleton className="aspect-square w-full rounded-xl mb-2" />
+                <Skeleton className="h-3.5 w-3/4 rounded" />
+                <Skeleton className="h-3 w-1/2 rounded mt-1" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+            {related.map((post) => (
+              <RelatedPostCard key={post.id} post={post} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 /* ── Page ───────────────────────────────────────────────────── */
 function PostDetailPage() {
   const { postId } = Route.useParams()
@@ -400,24 +483,41 @@ function PostDetailPage() {
 
             <hr className="my-6 border-gray-100" />
 
-            {/* Author */}
-            <div className="flex items-center gap-4">
-              {post.author.avatarUrl ? (
-                <img
-                  src={post.author.avatarUrl}
-                  alt={post.author.displayName}
-                  className="w-12 h-12 rounded-full object-cover shrink-0"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-[#e5e7eb] flex items-center justify-center shrink-0">
-                  <User className="w-6 h-6 text-[#9ca3af]" />
+            {/* Author / Organization */}
+            {(() => {
+              const org = post.organization
+              const hasAuthorName = !!post.author.displayName
+              const hasAuthorAvatar = !!post.author.avatarUrl
+              const displayName = hasAuthorName ? post.author.displayName : (org?.name ?? 'Unknown')
+              const avatarUrl = hasAuthorAvatar ? post.author.avatarUrl : (org ? org.logoUrl : null)
+              const subtitle = org
+                ? `${org.name}${org.displayAddress ? ` · ${org.displayAddress}` : ''}`
+                : `Posted ${formatPostedDate(post.createdAt)}`
+
+              return (
+                <div className="flex items-center gap-4">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={displayName}
+                      className="w-12 h-12 rounded-full object-cover shrink-0"
+                    />
+                  ) : org ? (
+                    <div className="w-12 h-12 rounded-xl bg-[#f3f4f6] flex items-center justify-center shrink-0 text-base font-bold text-[#555]">
+                      {org.name.charAt(0).toUpperCase()}
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-[#e5e7eb] flex items-center justify-center shrink-0">
+                      <User className="w-6 h-6 text-[#9ca3af]" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-base font-semibold text-[#111]">{displayName}</p>
+                    <p className="text-sm text-[#717171] line-clamp-1">{subtitle}</p>
+                  </div>
                 </div>
-              )}
-              <div>
-                <p className="text-base font-semibold text-[#111]">{post.author.displayName}</p>
-                <p className="text-sm text-[#717171]">Posted {formatPostedDate(post.createdAt)}</p>
-              </div>
-            </div>
+              )
+            })()}
 
             <hr className="my-6 border-gray-100" />
 
@@ -552,6 +652,12 @@ function PostDetailPage() {
             </div>
           </div>
 
+        </div>
+
+        {/* ── Related posts (full width, below both columns) ───── */}
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 pb-16">
+          <hr className="mb-8 border-gray-100" />
+          <RelatedPosts category={post.item.category} currentPostId={post.id} />
         </div>
       </div>
     </>
