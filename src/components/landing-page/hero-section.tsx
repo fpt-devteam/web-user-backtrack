@@ -82,12 +82,6 @@ export function HeroSection() {
           {/* ── Left: text content ── */}
           <div className="space-y-7">
 
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-brand-600/6 border border-brand-600/15 text-[#444] text-xs font-semibold px-4 py-2 rounded-full w-fit tracking-widest uppercase">
-              <Sparkles className="w-3 h-3 text-brand-400" />
-              AI-Powered Lost &amp; Found
-            </div>
-
             {/* Headline */}
             <h1 className="font-black text-[#0F0F0F] leading-[1.0] tracking-tight"
               style={{ fontSize: 'clamp(2.6rem, 5vw, 4.8rem)' }}>

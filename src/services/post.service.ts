@@ -1,6 +1,6 @@
 import type { ApiResponse } from '@/types/api-response.type'
 import type { PagedResponse } from '@/types/pagination.type'
-import type { FeedApiPost, FeedApiResponse, FeedRequest, Post, SearchPostsRequest } from '@/types/post.type'
+import type { FeedApiPost, FeedApiResponse, FeedRequest, Post } from '@/types/post.type'
 import { privateClient } from '@/lib/api-client'
 
 function mapApiPost(apiPost: FeedApiPost): Post {
@@ -31,6 +31,14 @@ function flattenFeedResponse(raw: FeedApiResponse): Array<Post> {
 }
 
 export const postService = {
+  async getPostsByOrgId(orgId: string): Promise<Array<Post>> {
+    const { data } = await privateClient.get<ApiResponse<{ items: Array<FeedApiPost> }>>(
+      `/api/core/posts/orgs/${orgId}`,
+    )
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch org posts')
+    return data.data.items.map(mapApiPost)
+  },
+
   async getPostById(id: string): Promise<FeedApiPost> {
     const { data } = await privateClient.get<ApiResponse<FeedApiPost>>(
       `/api/core/posts/${id}`,
@@ -54,12 +62,12 @@ export const postService = {
     }
   },
 
-  async searchPosts(req: SearchPostsRequest): Promise<PagedResponse<Post>> {
-    const { data } = await privateClient.post<ApiResponse<PagedResponse<Post>>>(
+  async searchPosts(query: string): Promise<Array<Post>> {
+    const { data } = await privateClient.post<ApiResponse<Array<FeedApiPost>>>(
       '/api/core/posts/search',
-      req,
+      { query },
     )
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to search posts')
-    return data.data
+    return data.data.map(mapApiPost)
   },
 }

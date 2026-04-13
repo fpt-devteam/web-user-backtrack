@@ -103,9 +103,6 @@ function FeedPage() {
   /* Search (single page) */
   const { data: searchData, isLoading: searchLoading } = useSearchPosts({
     query: debouncedSearch,
-    latitude: coords?.lat,
-    longitude: coords?.lng,
-    postType,
     enabled: isSearching,
   })
 
@@ -123,9 +120,9 @@ function FeedPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const feedPosts: Array<Post> = feedData?.pages.flatMap((p) => p.items ?? []).filter((p): p is Post => p != null) ?? []
-  const posts = isSearching ? (searchData?.items ?? []) : feedPosts
+  const posts = isSearching ? (searchData ?? []) : feedPosts
   const isLoading = isSearching ? searchLoading : (geoLoading || feedLoading)
-  const totalCount = isSearching ? (searchData?.totalCount ?? 0) : (feedData?.pages[0]?.totalCount ?? 0)
+  const totalCount = isSearching ? (searchData?.length ?? 0) : (feedData?.pages[0]?.totalCount ?? 0)
 
   const handleClearSearch = useCallback(() => setSearchInput(''), [])
 
@@ -221,7 +218,7 @@ function FeedPage() {
           <>
             {isSearching && (
               <p className="text-xs text-[#aaa] font-medium mb-4">
-                {searchData?.totalCount ?? 0} result{(searchData?.totalCount ?? 0) !== 1 ? 's' : ''} for &ldquo;{debouncedSearch}&rdquo;
+                {searchData?.length ?? 0} result{(searchData?.length ?? 0) !== 1 ? 's' : ''} for &ldquo;{debouncedSearch}&rdquo;
               </p>
             )}
 

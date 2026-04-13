@@ -3,12 +3,12 @@ import {
   Building2,
   ChevronRight,
   Download,
-  Headset,
   HelpCircle,
   Info,
   LogOut,
   Menu,
   MessageCircle,
+  PackageSearch,
   QrCode,
   Sparkles,
   User,
@@ -45,8 +45,8 @@ interface SecondaryMenuItem {
 // ── Constants ─────────────────────────────────────────────────
 
 const QUICK_LINKS = [
-  { icon: Headset,       label: 'Support',  to: '/support'  },
-  { icon: MessageCircle, label: 'Messager', to: '/messager' },
+  { icon: PackageSearch, label: 'Feed',     to: '/feed'     },
+  { icon: MessageCircle, label: 'Message', to: '/message' },
   { icon: Building2,     label: 'Orgs',     to: '/organizations' },
 ]
 
@@ -149,7 +149,7 @@ export function NavDrawer() {
     navigate({ to: '/' })
   }
 
-  const primaryItems: PrimaryMenuItem[] = isSignedIn
+  const primaryItems: Array<PrimaryMenuItem> = isSignedIn
     ? [
         { icon: User,     title: 'My Account',        subtitle: 'View and edit your profile',    onClick: () => go('/account')  },
         { icon: Sparkles, title: 'Backtrack Premium',  subtitle: 'Upgrade for more features',     onClick: () => go('/premium')  },
@@ -163,7 +163,7 @@ export function NavDrawer() {
         { icon: Download, title: 'Download App',       subtitle: 'Get the full mobile experience'                              },
       ]
 
-  const secondaryItems: SecondaryMenuItem[] = [
+  const secondaryItems: Array<SecondaryMenuItem> = [
     { icon: Info,       label: 'How it Works' },
     { icon: HelpCircle, label: 'Help Center',  onClick: () => go('/help') },
   ]

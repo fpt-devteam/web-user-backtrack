@@ -1,14 +1,24 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { postService } from '@/services/post.service'
-import type { PostType } from '@/types/post.type'
+import type { Post, PostType } from '@/types/post.type'
 
 export const postKeys = {
   all: ['posts'] as const,
   detail: (id: string) => [...postKeys.all, 'detail', id] as const,
+  byOrg: (orgId: string) => [...postKeys.all, 'org', orgId] as const,
   feed: (lat: number, lng: number, postType?: PostType | null) =>
     [...postKeys.all, 'feed', lat, lng, postType ?? 'all'] as const,
-  search: (query: string, postType?: PostType | null) =>
-    [...postKeys.all, 'search', query, postType ?? 'all'] as const,
+  search: (query: string) =>
+    [...postKeys.all, 'search', query] as const,
+}
+
+export function useGetPostsByOrg(orgId: string) {
+  return useQuery({
+    queryKey: postKeys.byOrg(orgId),
+    queryFn: () => postService.getPostsByOrgId(orgId),
+    staleTime: 1000 * 60 * 2,
+    enabled: !!orgId,
+  })
 }
 
 export function useGetPost(id: string) {
@@ -51,23 +61,13 @@ export function useGetFeed({ latitude, longitude, postType, enabled = true }: Us
 
 interface UseSearchPostsParams {
   query: string
-  latitude?: number | null
-  longitude?: number | null
-  postType?: PostType | null
   enabled?: boolean
 }
 
-export function useSearchPosts({ query, latitude, longitude, postType, enabled = true }: UseSearchPostsParams) {
-  return useQuery({
-    queryKey: postKeys.search(query, postType),
-    queryFn: () =>
-      postService.searchPosts({
-        query,
-        location: latitude && longitude ? { latitude, longitude } : null,
-        postType: postType ?? undefined,
-        page: 1,
-        pageSize: PAGE_SIZE,
-      }),
+export function useSearchPosts({ query, enabled = true }: UseSearchPostsParams) {
+  return useQuery<Array<Post>>({
+    queryKey: postKeys.search(query),
+    queryFn: () => postService.searchPosts(query),
     enabled: enabled && query.trim().length > 1,
     staleTime: 1000 * 30,
   })
