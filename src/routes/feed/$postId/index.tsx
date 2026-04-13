@@ -406,10 +406,7 @@ function PostDetailPage() {
             </div>
           ) : (
             <div className="relative rounded-2xl overflow-hidden">
-              <div className={cn(
-                'grid gap-2',
-                images.length >= 3 ? 'grid-cols-2' : 'grid-cols-1',
-              )}>
+              <div className="grid grid-cols-2 gap-2">
                 {/* Main large image */}
                 <div
                   className="aspect-[4/3] bg-[#f3f4f6] cursor-pointer overflow-hidden"
@@ -417,8 +414,15 @@ function PostDetailPage() {
                 >
                   <img src={images[0]} alt={post.item.itemName} className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300" />
                 </div>
-                {/* Side images */}
-                {images.length >= 3 && (
+                {/* Side: 2 images → equal tile; 3+ → stacked thumbnails */}
+                {images.length === 2 ? (
+                  <div
+                    className="aspect-[4/3] bg-[#f3f4f6] cursor-pointer overflow-hidden"
+                    onClick={() => openGallery(1)}
+                  >
+                    <img src={images[1]} alt="" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300" />
+                  </div>
+                ) : (
                   <div className="grid grid-rows-2 gap-2">
                     {images.slice(1, 3).map((src, i) => (
                       <div
