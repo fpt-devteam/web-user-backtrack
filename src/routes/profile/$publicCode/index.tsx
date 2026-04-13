@@ -16,7 +16,7 @@ import { useGetUserPosts } from '@/hooks/use-user'
 import { StartChatButton } from '@/components/found-item/start-chat-button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getErrorMessage } from '@/lib/utils'
+import { Splash } from '@/components/ui/splash'
 
 export const Route = createFileRoute('/profile/$publicCode/')({
   component: OwnerProfilePage,
@@ -42,12 +42,12 @@ function OwnerProfilePage() {
   // Redirect to home if profile not found
   useEffect(() => {
     if (profileError) {
-      const timer = setTimeout(() => {
-        navigate({ to: '/' })
-      }, 2000) // Show error for 2s before redirecting
-      return () => clearTimeout(timer)
+      navigate({ to: '/' })
     }
   }, [profileError, navigate])
+
+  if (isLoading) return <Splash />
+  if (profileError || !profile) return null
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col pb-40">
@@ -81,10 +81,7 @@ function OwnerProfilePage() {
         <div className="max-w-2xl mx-auto space-y-6">
 
           {/* Profile Card */}
-          {isLoading ? (
-            <ProfileSkeleton />
-          ) : profile ? (
-            <div className="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100">
+          <div className="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100">
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 sm:gap-6 -mt-16 sm:-mt-20">
                 <div className="relative">
                   <Avatar className="w-28 h-28 sm:w-32 sm:h-32 border-[6px] border-white shadow-xl ring-1 ring-black/5">
@@ -147,17 +144,7 @@ function OwnerProfilePage() {
                   </p>
                 </div>
               )}
-            </div>
-          ) : null}
-
-          {/* Error Message */}
-          {profileError && !isProfileLoading && (
-            <div className="bg-red-50 border border-red-100 rounded-[2rem] p-5 text-center">
-              <X className="w-10 h-10 text-red-400 mx-auto mb-2" />
-              <p className="text-sm font-bold text-red-900">Profile Not Found</p>
-              <p className="text-xs text-red-600 mt-1">{getErrorMessage(profileError)}</p>
-            </div>
-          )}
+          </div>
 
           {/* Safety Reminder */}
           {!safetyDismissed && (
@@ -299,21 +286,4 @@ function PostCard({ post }: { post: Post }) {
   )
 }
 
-/* ── Skeleton ── */
-function ProfileSkeleton() {
-  return (
-    <div className="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100">
-      <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 sm:gap-6 -mt-16 sm:-mt-20">
-        <Skeleton className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-[6px] border-white shadow-xl" />
-        <div className="flex-1 space-y-2 text-center sm:text-left">
-          <Skeleton className="h-8 w-48 mx-auto sm:mx-0" />
-          <Skeleton className="h-4 w-32 mx-auto sm:mx-0" />
-        </div>
-      </div>
-      <div className="mt-8 space-y-2">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-      </div>
-    </div>
-  )
-}
+
