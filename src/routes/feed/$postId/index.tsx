@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   ArrowLeft,
@@ -33,12 +33,17 @@ import type { Post, PostCategory } from '@/types/post.type'
 
 export const Route = createFileRoute('/feed/$postId/')({
   component: PostDetailPage,
-  loader: ({ context: { queryClient }, params: { postId } }) =>
-    queryClient.ensureQueryData({
-      queryKey: postKeys.detail(postId),
-      queryFn: () => postService.getPostById(postId),
-      staleTime: 1000 * 60 * 5,
-    }),
+  loader: async ({ context: { queryClient }, params: { postId } }) => {
+    try {
+      await queryClient.ensureQueryData({
+        queryKey: postKeys.detail(postId),
+        queryFn: () => postService.getPostById(postId),
+        staleTime: 1000 * 60 * 5,
+      })
+    } catch {
+      // Let the component handle error/not-found state
+    }
+  },
 })
 
 /* ── Category icon map ──────────────────────────────────────── */
@@ -340,25 +345,12 @@ function PostDetailPage() {
     navigate({ to: '/message', search: { selectedId: conv.conversationId } })
   }
 
-  if (isLoading) return <DetailSkeleton />
+  useEffect(() => {
+    if (isError) navigate({ to: '/' })
+  }, [isError, navigate])
 
-  if (isError || !post) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 px-6">
-        <PackageSearch className="w-14 h-14 text-[#d1d5db]" />
-        <p className="text-xl font-bold text-[#111]">Post not found</p>
-        <p className="text-sm text-[#717171] text-center max-w-xs">
-          This post may have been removed or doesn't exist.
-        </p>
-        <button
-          onClick={() => navigate({ to: '/feed' })}
-          className="mt-2 px-6 py-2.5 rounded-xl bg-[#111] text-white text-sm font-semibold hover:bg-[#333] transition-colors cursor-pointer"
-        >
-          Back to feed
-        </button>
-      </div>
-    )
-  }
+  if (isLoading) return <DetailSkeleton />
+  if (isError || !post) return null
 
   const images = post.imageUrls ?? []
   const isLost = post.postType === 'Lost'
