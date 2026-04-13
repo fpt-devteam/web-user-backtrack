@@ -1,8 +1,8 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AlertCircle, MapPin, Navigation, Package, PackageSearch, Search, X } from 'lucide-react'
 import type { Post, PostCategory, PostType } from '@/types/post.type'
-import { useGetFeed, useSearchPosts } from '@/hooks/use-post'
+import { useSearchPosts } from '@/hooks/use-post'
 import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Slider } from '@/components/ui/slider'
@@ -97,63 +97,34 @@ function FeedPage() {
 
   const [postType, setPostType] = useState<PostType | null>(null)
   const [category, setCategory] = useState<PostCategory | null>(null)
-  const [radiusInKm, setRadiusInKm] = useState<number>(10)
+  const [radiusInKm, setRadiusInKm] = useState<number>(1000)
+  const debouncedRadius = useDebounce(radiusInKm, 500)
   const [searchInput, setSearchInput] = useState('')
   const debouncedSearch = useDebounce(searchInput, 420)
   const hasText = debouncedSearch.trim().length > 1
-  // Use search endpoint when there's text OR a category filter selected
-  const useSearchMode = hasText || category !== null
   const { coords, error: geoError, loading: geoLoading } = useGeolocation()
 
-  /* Feed (infinite) — only when no text and no category filter */
-  const {
-    data: feedData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading: feedLoading,
-  } = useGetFeed({
-    latitude: coords?.lat ?? 0,
-    longitude: coords?.lng ?? 0,
-    radiusInKm,
-    postType,
-    category,
-    enabled: !geoLoading && !useSearchMode,
-  })
-
-  /* Search — fires on text OR category filter */
-  const { data: searchData, isLoading: searchLoading } = useSearchPosts({
+  /* Always use search endpoint */
+  const { data, isLoading } = useSearchPosts({
     query: debouncedSearch,
+    latitude: coords?.lat,
+    longitude: coords?.lng,
+    radiusInKm: debouncedRadius,
     postType,
     category,
-    enabled: useSearchMode,
+    enabled: !geoLoading,
   })
 
-  /* Infinite scroll sentinel */
-  const sentinelRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!sentinelRef.current || !hasNextPage) return
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting && !isFetchingNextPage) fetchNextPage() },
-      { threshold: 0.1 },
-    )
-    obs.observe(sentinelRef.current)
-    return () => obs.disconnect()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const feedPosts: Array<Post> = feedData?.pages.flatMap((p) => p.items ?? []).filter((p): p is Post => p != null) ?? []
-  const posts = useSearchMode ? (searchData ?? []) : feedPosts
-  const isLoading = useSearchMode ? searchLoading : (geoLoading || feedLoading)
-  const totalCount = useSearchMode ? (searchData?.length ?? 0) : (feedData?.pages[0]?.totalCount ?? 0)
+  const posts: Array<Post> = data ?? []
+  const totalCount = posts.length
 
   const handleClearSearch = useCallback(() => setSearchInput(''), [])
-  const hasActiveFilters = postType !== null || category !== null || (!useSearchMode && radiusInKm !== 10)
+  const hasActiveFilters = postType !== null || category !== null || radiusInKm !== 1000
 
   const handleClearFilters = useCallback(() => {
     setPostType(null)
     setCategory(null)
-    setRadiusInKm(10)
+    setRadiusInKm(1000)
   }, [])
 
   return (
@@ -184,7 +155,7 @@ function FeedPage() {
                   Clear filters
                 </button>
               )}
-              {!geoLoading && !useSearchMode && totalCount > 0 && (
+              {!geoLoading && totalCount > 0 && (
                 <span className="text-xs text-[#aaa] font-medium">
                   {totalCount.toLocaleString()} post{totalCount !== 1 ? 's' : ''}
                 </span>
@@ -235,25 +206,23 @@ function FeedPage() {
           </div>
 
           {/* Radius slider */}
-          {!useSearchMode && (
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-gray-400 shrink-0 flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                Radius
-              </span>
-              <Slider
-                min={1}
-                max={50}
-                step={1}
-                value={[radiusInKm]}
-                onValueChange={([v]) => setRadiusInKm(v)}
-                className="flex-1"
-              />
-              <span className="text-xs font-semibold text-gray-700 w-12 text-right shrink-0">
-                {radiusInKm} km
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium text-gray-400 shrink-0 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              Radius
+            </span>
+            <Slider
+              min={1}
+              max={5000}
+              step={1}
+              value={[radiusInKm]}
+              onValueChange={([v]) => setRadiusInKm(v)}
+              className="flex-1"
+            />
+            <span className="text-xs font-semibold text-gray-700 w-16 text-right shrink-0">
+              {radiusInKm >= 1000 ? `${(radiusInKm / 1000).toFixed(1)}k` : radiusInKm} km
+            </span>
+          </div>
 
           {/* Category chips */}
           <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
@@ -304,37 +273,18 @@ function FeedPage() {
             {Array.from({ length: 8 }).map((_, i) => <PostSkeleton key={i} />)}
           </PostGrid>
         ) : posts.length === 0 ? (
-          <EmptyState isSearch={useSearchMode} hasText={hasText} query={debouncedSearch} onClear={handleClearSearch} />
+          <EmptyState isSearch={hasText || category !== null} hasText={hasText} query={debouncedSearch} onClear={handleClearSearch} />
         ) : (
           <>
-            {useSearchMode && (
-              <p className="text-xs text-[#aaa] font-medium mb-4">
-                {searchData?.length ?? 0} result{(searchData?.length ?? 0) !== 1 ? 's' : ''}
-                {hasText && <span> for &ldquo;{debouncedSearch}&rdquo;</span>}
-                {category && <span> in <strong>{category}</strong></span>}
-              </p>
-            )}
+            <p className="text-xs text-[#aaa] font-medium mb-4">
+              {totalCount} result{totalCount !== 1 ? 's' : ''}
+              {hasText && <span> for &ldquo;{debouncedSearch}&rdquo;</span>}
+              {category && <span> in <strong>{category}</strong></span>}
+            </p>
 
             <PostGrid>
               {posts.map((post) => <PostCard key={post.id} post={post} />)}
             </PostGrid>
-
-            {/* Infinite scroll sentinel (feed mode only) */}
-            {!useSearchMode && (
-              <>
-                <div ref={sentinelRef} className="h-1" />
-                {isFetchingNextPage && (
-                  <PostGrid className="mt-1">
-                    {Array.from({ length: 4 }).map((_, i) => <PostSkeleton key={i} />)}
-                  </PostGrid>
-                )}
-                {!hasNextPage && feedPosts.length > 0 && (
-                  <p className="text-center text-xs text-[#bbb] font-medium py-8">
-                    You&apos;ve seen all posts nearby.
-                  </p>
-                )}
-              </>
-            )}
           </>
         )}
       </div>

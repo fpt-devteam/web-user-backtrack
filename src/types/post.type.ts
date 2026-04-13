@@ -13,6 +13,7 @@ export type PostCategory =
 
 export interface FeedFilters {
   geo?: {
+    location?: { latitude: number; longitude: number } | null
     radiusInKm?: number | null
   } | null
   postType?: PostType | null

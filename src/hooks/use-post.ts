@@ -13,8 +13,8 @@ export const postKeys = {
     category?: PostCategory | null,
     radius?: number | null,
   ) => [...postKeys.all, 'feed', lat, lng, postType ?? 'all', category ?? 'all', radius ?? 'default'] as const,
-  search: (query: string, postType?: PostType | null, category?: PostCategory | null) =>
-    [...postKeys.all, 'search', query, postType ?? 'all', category ?? 'all'] as const,
+  search: (query: string, postType?: PostType | null, category?: PostCategory | null, lat?: number | null, lng?: number | null, radius?: number | null) =>
+    [...postKeys.all, 'search', query, postType ?? 'all', category ?? 'all', lat ?? 0, lng ?? 0, radius ?? 0] as const,
 }
 
 export function useGetPostsByOrg(orgId: string) {
@@ -73,18 +73,24 @@ export function useGetFeed({ latitude, longitude, radiusInKm, postType, category
 
 interface UseSearchPostsParams {
   query: string
+  latitude?: number | null
+  longitude?: number | null
+  radiusInKm?: number | null
   postType?: PostType | null
   category?: PostCategory | null
   enabled?: boolean
 }
 
-export function useSearchPosts({ query, postType, category, enabled = true }: UseSearchPostsParams) {
+export function useSearchPosts({ query, latitude, longitude, radiusInKm, postType, category, enabled = true }: UseSearchPostsParams) {
   return useQuery<Array<Post>>({
-    queryKey: postKeys.search(query, postType, category),
+    queryKey: postKeys.search(query, postType, category, latitude, longitude, radiusInKm),
     queryFn: () =>
       postService.searchPosts({
         query,
         filters: {
+          geo: latitude != null && longitude != null
+            ? { location: { latitude, longitude }, radiusInKm: radiusInKm ?? null }
+            : null,
           postType: postType ?? null,
           category: category ?? null,
         },
