@@ -3,6 +3,7 @@ import { useAuth, useSignInAnonymous } from "@/hooks/use-auth";
 import { Spinner } from "@/components/ui/spinner";
 import { useNavigate } from "@tanstack/react-router";
 import { useCreateUser } from "@/hooks/use-user";
+import { useCreateDirectConversation } from "@/hooks/use-messager";
 
 export function StartChatButton(
   { partnerId }: { readonly partnerId: string; readonly itemName?: string }
@@ -10,17 +11,18 @@ export function StartChatButton(
   const { profile, syncProfile } = useAuth();
   const { mutateAsync: signInAnonymous, isPending: isSigningIn } = useSignInAnonymous();
   const { mutateAsync: createUser, isPending: isCreatingUser } = useCreateUser();
-  const isLoading = isSigningIn || isCreatingUser;
+  const { mutateAsync: createDirectConv, isPending: isCreatingConv } = useCreateDirectConversation();
+  const isLoading = isSigningIn || isCreatingUser || isCreatingConv;
   const navigate = useNavigate();
 
   const handleStartChat = async () => {
-    // Only sign in anonymously if not already authenticated
     if (!profile) {
       await signInAnonymous();
       await createUser();
       await syncProfile();
     }
-    navigate({ to: "/chat/new/dm/$partnerId", params: { partnerId } });
+    const conv = await createDirectConv(partnerId);
+    navigate({ to: '/message', search: { selectedId: conv.conversationId } });
   };
 
   return (
