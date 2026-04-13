@@ -169,7 +169,11 @@ function MessagerPage() {
       {/* ═══════════════════════════════
           LEFT PANEL — conversation list
       ═══════════════════════════════ */}
-      <aside className="w-[320px] flex-shrink-0 border-r-2 border-gray-300 flex flex-col h-full bg-gray-50">
+      <aside className={cn(
+        'flex-shrink-0 border-r-2 border-gray-300 flex flex-col h-full bg-gray-50',
+        'w-full md:w-[320px]',
+        selectedId ? 'hidden md:flex' : 'flex',
+      )}>
 
         {/* Header */}
         <div className="px-5 pt-6 pb-4 border-b-2 border-gray-300">
@@ -240,7 +244,10 @@ function MessagerPage() {
       {/* ═══════════════════════════════
           RIGHT PANEL — empty state OR active chat
       ═══════════════════════════════ */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-white">
+      <main className={cn(
+        'flex-1 flex flex-col overflow-hidden bg-white',
+        selectedId ? 'flex' : 'hidden md:flex',
+      )}>
         <AnimatePresence mode="wait">
           {selectedId ? (
             <motion.div

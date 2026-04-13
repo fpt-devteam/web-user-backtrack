@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Phone, Video } from 'lucide-react'
+import { ChevronLeft, Phone, Video } from 'lucide-react'
 import type { InfiniteData } from '@tanstack/react-query'
 import type { Conversation } from '@/types/chat.type'
 import type { CursorPagedResponse } from '@/types/pagination.type'
@@ -22,7 +22,7 @@ type ConversationHeaderProps = {
   readonly onClose?: () => void
 }
 
-export function ConversationHeader({ conversationId, fallback }: ConversationHeaderProps) {
+export function ConversationHeader({ conversationId, fallback, onClose }: ConversationHeaderProps) {
   const queryClient = useQueryClient()
 
   // Use cached list data as a placeholder while the single-conversation fetch loads
@@ -83,6 +83,16 @@ export function ConversationHeader({ conversationId, fallback }: ConversationHea
   if (conversationId && (isLoading || !conversation) && !fallback) {
     return (
       <header className="flex items-center gap-3 px-5 py-3.5 border-b-2 border-gray-300 bg-white shrink-0">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="md:hidden p-1.5 -ml-1.5 rounded-full hover:bg-gray-100 transition-colors shrink-0"
+            aria-label="Back"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-700" strokeWidth={2} />
+          </button>
+        )}
         <div className="relative shrink-0">
           <Skeleton className="w-10 h-10 rounded-full" />
         </div>
@@ -103,6 +113,17 @@ export function ConversationHeader({ conversationId, fallback }: ConversationHea
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       className="flex items-center gap-3 px-5 py-3.5 border-b-2 border-gray-300 bg-white shrink-0"
     >
+      {/* Back button — mobile only */}
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="md:hidden p-1.5 -ml-1.5 rounded-full hover:bg-gray-100 transition-colors shrink-0"
+          aria-label="Back"
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-700" strokeWidth={2} />
+        </button>
+      )}
       {/* Avatar + online dot */}
       <div className="relative shrink-0">
         <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center ring-2 ring-gray-200">
