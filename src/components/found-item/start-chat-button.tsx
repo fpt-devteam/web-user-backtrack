@@ -4,6 +4,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useNavigate } from "@tanstack/react-router";
 import { useCreateUser } from "@/hooks/use-user";
 import { useCreateDirectConversation } from "@/hooks/use-messager";
+import { toast } from "@/lib/toast";
 
 export function StartChatButton(
   { partnerId }: { readonly partnerId: string; readonly itemName?: string }
@@ -16,13 +17,24 @@ export function StartChatButton(
   const navigate = useNavigate();
 
   const handleStartChat = async () => {
-    if (!profile) {
-      await signInAnonymous();
-      await createUser();
-      await syncProfile();
+    if (!partnerId) {
+      console.error('[StartChatButton] partnerId is empty — cannot create conversation');
+      toast.error('Unable to start chat: user ID is missing');
+      return;
     }
-    const conv = await createDirectConv(partnerId);
-    navigate({ to: '/message', search: { selectedId: conv.conversationId } });
+    try {
+      if (!profile) {
+        await signInAnonymous();
+        await createUser();
+        await syncProfile();
+      }
+      console.log('[StartChatButton] creating direct conversation with memberId:', partnerId);
+      const conv = await createDirectConv(partnerId);
+      navigate({ to: '/message', search: { selectedId: conv.conversationId } });
+    } catch (err) {
+      console.error('[StartChatButton] handleStartChat error:', err);
+      toast.error('Failed to start chat. Please try again.');
+    }
   };
 
   return (

@@ -15,7 +15,7 @@ interface MessageListProps {
 }
 
 export function MessageList({ conversationId = '' }: MessageListProps) {
-  const { profile } = useAuth()
+  const { profile, firebaseUser } = useAuth()
   const {
     socket,
     joinConversation,
@@ -170,7 +170,7 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
   useEffect(() => {
     if (!socket) return
     const handle = (d: { conversationId: string; userId: string; isTyping: boolean }) => {
-      if (d.conversationId !== conversationId || d.userId === profile?.id) return
+      if (d.conversationId !== conversationId || d.userId === profile?.id || d.userId === firebaseUser?.uid) return
       const { userId, isTyping } = d
       const existing = typingTimersRef.current[userId]
       if (existing) clearTimeout(existing)
@@ -204,7 +204,7 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
     const seenDate = new Date(seenAt)
     for (let i = allMessages.length - 1; i >= 0; i--) {
       const m = allMessages[i]
-      if (m.senderId === profile?.id && new Date(m.createdAt) <= seenDate) {
+      if ((m.senderId === profile?.id || m.senderId === firebaseUser?.uid) && new Date(m.createdAt) <= seenDate) {
         lastSentMsgId = m.id
         break
       }
@@ -265,7 +265,11 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
       {/* Messages */}
       <div className="flex flex-col gap-1">
         {allMessages.map((message, index) => {
-          const isMe = message.senderId === profile?.id
+          // senderId can be either the backend UUID (profile.id) or Firebase UID
+          // depending on which service stored the message — check both
+          const isMe =
+            message.senderId === profile?.id ||
+            message.senderId === firebaseUser?.uid
 
           // Grouping: same sender, within 2 min of adjacent messages
           const next = index + 1 < allMessages.length ? allMessages[index + 1] : undefined
