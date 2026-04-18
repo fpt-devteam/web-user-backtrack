@@ -40,8 +40,8 @@ export function StartChatButton({
         to: '/message',
         search: {
           selectedId: conv.conversationId,
-          ...(fallbackName ? { fallbackName } : {}),
-          ...(fallbackAvatarUrl ? { fallbackAvatarUrl } : {}),
+          fallbackName: fallbackName ?? undefined,
+          fallbackAvatarUrl: fallbackAvatarUrl ?? undefined,
         },
       });
     } catch (err) {

@@ -342,7 +342,7 @@ function PostDetailPage() {
   const handleMessagePoster = async () => {
     if (!post) return
     const conv = await createDirectConv(post.author.id)
-    navigate({ to: '/message', search: { selectedId: conv.conversationId } })
+    navigate({ to: '/message', search: { selectedId: conv.conversationId, fallbackName: undefined, fallbackAvatarUrl: undefined } })
   }
 
   useEffect(() => {

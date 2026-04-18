@@ -289,7 +289,7 @@ function HelpCenterPage() {
               title="Live chat"
               description="Chat with a support agent in real time."
               cta="Start chat"
-              onClick={() => navigate({ to: '/message', search: { selectedId: undefined } })}
+              onClick={() => navigate({ to: '/message', search: { selectedId: undefined, fallbackName: undefined, fallbackAvatarUrl: undefined } })}
             />
             <ContactCard
               icon={Mail}
