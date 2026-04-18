@@ -18,6 +18,8 @@ export const Route = createFileRoute('/message/')({
   component: MessagerPage,
   validateSearch: (search: Record<string, unknown>) => ({
     selectedId: typeof search.selectedId === 'string' ? search.selectedId : undefined,
+    fallbackName: typeof search.fallbackName === 'string' ? search.fallbackName : undefined,
+    fallbackAvatarUrl: typeof search.fallbackAvatarUrl === 'string' ? search.fallbackAvatarUrl : undefined,
   }),
 })
 
@@ -143,7 +145,7 @@ function ConversationListItem({ conv, index, isActive, onClick }: ConversationLi
 
 /* ── Page ────────────────────────────────────────────────── */
 function MessagerPage() {
-  const { selectedId: initialSelectedId } = Route.useSearch()
+  const { selectedId: initialSelectedId, fallbackName, fallbackAvatarUrl } = Route.useSearch()
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null)
   const queryClient = useQueryClient()
 
@@ -262,6 +264,7 @@ function MessagerPage() {
               <ConversationHeader
                 conversationId={selectedId}
                 onClose={() => setSelectedId(null)}
+                fallback={fallbackName ? { name: fallbackName, avatarUrl: fallbackAvatarUrl } : undefined}
               />
 
               {/* Messages */}

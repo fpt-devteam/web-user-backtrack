@@ -40,7 +40,7 @@ const QUICK_SUGGESTIONS = [
 ]
 
 export function MessageInput({ conversationId, orgId, recipientId, onSend, onConversationCreated }: MessageInputProps) {
-  const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, onMessageSendError, isConnected } =
+  const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, onMessageSendError, isConnected, markConversationAsRead } =
     useSocket()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -280,6 +280,7 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
                     disabled={isDisabled}
                     onKeyDown={handleKeyDown}
                     onChange={(e) => { field.onChange(e); handleTyping() }}
+                    onFocus={() => { if (conversationId) markConversationAsRead(conversationId) }}
                     rows={1}
                     className={cn(
                       'w-full resize-none rounded-[22px] px-4 py-2.5',

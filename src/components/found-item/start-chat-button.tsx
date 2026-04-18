@@ -6,9 +6,16 @@ import { useCreateUser } from "@/hooks/use-user";
 import { useCreateDirectConversation } from "@/hooks/use-messager";
 import { toast } from "@/lib/toast";
 
-export function StartChatButton(
-  { partnerId }: { readonly partnerId: string; readonly itemName?: string }
-) {
+export function StartChatButton({
+  partnerId,
+  fallbackName,
+  fallbackAvatarUrl,
+}: {
+  readonly partnerId: string
+  readonly itemName?: string
+  readonly fallbackName?: string
+  readonly fallbackAvatarUrl?: string
+}) {
   const { profile, syncProfile } = useAuth();
   const { mutateAsync: signInAnonymous, isPending: isSigningIn } = useSignInAnonymous();
   const { mutateAsync: createUser, isPending: isCreatingUser } = useCreateUser();
@@ -28,9 +35,15 @@ export function StartChatButton(
         await createUser();
         await syncProfile();
       }
-      console.log('[StartChatButton] creating direct conversation with memberId:', partnerId);
       const conv = await createDirectConv(partnerId);
-      navigate({ to: '/message', search: { selectedId: conv.conversationId } });
+      navigate({
+        to: '/message',
+        search: {
+          selectedId: conv.conversationId,
+          ...(fallbackName ? { fallbackName } : {}),
+          ...(fallbackAvatarUrl ? { fallbackAvatarUrl } : {}),
+        },
+      });
     } catch (err) {
       console.error('[StartChatButton] handleStartChat error:', err);
       toast.error('Failed to start chat. Please try again.');

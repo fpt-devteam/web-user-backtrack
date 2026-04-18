@@ -134,7 +134,14 @@ function OrgDetailPage() {
       const conversation = await chatService.createSupportConversation(org.id)
       const convId = conversation.conversationId
       if (!convId) throw new Error('No conversation ID returned from server')
-      navigate({ to: '/message', search: { selectedId: convId } as never })
+      navigate({
+        to: '/message',
+        search: {
+          selectedId: convId,
+          fallbackName: org.name,
+          ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
+        } as never,
+      })
     } catch (err) {
       toast.fromError(err)
     }

@@ -205,7 +205,11 @@ function OwnerProfilePage() {
       {profile && (
         <div className="fixed bottom-0 left-0 right-0 p-5 bg-white/80 backdrop-blur-xl border-t border-gray-100 z-30">
           <div className="max-w-md mx-auto space-y-3">
-            <StartChatButton partnerId={userId} />
+            <StartChatButton
+              partnerId={userId}
+              fallbackName={displayName}
+              fallbackAvatarUrl={profile.avatarUrl ?? undefined}
+            />
             <button className="w-full text-[10px] font-bold text-gray-400 hover:text-red-500 transition-colors uppercase tracking-widest text-center">
               Report this profile
             </button>
