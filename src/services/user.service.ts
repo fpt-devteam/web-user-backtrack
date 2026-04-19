@@ -44,7 +44,7 @@ export const userService = {
     return data.data;
   },
   async getUserPosts(userId: string): Promise<Post[]> {
-    const { data } = await publicClient.get<ApiResponse<Post[]>>(`/api/core/users/${userId}/posts`);
+    const { data } = await publicClient.get<ApiResponse<Post[]>>(`/api/core/posts/users/${userId}`);
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch user posts');
     return data.data;
   },

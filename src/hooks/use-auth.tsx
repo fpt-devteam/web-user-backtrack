@@ -33,6 +33,9 @@ interface AuthContextValue {
 }
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Prevents auto-anonymous sign-in when we deliberately signOut before a real sign-in
+let skipAnonymousSignIn = false;
+
 export function AuthProvider({ children }: { readonly children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -45,6 +48,10 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (!user) {
+          if (skipAnonymousSignIn) {
+            skipAnonymousSignIn = false;
+            return;
+          }
           // No session at all — sign in anonymously so every visitor has a
           // valid Firebase token (needed for the chat socket and other calls).
           await signInAnonymously(auth);
@@ -148,7 +155,9 @@ export function useSignInWithEmailAndPassword() {
         } catch (err) {
           const authErr = err as AuthError;
           if (authErr.code === 'auth/credential-already-in-use' || authErr.code === 'auth/email-already-in-use') {
-            // Credential belongs to an existing account — sign out anonymous then sign in normally
+            // Credential belongs to an existing account — sign out anonymous then sign in normally.
+            // Set flag so onAuthStateChanged doesn't re-create an anonymous session during the gap.
+            skipAnonymousSignIn = true;
             await signOut(auth);
             await signInWithEmailAndPassword(auth, email, password);
           } else {
@@ -186,6 +195,7 @@ export function useSignInWithGoogle() {
             // Google account already exists as a separate Firebase user.
             // Sign out the anonymous session, then sign in with the returned credential.
             const credential = GoogleAuthProvider.credentialFromError(authErr);
+            skipAnonymousSignIn = true;
             await signOut(auth);
             if (credential) {
               await signInWithCredential(auth, credential);
