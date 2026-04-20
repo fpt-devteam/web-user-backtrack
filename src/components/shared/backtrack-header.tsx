@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { NavDrawer } from '@/components/shared/nav-drawer'
 import { useAuth } from '@/hooks/use-auth'
+import { useTotalUnreadCount } from '@/hooks/use-messager'
 
 /* ── nav link manifest ──────────────────────────────────────── */
 const NAV_LINKS = [
@@ -48,6 +49,7 @@ export function BacktrackHeader() {
   const { profile }  = useAuth()
   const pathname     = location.pathname
 
+  const totalUnread = useTotalUnreadCount()
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4)
@@ -116,6 +118,11 @@ export function BacktrackHeader() {
                     strokeWidth={active ? 2.2 : 1.8}
                     aria-hidden="true"
                   />
+                  {to === '/message' && totalUnread > 0 && (
+                    <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </span>
+                  )}
                 </span>
 
                 <span

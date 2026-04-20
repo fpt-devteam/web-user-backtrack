@@ -137,14 +137,25 @@ export function SocketProvider({ children }: { children: ReactNode }) {
               })),
             };
           };
-          queryClient.setQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
-            MESSAGER_CONV_KEY,
-            patch,
-          );
-          queryClient.setQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
-            CHAT_CONV_KEY,
-            patch,
-          );
+          // If cache exists → patch in-place (fast, no network).
+          // If cache is empty (user hasn't visited message page yet) → invalidate
+          // so the query fetches fresh data with correct unreadCount from server.
+          if (queryClient.getQueryData(MESSAGER_CONV_KEY)) {
+            queryClient.setQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
+              MESSAGER_CONV_KEY,
+              patch,
+            );
+          } else {
+            void queryClient.invalidateQueries({ queryKey: [...MESSAGER_CONV_KEY] });
+          }
+          if (queryClient.getQueryData(CHAT_CONV_KEY)) {
+            queryClient.setQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
+              CHAT_CONV_KEY,
+              patch,
+            );
+          } else {
+            void queryClient.invalidateQueries({ queryKey: [...CHAT_CONV_KEY] });
+          }
         };
 
         // ── conversation:new — new conversation initiated by other party ───

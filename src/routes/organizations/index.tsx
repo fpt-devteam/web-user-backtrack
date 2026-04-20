@@ -1,9 +1,96 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { Building2, MapPin, Search, ShieldCheck, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { getDistricts, getProvinces } from 'vn-provinces'
 import type { Org } from '@/types/org.type'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Slider } from '@/components/ui/slider'
 import { useGetOrgs } from '@/hooks/use-org'
+
+function useGeolocation() {
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setCoords({ lat: 10.7769, lng: 106.7009 }), // fallback HCM
+      { timeout: 8000, maximumAge: 300_000 },
+    )
+  }, [])
+  return coords
+}
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return debounced
+}
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function norm(s: string): string {
+  return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+}
+function compact(s: string): string {
+  return norm(s).replace(/\s+/g, '')
+}
+
+const PROVINCE_ALIASES: Record<string, Array<string>> = {
+  'Hồ Chí Minh': ['tp.hcm', 'tphcm', 'hcm', 'sai gon', 'saigon'],
+}
+
+// Pre-sorted longest-first, pre-normalized — computed once at module load
+const PROVINCES = getProvinces()
+  .map((p) => {
+    const short = p.name.replace(/^(Thành phố |Tỉnh )/, '')
+    return {
+      short,
+      tokens: [norm(short), norm(p.name)],
+      compactTokens: [compact(short), compact(p.name)],
+      aliases: (PROVINCE_ALIASES[short] ?? []).map((a) => ({ raw: a, compact: compact(a) })),
+    }
+  })
+  .sort((a, b) => b.short.length - a.short.length)
+
+const DISTRICTS = getDistricts()
+  .map((d) => ({
+    provinceShort: d.provinceName.replace(/^(Thành phố |Tỉnh )/, ''),
+    token: norm(d.name.replace(/^(Thành phố |Thị xã |Quận |Huyện )/, '')),
+    compactToken: compact(d.name.replace(/^(Thành phố |Thị xã |Quận |Huyện )/, '')),
+  }))
+  .sort((a, b) => b.token.length - a.token.length)
+
+function extractCity(address: string | null | undefined): string {
+  if (!address) return 'Khác'
+  const n = norm(address)
+  const c = compact(address)
+
+  for (const { short, tokens, compactTokens, aliases } of PROVINCES) {
+    if (
+      tokens.some((t) => n.includes(t)) ||
+      compactTokens.some((t) => c.includes(t)) ||
+      aliases.some((a) => n.includes(a.raw) || c.includes(a.compact))
+    ) return short
+  }
+
+  for (const { provinceShort, token, compactToken } of DISTRICTS) {
+    if (n.includes(token) || c.includes(compactToken)) return provinceShort
+  }
+
+  return 'Khác'
+}
 
 export const Route = createFileRoute('/organizations/')({
   component: OrgListPage,
@@ -11,9 +98,14 @@ export const Route = createFileRoute('/organizations/')({
 
 
 /* ─── page ─── */
+const MAX_RADIUS = 5000
+
 function OrgListPage() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetOrgs()
   const [query, setQuery] = useState('')
+  const [radiusKm, setRadiusKm] = useState(MAX_RADIUS)
+  const debouncedRadius = useDebounce(radiusKm, 400)
+  const userCoords = useGeolocation()
 
   const orgs: Array<Org> = data?.pages.flatMap((p) => p.items) ?? []
 
@@ -27,24 +119,52 @@ function OrgListPage() {
           o.displayAddress?.toLowerCase().includes(q),
       )
     }
+    if (userCoords && debouncedRadius < MAX_RADIUS) {
+      list = list.filter((o) => {
+        if (!o.location) return true // no coords → always show
+        return haversineKm(userCoords.lat, userCoords.lng, o.location.latitude, o.location.longitude) <= debouncedRadius
+      })
+    }
     return list
-  }, [orgs, query])
+  }, [orgs, query, userCoords, debouncedRadius])
 
-  // Group organizations by industry
-  const orgsByIndustry = useMemo(() => {
+  // Group organizations by Vietnamese city/province
+  const orgsByCity = useMemo(() => {
     const groups: Record<string, Array<Org>> = {}
     filtered.forEach((org) => {
-      const industry = org.industryType || 'Other'
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!groups[industry]) {
-        groups[industry] = []
-      }
-      groups[industry].push(org)
+      const city = extractCity(org.displayAddress)
+      if (!Object.hasOwn(groups, city)) groups[city] = []
+      groups[city].push(org)
     })
     return groups
   }, [filtered])
 
-  const industries = Object.keys(orgsByIndustry).sort()
+  // Sort cities by nearest org distance to user; "Khác" always last
+  const cities = useMemo(() => {
+    const cityNames = Object.keys(orgsByCity)
+    if (!userCoords) {
+      return cityNames.sort((a, b) => {
+        if (a === 'Khác') return 1
+        if (b === 'Khác') return -1
+        return a.localeCompare(b, 'vi')
+      })
+    }
+    const minDist = (city: string) => {
+      const orgsInCity = orgsByCity[city]
+      let min = Infinity
+      for (const o of orgsInCity) {
+        if (!o.location) continue
+        const d = haversineKm(userCoords.lat, userCoords.lng, o.location.latitude, o.location.longitude)
+        if (d < min) min = d
+      }
+      return min
+    }
+    return cityNames.sort((a, b) => {
+      if (a === 'Khác') return 1
+      if (b === 'Khác') return -1
+      return minDist(a) - minDist(b)
+    })
+  }, [orgsByCity, userCoords])
 
   return (
     <div className="min-h-screen bg-white">
@@ -109,21 +229,40 @@ function OrgListPage() {
             )}
           </div>
 
-          {/* Industry navigation chips - Centered */}
-          {!isLoading && industries.length > 0 && (
+          {/* Radius slider */}
+          <div className="flex items-center gap-3 mt-4 max-w-3xl mx-auto">
+            <span className="text-xs font-medium text-gray-400 shrink-0 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              Radius
+            </span>
+            <Slider
+              min={1}
+              max={MAX_RADIUS}
+              step={1}
+              value={[radiusKm]}
+              onValueChange={([v]) => setRadiusKm(v)}
+              className="flex-1"
+            />
+            <span className="text-xs font-semibold text-gray-700 w-16 text-right shrink-0">
+              {radiusKm >= 1000 ? `${(radiusKm / 1000).toFixed(1)}k` : radiusKm} km
+            </span>
+          </div>
+
+          {/* City navigation chips */}
+          {!isLoading && cities.length > 0 && (
             <div className="flex justify-center gap-2 mt-6 flex-wrap max-w-4xl mx-auto">
-              {industries.map((ind) => (
+              {cities.map((city) => (
                 <button
-                  key={ind}
+                  key={city}
                   onClick={() => {
-                    const element = document.getElementById(`industry-${ind}`)
+                    const element = document.getElementById(`city-${city}`)
                     if (element) {
                       element.scrollIntoView({ behavior: 'smooth', block: 'start' })
                     }
                   }}
                   className="px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer border bg-white text-[#555] border-[#e5e5e5] hover:border-[#999]"
                 >
-                  {ind}
+                  {city}
                 </button>
               ))}
             </div>
@@ -152,16 +291,16 @@ function OrgListPage() {
           <EmptyState hasQuery={!!query} onReset={() => setQuery('')} />
         ) : (
           <>
-            {industries.map((industry) => {
-              const industryOrgs = orgsByIndustry[industry]
+            {cities.map((city) => {
+              const cityOrgs = orgsByCity[city]
 
               return (
-                <div key={industry} id={`industry-${industry}`} className="space-y-4 scroll-mt-32">
-                  {/* Industry Header */}
+                <div key={city} id={`city-${city}`} className="space-y-4 scroll-mt-32">
+                  {/* City Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="px-3 py-1 rounded-full text-sm font-bold bg-white text-[#555] border border-[#e5e5e5]">
-                        {industry}
+                        {city}
                       </span>
                       <span className="text-[#717171] text-sm">→</span>
                     </div>
@@ -169,7 +308,7 @@ function OrgListPage() {
 
                   {/* Horizontal scrolling cards for this industry */}
                   <div className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none">
-                    {industryOrgs.map((org, i) => (
+                    {cityOrgs.map((org, i) => (
                       <Link
                         key={org.id}
                         to="/organizations/$slug"
