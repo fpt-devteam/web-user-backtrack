@@ -21,15 +21,17 @@ import {
   QrCode,
   ShieldCheck,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { Variants } from 'framer-motion'
 import type { BusinessHour } from '@/types/org.type'
 import type { Post } from '@/types/post.type'
 import { useGetPostsByOrg } from '@/hooks/use-post'
 import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
+import { AnonymousProfileDialog } from '@/components/shared/anonymous-profile-dialog'
 import { orgKeys, useGetOrgBySlug  } from '@/hooks/use-org'
 import { useCreateUser } from '@/hooks/use-user'
 import { toast } from '@/lib/toast'
+import { userService } from '@/services/user.service'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
@@ -112,11 +114,13 @@ function OrgDetailPage() {
   const navigate = useNavigate()
 
   const { data: org, isLoading: isOrgLoading } = useGetOrgBySlug(slug)
-  const { profile, syncProfile, loading: isProfileLoading } = useAuth()
+  const { firebaseUser, profile, syncProfile, loading: isProfileLoading } = useAuth()
 
   const { mutateAsync: signInAnonymous, isPending: isSigningIn } = useSignInAnonymous()
   const { mutateAsync: createUser, isPending: isCreatingUser } = useCreateUser()
   const isAuthPending = isSigningIn || isCreatingUser
+
+  const [showAnonDialog, setShowAnonDialog] = useState(false)
 
   if (isOrgLoading || isProfileLoading) { return <OrgDetailSkeleton /> }
   if (!org) {
@@ -124,24 +128,45 @@ function OrgDetailPage() {
     return null
   }
 
+  const doCreateConversation = async () => {
+    const conversation = await chatService.createSupportConversation(org.id)
+    const convId = conversation.conversationId
+    if (!convId) throw new Error('No conversation ID returned from server')
+    navigate({
+      to: '/message',
+      search: {
+        selectedId: convId,
+        fallbackName: org.name,
+        ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
+      } as never,
+    })
+  }
+
   const handleStartChat = async () => {
     try {
+      if (firebaseUser?.isAnonymous || !profile) {
+        // Show anonymous name picker before creating conversation
+        setShowAnonDialog(true)
+        return
+      }
+      await doCreateConversation()
+    } catch (err) {
+      toast.fromError(err)
+    }
+  }
+
+  const handleAnonConfirm = async (displayName: string) => {
+    try {
       if (!profile) {
-        await signInAnonymous()
         await createUser()
+        await userService.updateMe({ displayName })
+        await syncProfile()
+      } else {
+        await userService.updateMe({ displayName })
         await syncProfile()
       }
-      const conversation = await chatService.createSupportConversation(org.id)
-      const convId = conversation.conversationId
-      if (!convId) throw new Error('No conversation ID returned from server')
-      navigate({
-        to: '/message',
-        search: {
-          selectedId: convId,
-          fallbackName: org.name,
-          ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
-        } as never,
-      })
+      setShowAnonDialog(false)
+      await doCreateConversation()
     } catch (err) {
       toast.fromError(err)
     }
@@ -153,6 +178,12 @@ function OrgDetailPage() {
   const motionVariant = prefersReduced ? fadeUpReduced : fadeUp
 
   return (
+    <>
+    <AnonymousProfileDialog
+      open={showAnonDialog}
+      onConfirm={handleAnonConfirm}
+      onCancel={() => setShowAnonDialog(false)}
+    />
     <div className="min-h-screen bg-[#F7F7F7] pb-8">
 
       {/* ── back button ── */}
@@ -211,6 +242,7 @@ function OrgDetailPage() {
       )}
       */}
     </div>
+    </>
   )
 }
 

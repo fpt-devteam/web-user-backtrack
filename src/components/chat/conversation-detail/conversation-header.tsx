@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronLeft, Phone, Video } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import type { InfiniteData } from '@tanstack/react-query'
 import type { Conversation } from '@/types/chat.type'
 import type { CursorPagedResponse } from '@/types/pagination.type'
@@ -100,8 +100,6 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
           <Skeleton className="h-4 w-32 rounded-full" />
           <Skeleton className="h-3 w-20 rounded-full" />
         </div>
-        <Skeleton className="w-9 h-9 rounded-full" />
-        <Skeleton className="w-9 h-9 rounded-full" />
       </header>
     )
   }
@@ -176,21 +174,6 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
         </AnimatePresence>
       </div>
 
-      {/* Action icons */}
-      <div className="flex items-center gap-1 shrink-0">
-        <button
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="Voice call"
-        >
-          <Phone className="w-5 h-5 text-gray-800" strokeWidth={1.8} />
-        </button>
-        <button
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="Video call"
-        >
-          <Video className="w-5 h-5 text-gray-800" strokeWidth={1.8} />
-        </button>
-      </div>
     </motion.header>
   )
 }

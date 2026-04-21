@@ -104,7 +104,10 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
   }
 
   const logout = async () => {
+    skipAnonymousSignIn = true
     await signOut(auth)
+    setFirebaseUser(null)
+    setProfile(null)
     queryClient.removeQueries({ queryKey: userKeys.all })
   }
 
@@ -271,6 +274,7 @@ export function useSignOut() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
+      skipAnonymousSignIn = true
       await signOut(auth);
     },
     onSuccess: () => {

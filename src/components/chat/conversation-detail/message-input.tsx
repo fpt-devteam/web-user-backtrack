@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Send, Loader2, WifiOff, Smile, Image } from 'lucide-react'
+import { Send, Loader2, WifiOff } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -55,7 +55,7 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
   })
 
   const watchContent = form.watch('content')
-  const hasText = !!watchContent?.trim()
+  const hasText = !!watchContent.trim()
 
   /* ── Auto-resize textarea ── */
   useEffect(() => {
@@ -109,7 +109,7 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
   useEffect(() => {
     return onMessageSendError((err) => {
       setIsSending(false)
-      toast.error(err.message ?? 'Failed to send message')
+      toast.error(err.message || 'Failed to send message')
     })
   }, [onMessageSendError])
 
@@ -236,34 +236,6 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
 
         {/* Input row */}
         <div className="flex items-end gap-2 px-3 py-3">
-          {/* Left icons (emoji + image) — hidden once text is present */}
-          <AnimatePresence>
-            {!hasText && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.15 }}
-                className="flex items-center gap-1 shrink-0 overflow-hidden"
-              >
-                <button
-                  type="button"
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Emoji"
-                >
-                  <Smile className="w-5 h-5 text-gray-500" strokeWidth={1.8} />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Image"
-                >
-                  <Image className="w-5 h-5 text-gray-500" strokeWidth={1.8} />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {/* Textarea pill */}
           <FormField
             control={form.control}
@@ -297,43 +269,19 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
             )}
           />
 
-          {/* Send / Like button */}
-          <AnimatePresence mode="wait">
-            {hasText ? (
-              /* Send button — appears when there's text */
-              <motion.button
-                key="send"
-                type="submit"
-                disabled={isDisabled}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 420, damping: 26 }}
-                className="shrink-0 p-2 rounded-full text-[#0095f6] hover:text-[#1877f2] transition-colors disabled:opacity-40"
-                aria-label="Send"
-              >
-                {isSending ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                ) : (
-                  <Send className="w-6 h-6" strokeWidth={2} />
-                )}
-              </motion.button>
+          {/* Send button */}
+          <button
+            type="submit"
+            disabled={isDisabled || !hasText}
+            className="shrink-0 p-2 rounded-full text-[#0095f6] hover:text-[#1877f2] transition-colors disabled:opacity-40"
+            aria-label="Send"
+          >
+            {isSending ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
-              /* Like button — shown when input is empty */
-              <motion.button
-                key="like"
-                type="button"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 420, damping: 26 }}
-                className="shrink-0 p-2 rounded-full text-[#0095f6] hover:text-[#1877f2] transition-colors text-xl"
-                aria-label="Like"
-              >
-                👍
-              </motion.button>
+              <Send className="w-6 h-6" strokeWidth={2} />
             )}
-          </AnimatePresence>
+          </button>
         </div>
       </form>
     </Form>
