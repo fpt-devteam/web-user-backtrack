@@ -145,7 +145,8 @@ function OrgDetailPage() {
   const handleStartChat = async () => {
     try {
       if (firebaseUser?.isAnonymous || !profile) {
-        // Show anonymous name picker before creating conversation
+        // Ensure user exists in DB before showing the name picker
+        await createUser()
         setShowAnonDialog(true)
         return
       }
@@ -157,14 +158,8 @@ function OrgDetailPage() {
 
   const handleAnonConfirm = async (displayName: string) => {
     try {
-      if (!profile) {
-        await createUser()
-        await userService.updateMe({ displayName })
-        await syncProfile()
-      } else {
-        await userService.updateMe({ displayName })
-        await syncProfile()
-      }
+      await userService.updateMe({ displayName })
+      await syncProfile()
       setShowAnonDialog(false)
       await doCreateConversation()
     } catch (err) {

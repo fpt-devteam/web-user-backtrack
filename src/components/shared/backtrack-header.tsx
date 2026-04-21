@@ -46,7 +46,7 @@ function WordmarkLogo() {
 export function BacktrackHeader() {
   const navigate     = useNavigate()
   const { location } = useRouterState()
-  const { profile }  = useAuth()
+  const { profile, firebaseUser } = useAuth()
   const pathname     = location.pathname
 
   const totalUnread = useTotalUnreadCount()
@@ -59,9 +59,10 @@ export function BacktrackHeader() {
 
   const isActive = (to: string) => pathname === to || pathname.startsWith(to + '/')
 
-  const accountTo    = profile ? '/account' : '/sign-in'
-  const accountLabel = profile ? (profile.displayName?.split(' ')[0] ?? 'Account') : 'Log in'
-  const avatarLetter = profile?.displayName?.charAt(0).toUpperCase() ?? null
+  const isRealUser   = !!profile && firebaseUser?.isAnonymous === false
+  const accountTo    = isRealUser ? '/account' : '/sign-in'
+  const accountLabel = isRealUser ? (profile.displayName?.split(' ')[0] ?? 'Account') : 'Log in'
+  const avatarLetter = isRealUser ? (profile.displayName?.charAt(0).toUpperCase() ?? null) : null
 
   const handleGetApp = () => {
     if (pathname === '/') {
@@ -169,7 +170,7 @@ export function BacktrackHeader() {
           >
             <Menu className="w-4 h-4 text-gray-600" strokeWidth={2} aria-hidden="true" />
             <span className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-gray-800 flex items-center justify-center shrink-0 overflow-hidden">
-              {profile?.avatarUrl ? (
+              {isRealUser && profile.avatarUrl ? (
                 <img
                   src={profile.avatarUrl}
                   alt={accountLabel}
