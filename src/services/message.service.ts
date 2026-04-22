@@ -31,11 +31,12 @@ export const messageService = {
   },
 
   async getConversationById(id: string): Promise<Conversation> {
-    const { data } = await privateClient.get<ApiResponse<Conversation>>(
+    const { data } = await privateClient.get<ApiResponse<{ conversation: Conversation }>>(
       `/api/chat/conversations/${id}`,
     )
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch conversation')
-    return data.data
+      console.log('Fetched conversation details:', data.data.conversation)
+    return data.data.conversation
   },
 
   async createSupportConversation(orgId: string): Promise<Conversation> {

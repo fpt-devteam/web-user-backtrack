@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import {
   ArrowLeft,
@@ -14,12 +14,20 @@ import {
   Star,
 } from 'lucide-react'
 import type { Post } from '@/types/user.type'
+import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
 import { useGetPublicQrProfile } from '@/hooks/use-qr'
-import { useGetUserPosts } from '@/hooks/use-user'
-import { StartChatButton } from '@/components/found-item/start-chat-button'
+import { useGetUserPosts, useCreateUser } from '@/hooks/use-user'
+import { useSendNotification } from '@/hooks/use-notification'
+import { NOTIFICATION_CATEGORY, NOTIFICATION_EVENT } from '@/types/notification.type'
+import { AnonymousProfileDialog } from '@/components/shared/anonymous-profile-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import { Splash } from '@/components/ui/splash'
+import { messageService } from '@/services/message.service'
+import { userService } from '@/services/user.service'
+import { toast } from '@/lib/toast'
 
 export const Route = createFileRoute('/profile/$publicCode/')({
   component: OwnerProfilePage,
@@ -29,6 +37,15 @@ function OwnerProfilePage() {
   const { publicCode } = Route.useParams()
   const navigate = useNavigate()
 
+  const { firebaseUser, profile: myProfile, syncProfile } = useAuth()
+  const { mutateAsync: signInAnonymous, isPending: isSigningIn } = useSignInAnonymous()
+  const { mutateAsync: createUser, isPending: isCreatingUser } = useCreateUser()
+  const { mutate: sendNotification } = useSendNotification()
+
+  const [showAnonDialog, setShowAnonDialog] = useState(false)
+  const [isChatting, setIsChatting] = useState(false)
+  const notificationSentRef = useRef(false)
+
   const { data: profile, isLoading: isProfileLoading, error: profileError } = useGetPublicQrProfile(publicCode)
   const userId = profile?.userId ?? ''
   const { data: postsData, isLoading: isPostsLoading } = useGetUserPosts(userId, !!userId)
@@ -37,15 +54,116 @@ function OwnerProfilePage() {
   const displayName = profile?.displayName ?? 'User'
   const initial = displayName[0]?.toUpperCase() ?? 'U'
 
+  const isBusy = isSigningIn || isCreatingUser || isChatting
+
+  const doCreateConversation = async () => {
+    if (!userId) { toast.error('Cannot start chat: user ID is missing'); return }
+    setIsChatting(true)
+    try {
+      const conv = await messageService.createDirectConversation(userId)
+      navigate({
+        to: '/message',
+        search: {
+          selectedId: conv.conversationId,
+          isSupport: false,
+          fallbackName: displayName,
+          ...(profile?.avatarUrl ? { fallbackAvatarUrl: profile.avatarUrl } : {}),
+        } as never,
+      })
+    } finally {
+      setIsChatting(false)
+    }
+  }
+
+  const handleStartChat = async () => {
+    try {
+      let currentProfile = myProfile;
+
+      if (!currentProfile) {
+        await signInAnonymous()
+        currentProfile = await createUser()
+        await syncProfile()
+      }
+
+      // Check if display name is missing or empty
+      if (!currentProfile?.displayName) {
+        setShowAnonDialog(true)
+        return
+      }
+
+      // If they already have a name, just start the chat
+      await doCreateConversation()
+    } catch (err) {
+      toast.fromError(err)
+    }
+  }
+
+  const handleAnonConfirm = async (chosenName: string) => {
+    try {
+      await userService.updateMe({ displayName: chosenName })
+      await syncProfile()
+      setShowAnonDialog(false)
+      await doCreateConversation()
+    } catch (err) {
+      toast.fromError(err)
+    }
+  }
+
   useEffect(() => {
     if (profileError) navigate({ to: '/' })
   }, [profileError, navigate])
+
+  useEffect(() => {
+    if (profile?.userId && !notificationSentRef.current) {
+      notificationSentRef.current = true
+
+      const randomSuffix = () => Math.random().toString(36).substring(2, 10)
+      const sendNotif = (location?: { latitude: number; longitude: number }) => {
+        sendNotification({
+          target: { userId: profile.userId },
+          source: {
+            name: `web-visitor-${randomSuffix()}`,
+            eventId: `${randomSuffix()}${randomSuffix()}`,
+          },
+          title: 'Someone scan your qr code',
+          body: 'you may lost something',
+          category: NOTIFICATION_CATEGORY.Push,
+          type: NOTIFICATION_EVENT.QRScanEvent,
+          data: location ? { location } : undefined,
+        })
+      }
+
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            sendNotif({
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+            })
+          },
+          () => {
+            // Permission denied or error, send without location
+            sendNotif()
+          },
+          { timeout: 5000 }
+        )
+      } else {
+        sendNotif()
+      }
+    }
+  }, [profile?.userId, publicCode, sendNotification])
 
   if (isProfileLoading) return <Splash />
   if (profileError || !profile) return null
 
   return (
     <div className="min-h-screen bg-white">
+... rest of the code ...
+      <AnonymousProfileDialog
+        open={showAnonDialog}
+        onConfirm={handleAnonConfirm}
+        onCancel={() => setShowAnonDialog(false)}
+      />
       {/* ── Back button ── */}
       <button
         onClick={() => navigate({ to: '/' })}
@@ -158,11 +276,18 @@ function OwnerProfilePage() {
 
             {/* Chat button */}
             <div className="max-w-xs">
-              <StartChatButton
-                partnerId={userId}
-                fallbackName={displayName}
-                fallbackAvatarUrl={profile.avatarUrl ?? undefined}
-              />
+              <Button
+                onClick={() => void handleStartChat()}
+                disabled={isBusy}
+                className="relative w-full h-14 rounded-full text-base font-semibold"
+              >
+                {isBusy && (
+                  <span className="absolute inset-0 grid place-items-center">
+                    <Spinner size="sm" />
+                  </span>
+                )}
+                <span className={isBusy ? 'opacity-0' : 'opacity-100'}>Start Chat</span>
+              </Button>
             </div>
 
             {/* Safety note */}

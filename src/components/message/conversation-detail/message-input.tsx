@@ -9,6 +9,10 @@ import { useSocket } from '@/hooks/use-socket'
 import { motion, AnimatePresence } from 'framer-motion'
 import { messageService } from '@/services/message.service'
 import { toast } from '@/lib/toast'
+import { useGetConversationById } from '@/hooks/use-message'
+import { useSendNotification } from '@/hooks/use-notification'
+import { NOTIFICATION_CATEGORY, NOTIFICATION_EVENT } from '@/types/notification.type'
+import { useAuth } from '@/hooks/use-auth'
 
 const messageSchema = z.object({
   content: z.string().min(1).trim(),
@@ -41,6 +45,10 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
     isConnected,
     markConversationAsRead,
   } = useSocket()
+
+  const { profile: myProfile } = useAuth()
+  const { data: conversation } = useGetConversationById(conversationId ?? '', !!conversationId)
+  const { mutate: sendNotification } = useSendNotification()
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -97,6 +105,33 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
 
   useEffect(() => () => stopTyping(), [stopTyping])
 
+  const triggerPushNotification = useCallback(
+    (content: string, type: 'text' | 'image' = 'text') => {
+      console.log('Triggering push notification for recipient...', conversation)
+      const recipientId = conversation?.partner?.id
+      if (!recipientId || !conversationId) return
+
+      const randomSuffix = () => Math.random().toString(36).substring(2, 10)
+      
+      sendNotification({
+        target: { userId: recipientId },
+        source: {
+          name: 'web-chat-sender',
+          eventId: `msg-${conversationId}-${Date.now()}-${randomSuffix()}`,
+        },
+        title: myProfile?.displayName ? `${myProfile.displayName} sent a message` : 'New message',
+        body: type === 'image' ? 'Sent an image' : content,
+        category: NOTIFICATION_CATEGORY.Push,
+        type: NOTIFICATION_EVENT.ChatEvent,
+        data: {
+          screenPath: 'CHAT_THREAD',
+          conversationId,
+        },
+      })
+    },
+    [conversation, conversationId, myProfile, sendNotification],
+  )
+
   /* ── Submit ── */
   const onSubmit = useCallback(
     (values: MessageFormValues) => {
@@ -104,6 +139,10 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
       setIsSending(true)
       stopTyping()
       sendMessage({ conversationId, type: 'text', content: values.content, isSupport })
+      
+      // Send push notification to recipient
+      triggerPushNotification(values.content, 'text')
+
       form.reset()
       requestAnimationFrame(() => {
         if (textareaRef.current) {
@@ -114,7 +153,7 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
       })
       onSend?.()
     },
-    [isSending, isConnected, conversationId, isSupport, sendMessage, stopTyping, form, onSend],
+    [isSending, isConnected, conversationId, isSupport, sendMessage, stopTyping, form, onSend, triggerPushNotification],
   )
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -135,6 +174,10 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
       try {
         const url = await messageService.uploadChatImage(file)
         sendMessage({ conversationId, type: 'image', content: url, isSupport })
+        
+        // Send push notification to recipient
+        triggerPushNotification(url, 'image')
+
         onSend?.()
       } catch {
         toast.error('Failed to upload image')
@@ -142,7 +185,7 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
         setIsUploading(false)
       }
     },
-    [conversationId, isSupport, sendMessage, onSend],
+    [conversationId, isSupport, sendMessage, onSend, triggerPushNotification],
   )
 
   const isDisabled = isSending || !isConnected || isUploading
