@@ -158,7 +158,6 @@ function OwnerProfilePage() {
 
   return (
     <div className="min-h-screen bg-white">
-... rest of the code ...
       <AnonymousProfileDialog
         open={showAnonDialog}
         onConfirm={handleAnonConfirm}
