@@ -4,8 +4,7 @@ import { ChevronLeft } from 'lucide-react'
 import type { InfiniteData } from '@tanstack/react-query'
 import type { Conversation } from '@/types/chat.type'
 import type { CursorPagedResponse } from '@/types/pagination.type'
-import { useGetConversationById } from '@/hooks/use-chat'
-import { messagerKeys } from '@/hooks/use-messager'
+import { useGetConversationById, messageKeys } from '@/hooks/use-message'
 import { useGetOrgBySlug } from '@/hooks/use-org'
 import { useGetPublicUserProfile } from '@/hooks/use-user'
 import { useSocket } from '@/hooks/use-socket'
@@ -27,7 +26,7 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
 
   // Use cached list data as a placeholder while the single-conversation fetch loads
   const cachedPages = queryClient.getQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
-    messagerKeys.conversations()
+    messageKeys.conversations()
   )
   const cachedConversation = conversationId
     ? cachedPages?.pages.flatMap((p) => p.items).find((c) => c.conversationId === conversationId)
@@ -58,14 +57,14 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
 
   // If the conversation's partner has no displayName, fetch their public profile
   const partnerId = conversation?.partner?.id ?? ''
-  const missingPartnerName = !!partnerId && !conversation?.partner?.displayName?.trim()
+  const missingPartnerName = !!partnerId && !conversation?.partner?.displayName.trim()
   const { data: partnerProfile } = useGetPublicUserProfile(partnerId, missingPartnerName)
 
   // Resolve display name + avatar — prefer conversation data, then public profile, then fallback prop
   const name =
     conversation?.orgName?.trim() ||
     org?.name.trim() ||
-    conversation?.partner?.displayName?.trim() ||
+    conversation?.partner?.displayName.trim() ||
     partnerProfile?.displayName?.trim() ||
     fallback?.name ||
     'Unknown'

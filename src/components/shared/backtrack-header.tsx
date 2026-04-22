@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { NavDrawer } from '@/components/shared/nav-drawer'
 import { useAuth } from '@/hooks/use-auth'
-import { useTotalUnreadCount } from '@/hooks/use-messager'
+import { useTotalUnreadCount } from '@/hooks/use-message'
 
 /* ── nav link manifest ──────────────────────────────────────── */
 const NAV_LINKS = [

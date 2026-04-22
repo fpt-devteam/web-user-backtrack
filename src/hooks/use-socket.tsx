@@ -15,9 +15,8 @@ import type { CursorPagedResponse } from '@/types/pagination.type';
 import { destroyChatSocket, getChatSocket } from '@/lib/socket';
 import { useAuth } from '@/hooks/use-auth';
 
-// Stable query key arrays (mirrors the factories in use-messager/use-chat)
-const MESSAGER_CONV_KEY = ['messager', 'conversations'] as const;
-const CHAT_CONV_KEY = ['chat', 'conversations'] as const;
+// Mirrors messageKeys.conversations() from use-message.ts
+const MESSAGE_CONV_KEY = ['message', 'conversations'] as const;
 
 // ─── Payload types ────────────────────────────────────────────────────────────
 export interface SendMessagePayload {
@@ -140,28 +139,19 @@ export function SocketProvider({ children }: { children: ReactNode }) {
           // If cache exists → patch in-place (fast, no network).
           // If cache is empty (user hasn't visited message page yet) → invalidate
           // so the query fetches fresh data with correct unreadCount from server.
-          if (queryClient.getQueryData(MESSAGER_CONV_KEY)) {
+          if (queryClient.getQueryData(MESSAGE_CONV_KEY)) {
             queryClient.setQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
-              MESSAGER_CONV_KEY,
+              MESSAGE_CONV_KEY,
               patch,
             );
           } else {
-            void queryClient.invalidateQueries({ queryKey: [...MESSAGER_CONV_KEY] });
-          }
-          if (queryClient.getQueryData(CHAT_CONV_KEY)) {
-            queryClient.setQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
-              CHAT_CONV_KEY,
-              patch,
-            );
-          } else {
-            void queryClient.invalidateQueries({ queryKey: [...CHAT_CONV_KEY] });
+            void queryClient.invalidateQueries({ queryKey: [...MESSAGE_CONV_KEY] });
           }
         };
 
         // ── conversation:new — new conversation initiated by other party ───
         const handleConversationNew = () => {
-          void queryClient.invalidateQueries({ queryKey: [...MESSAGER_CONV_KEY] });
-          void queryClient.invalidateQueries({ queryKey: [...CHAT_CONV_KEY] });
+          void queryClient.invalidateQueries({ queryKey: [...MESSAGE_CONV_KEY] });
         };
 
         socketInstance.on('connect', handleConnect);

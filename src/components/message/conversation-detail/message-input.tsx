@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Send, Loader2, WifiOff } from 'lucide-react'
+import { Send, Loader2, WifiOff, Camera } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -9,8 +9,8 @@ import { useSocket } from '@/hooks/use-socket'
 import { useNavigate } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { chatService } from '@/services/chat.service'
-import { messagerKeys } from '@/hooks/use-messager'
+import { messageService } from '@/services/message.service'
+import { messageKeys } from '@/hooks/use-message'
 import { toast } from '@/lib/toast'
 
 const messageSchema = z.object({
@@ -45,9 +45,11 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isTypingRef = useRef(false)
   const [isSending, setIsSending] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
 
   const form = useForm<MessageFormValues>({
     resolver: zodResolver(messageSchema),
@@ -146,15 +148,15 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
         let isSupport = false
 
         if (!targetId && orgId) {
-          const conv = await chatService.createSupportConversation(orgId)
+          const conv = await messageService.createSupportConversation(orgId)
           targetId = conv.conversationId
           isSupport = true
-          void queryClient.invalidateQueries({ queryKey: messagerKeys.conversations() })
+          void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
           onConversationCreated?.(targetId)
         } else if (!targetId && recipientId) {
-          const conv = await chatService.createDirectConversation(recipientId)
+          const conv = await messageService.createDirectConversation(recipientId)
           targetId = conv.conversationId
-          void queryClient.invalidateQueries({ queryKey: messagerKeys.conversations() })
+          void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
           onConversationCreated?.(targetId)
           if (!onConversationCreated) {
             navigate({ to: '/chat/conversation/$id', params: { id: targetId }, replace: true })
@@ -185,11 +187,58 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
     }
   }
 
-  const isDisabled = isSending || !isConnected
+  const handleImageCapture = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      e.target.value = ''
+
+      setIsUploading(true)
+      try {
+        let targetId = conversationId
+
+        if (!targetId && orgId) {
+          const conv = await messageService.createSupportConversation(orgId)
+          targetId = conv.conversationId
+          void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+          onConversationCreated?.(targetId)
+        } else if (!targetId && recipientId) {
+          const conv = await messageService.createDirectConversation(recipientId)
+          targetId = conv.conversationId
+          void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+          onConversationCreated?.(targetId)
+        }
+
+        const url = await messageService.uploadChatImage(file)
+
+        if (targetId) {
+          sendMessage({ conversationId: targetId, type: 'image', content: url })
+          onSend?.()
+        }
+      } catch {
+        toast.error('Failed to upload image')
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [conversationId, orgId, recipientId, sendMessage, queryClient, onConversationCreated, onSend],
+  )
+
+  const isDisabled = isSending || !isConnected || isUploading
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
+        {/* Hidden camera/image input */}
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handleImageCapture}
+        />
+
         {/* Disconnection banner */}
         <AnimatePresence>
           {!isConnected && (
@@ -236,6 +285,21 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
 
         {/* Input row */}
         <div className="flex items-end gap-2 px-3 py-3">
+          {/* Camera button */}
+          <button
+            type="button"
+            disabled={isDisabled}
+            onClick={() => cameraInputRef.current?.click()}
+            className="shrink-0 p-2 rounded-full text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-40"
+            aria-label="Send photo"
+          >
+            {isUploading ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : (
+              <Camera className="w-6 h-6" strokeWidth={2} />
+            )}
+          </button>
+
           {/* Textarea pill */}
           <FormField
             control={form.control}

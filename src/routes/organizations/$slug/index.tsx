@@ -34,7 +34,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { orgService } from '@/services/org.service'
-import {chatService} from '@/services/chat.service'
+import { messageService } from '@/services/message.service'
 
 export const Route = createFileRoute('/organizations/$slug/')({
   component: OrgDetailPage,
@@ -126,7 +126,7 @@ function OrgDetailPage() {
   }
 
   const doCreateConversation = async () => {
-    const conversation = await chatService.createSupportConversation(org.id)
+    const conversation = await messageService.createSupportConversation(org.id)
     const convId = conversation.conversationId
     if (!convId) throw new Error('No conversation ID returned from server')
     navigate({

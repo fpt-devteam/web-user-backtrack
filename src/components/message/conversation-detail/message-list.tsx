@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Message } from '@/types/chat.type'
 import type { CursorPagedResponse } from '@/types/pagination.type'
-import { chatKeys, useGetMessages } from '@/hooks/use-chat'
+import { messageKeys, useGetMessages } from '@/hooks/use-message'
 import { useSocket } from '@/hooks/use-socket'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
@@ -59,7 +59,7 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
       queryClient.setQueryData<{
         pages: Array<CursorPagedResponse<Message>>
         pageParams: Array<string | null>
-      }>(chatKeys.messages(cid), (old) => {
+      }>(messageKeys.messages(cid), (old) => {
         if (!old) {
           // Seed the cache for a brand-new conversation — no prior fetch exists yet
           return {
@@ -87,7 +87,7 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
   useEffect(() => {
     if (!conversationId || !socket) return
     joinConversation(conversationId)
-    queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) })
+    queryClient.invalidateQueries({ queryKey: messageKeys.messages(conversationId) })
     return () => { leaveConversation(conversationId) }
   }, [conversationId, socket, joinConversation, leaveConversation, queryClient])
 
@@ -323,15 +323,34 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
                 )}
               >
                 {/* Messages bubble */}
-                <div
-                  className={cn(
-                    'relative max-w-[65%] px-3.5 py-2 break-words text-sm leading-relaxed',
-                    isMe ? [radiusMe, 'bg-[#0095f6] text-white'] : [radiusThem, 'bg-gray-100 text-gray-900'],
-                  )}
-                  title={time}
-                >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
-                </div>
+                {message.type === 'image' ? (
+                  <div
+                    className={cn(
+                      'relative max-w-[65%] overflow-hidden',
+                      isMe ? radiusMe : radiusThem,
+                    )}
+                    title={time}
+                  >
+                    <img
+                      src={message.content}
+                      alt="Sent image"
+                      className="block max-w-full max-h-64 object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className={cn(
+                      'relative max-w-[65%] px-3.5 py-2 break-words text-sm leading-relaxed',
+                      isMe
+                        ? [radiusMe, 'bg-[#0095f6] text-white']
+                        : [radiusThem, 'bg-gray-100 text-gray-900'],
+                    )}
+                    title={time}
+                  >
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  </div>
+                )}
               </motion.div>
 
               {/* Seen receipt — shown below the last message the other party has read */}

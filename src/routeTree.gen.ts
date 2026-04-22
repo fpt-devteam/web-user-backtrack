@@ -16,7 +16,6 @@ import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
 import { Route as MessageIndexRouteImport } from './routes/message/index'
 import { Route as HelpIndexRouteImport } from './routes/help/index'
-import { Route as DownloadIndexRouteImport } from './routes/download/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProfilePublicCodeIndexRouteImport } from './routes/profile/$publicCode/index'
 import { Route as PremiumSuccessIndexRouteImport } from './routes/premium/success/index'
@@ -24,9 +23,6 @@ import { Route as PremiumCheckoutIndexRouteImport } from './routes/premium/check
 import { Route as OrganizationsSlugIndexRouteImport } from './routes/organizations/$slug/index'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
 import { Route as AccountBillingIndexRouteImport } from './routes/account/billing/index'
-import { Route as ChatNewSlugIndexRouteImport } from './routes/chat/new/$slug/index'
-import { Route as ChatConversationIdIndexRouteImport } from './routes/chat/conversation/$id/index'
-import { Route as ChatNewDmPartnerIdIndexRouteImport } from './routes/chat/new/dm/$partnerId/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -61,11 +57,6 @@ const MessageIndexRoute = MessageIndexRouteImport.update({
 const HelpIndexRoute = HelpIndexRouteImport.update({
   id: '/help/',
   path: '/help/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DownloadIndexRoute = DownloadIndexRouteImport.update({
-  id: '/download/',
-  path: '/download/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountIndexRoute = AccountIndexRouteImport.update({
@@ -103,26 +94,10 @@ const AccountBillingIndexRoute = AccountBillingIndexRouteImport.update({
   path: '/account/billing/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChatNewSlugIndexRoute = ChatNewSlugIndexRouteImport.update({
-  id: '/chat/new/$slug/',
-  path: '/chat/new/$slug/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatConversationIdIndexRoute = ChatConversationIdIndexRouteImport.update({
-  id: '/chat/conversation/$id/',
-  path: '/chat/conversation/$id/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatNewDmPartnerIdIndexRoute = ChatNewDmPartnerIdIndexRouteImport.update({
-  id: '/chat/new/dm/$partnerId/',
-  path: '/chat/new/dm/$partnerId/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
-  '/download/': typeof DownloadIndexRoute
   '/help/': typeof HelpIndexRoute
   '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
@@ -135,14 +110,10 @@ export interface FileRoutesByFullPath {
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
   '/premium/success/': typeof PremiumSuccessIndexRoute
   '/profile/$publicCode/': typeof ProfilePublicCodeIndexRoute
-  '/chat/conversation/$id/': typeof ChatConversationIdIndexRoute
-  '/chat/new/$slug/': typeof ChatNewSlugIndexRoute
-  '/chat/new/dm/$partnerId/': typeof ChatNewDmPartnerIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
-  '/download': typeof DownloadIndexRoute
   '/help': typeof HelpIndexRoute
   '/message': typeof MessageIndexRoute
   '/organizations': typeof OrganizationsIndexRoute
@@ -155,15 +126,11 @@ export interface FileRoutesByTo {
   '/premium/checkout': typeof PremiumCheckoutIndexRoute
   '/premium/success': typeof PremiumSuccessIndexRoute
   '/profile/$publicCode': typeof ProfilePublicCodeIndexRoute
-  '/chat/conversation/$id': typeof ChatConversationIdIndexRoute
-  '/chat/new/$slug': typeof ChatNewSlugIndexRoute
-  '/chat/new/dm/$partnerId': typeof ChatNewDmPartnerIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
-  '/download/': typeof DownloadIndexRoute
   '/help/': typeof HelpIndexRoute
   '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
@@ -176,16 +143,12 @@ export interface FileRoutesById {
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
   '/premium/success/': typeof PremiumSuccessIndexRoute
   '/profile/$publicCode/': typeof ProfilePublicCodeIndexRoute
-  '/chat/conversation/$id/': typeof ChatConversationIdIndexRoute
-  '/chat/new/$slug/': typeof ChatNewSlugIndexRoute
-  '/chat/new/dm/$partnerId/': typeof ChatNewDmPartnerIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/account/'
-    | '/download/'
     | '/help/'
     | '/message/'
     | '/organizations/'
@@ -198,14 +161,10 @@ export interface FileRouteTypes {
     | '/premium/checkout/'
     | '/premium/success/'
     | '/profile/$publicCode/'
-    | '/chat/conversation/$id/'
-    | '/chat/new/$slug/'
-    | '/chat/new/dm/$partnerId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account'
-    | '/download'
     | '/help'
     | '/message'
     | '/organizations'
@@ -218,14 +177,10 @@ export interface FileRouteTypes {
     | '/premium/checkout'
     | '/premium/success'
     | '/profile/$publicCode'
-    | '/chat/conversation/$id'
-    | '/chat/new/$slug'
-    | '/chat/new/dm/$partnerId'
   id:
     | '__root__'
     | '/'
     | '/account/'
-    | '/download/'
     | '/help/'
     | '/message/'
     | '/organizations/'
@@ -238,15 +193,11 @@ export interface FileRouteTypes {
     | '/premium/checkout/'
     | '/premium/success/'
     | '/profile/$publicCode/'
-    | '/chat/conversation/$id/'
-    | '/chat/new/$slug/'
-    | '/chat/new/dm/$partnerId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
-  DownloadIndexRoute: typeof DownloadIndexRoute
   HelpIndexRoute: typeof HelpIndexRoute
   MessageIndexRoute: typeof MessageIndexRoute
   OrganizationsIndexRoute: typeof OrganizationsIndexRoute
@@ -259,9 +210,6 @@ export interface RootRouteChildren {
   PremiumCheckoutIndexRoute: typeof PremiumCheckoutIndexRoute
   PremiumSuccessIndexRoute: typeof PremiumSuccessIndexRoute
   ProfilePublicCodeIndexRoute: typeof ProfilePublicCodeIndexRoute
-  ChatConversationIdIndexRoute: typeof ChatConversationIdIndexRoute
-  ChatNewSlugIndexRoute: typeof ChatNewSlugIndexRoute
-  ChatNewDmPartnerIdIndexRoute: typeof ChatNewDmPartnerIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -315,13 +263,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HelpIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/download/': {
-      id: '/download/'
-      path: '/download'
-      fullPath: '/download/'
-      preLoaderRoute: typeof DownloadIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/account/': {
       id: '/account/'
       path: '/account'
@@ -371,34 +312,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountBillingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/chat/new/$slug/': {
-      id: '/chat/new/$slug/'
-      path: '/chat/new/$slug'
-      fullPath: '/chat/new/$slug/'
-      preLoaderRoute: typeof ChatNewSlugIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/conversation/$id/': {
-      id: '/chat/conversation/$id/'
-      path: '/chat/conversation/$id'
-      fullPath: '/chat/conversation/$id/'
-      preLoaderRoute: typeof ChatConversationIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/new/dm/$partnerId/': {
-      id: '/chat/new/dm/$partnerId/'
-      path: '/chat/new/dm/$partnerId'
-      fullPath: '/chat/new/dm/$partnerId/'
-      preLoaderRoute: typeof ChatNewDmPartnerIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountIndexRoute: AccountIndexRoute,
-  DownloadIndexRoute: DownloadIndexRoute,
   HelpIndexRoute: HelpIndexRoute,
   MessageIndexRoute: MessageIndexRoute,
   OrganizationsIndexRoute: OrganizationsIndexRoute,
@@ -411,9 +330,6 @@ const rootRouteChildren: RootRouteChildren = {
   PremiumCheckoutIndexRoute: PremiumCheckoutIndexRoute,
   PremiumSuccessIndexRoute: PremiumSuccessIndexRoute,
   ProfilePublicCodeIndexRoute: ProfilePublicCodeIndexRoute,
-  ChatConversationIdIndexRoute: ChatConversationIdIndexRoute,
-  ChatNewSlugIndexRoute: ChatNewSlugIndexRoute,
-  ChatNewDmPartnerIdIndexRoute: ChatNewDmPartnerIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

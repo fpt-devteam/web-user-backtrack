@@ -3,7 +3,7 @@ import { useAuth, useSignInAnonymous } from "@/hooks/use-auth";
 import { Spinner } from "@/components/ui/spinner";
 import { useNavigate } from "@tanstack/react-router";
 import { useCreateUser } from "@/hooks/use-user";
-import { useCreateDirectConversation } from "@/hooks/use-messager";
+import { useCreateDirectConversation } from "@/hooks/use-message";
 import { toast } from "@/lib/toast";
 
 export function StartChatButton({
