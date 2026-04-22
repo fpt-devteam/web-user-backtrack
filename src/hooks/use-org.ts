@@ -6,6 +6,7 @@ export const orgKeys = {
   all: ['orgs'] as const,
   lists: () => [...orgKeys.all, 'list'] as const,
   detail: (id: string) => [...orgKeys.all, 'detail', id] as const,
+  inventory: (slug: string) => [...orgKeys.all, 'inventory', slug] as const,
 };
 
 const PAGE_SIZE = 20;
@@ -31,6 +32,21 @@ export function useGetOrgBySlug(slug: string, enabled = true) {
     queryFn: () => orgService.getOrgBySlug(slug),
     enabled: !!slug && enabled,
     staleTime: 1000 * 60 * 5,
+  });
+
+  if (error) {
+    toast.fromError(error);
+  }
+
+  return { data, isLoading };
+}
+
+export function useGetOrgInventory(slug: string, enabled = true) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: orgKeys.inventory(slug),
+    queryFn: () => orgService.getOrgInventory(slug, { pageSize: 100 }), // user wants all or more
+    enabled: !!slug && enabled,
+    staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
   if (error) {

@@ -8,8 +8,6 @@ import {
   LogOut,
   Menu,
   MessageCircle,
-  PackageSearch,
-  QrCode,
   Sparkles,
   User,
   X,
@@ -41,14 +39,6 @@ interface SecondaryMenuItem {
   label: string
   onClick?: () => void
 }
-
-// ── Constants ─────────────────────────────────────────────────
-
-const QUICK_LINKS = [
-  { icon: PackageSearch, label: 'Feed',     to: '/feed'     },
-  { icon: MessageCircle, label: 'Message', to: '/message' },
-  { icon: Building2,     label: 'Orgs',     to: '/organizations' },
-]
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -151,16 +141,18 @@ export function NavDrawer() {
 
   const primaryItems: Array<PrimaryMenuItem> = isSignedIn
     ? [
-        { icon: User,     title: 'My Account',        subtitle: 'View and edit your profile',    onClick: () => go('/account')  },
-        { icon: Sparkles, title: 'Backtrack Premium',  subtitle: 'Upgrade for more features',     onClick: () => go('/premium')  },
-        { icon: QrCode,   title: 'Scan QR',            subtitle: 'Quick connect devices'                                        },
-        { icon: Download, title: 'Download App',       subtitle: 'Get the full mobile experience'                               },
+        { icon: User,          title: 'My Account',        subtitle: 'View and edit your profile',    onClick: () => go('/account')       },
+        { icon: MessageCircle, title: 'Messages',          subtitle: 'View your conversations',       onClick: () => go('/message')       },
+        { icon: Building2,     title: 'Organizations',     subtitle: 'Manage your organizations',     onClick: () => go('/organizations') },
+        { icon: Sparkles,      title: 'Backtrack Premium', subtitle: 'Upgrade for more features',     onClick: () => go('/premium')       },
+        { icon: Download,      title: 'Download App',      subtitle: 'Get the full mobile experience'                                    },
       ]
     : [
-        { icon: User,     title: 'Sign In / Sign Up',  subtitle: 'Manage your account',           onClick: () => go('/sign-in') },
-        { icon: Sparkles, title: 'Backtrack Premium',  subtitle: 'Upgrade for more features',     onClick: () => go('/premium') },
-        { icon: QrCode,   title: 'Scan QR',            subtitle: 'Quick connect devices'                                       },
-        { icon: Download, title: 'Download App',       subtitle: 'Get the full mobile experience'                              },
+        { icon: User,          title: 'Sign In / Sign Up',  subtitle: 'Manage your account',           onClick: () => go('/sign-in')       },
+        { icon: MessageCircle, title: 'Messages',           subtitle: 'View your conversations',       onClick: () => go('/message')       },
+        { icon: Building2,     title: 'Organizations',      subtitle: 'Manage your organizations',     onClick: () => go('/organizations') },
+        { icon: Sparkles,      title: 'Backtrack Premium',  subtitle: 'Upgrade for more features',     onClick: () => go('/premium')       },
+        { icon: Download,      title: 'Download App',       subtitle: 'Get the full mobile experience'                                    },
       ]
 
   const secondaryItems: Array<SecondaryMenuItem> = [
@@ -215,24 +207,6 @@ export function NavDrawer() {
           {primaryItems.map((item) => (
             <PrimaryItem key={item.title} {...item} />
           ))}
-
-          {/* Quick nav grid */}
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {QUICK_LINKS.slice(0, 3).map(({ icon: Icon, label, to }) => (
-              <button
-                key={label}
-                onClick={() => go(to)}
-                className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-2xl
-                           bg-[#F7F7F7] hover:bg-[#EBEBEB] transition-colors duration-150
-                           text-[#555] cursor-pointer"
-              >
-                <span className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center">
-                  <Icon className="w-4.5 h-4.5" strokeWidth={1.8} />
-                </span>
-                <span className="text-[11px] font-semibold text-[#444] tracking-tight">{label}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Footer */}

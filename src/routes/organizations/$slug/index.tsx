@@ -24,11 +24,9 @@ import {
 import { useCallback, useState } from 'react'
 import type { Variants } from 'framer-motion'
 import type { BusinessHour } from '@/types/org.type'
-import type { Post } from '@/types/post.type'
-import { useGetPostsByOrg } from '@/hooks/use-post'
 import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
 import { AnonymousProfileDialog } from '@/components/shared/anonymous-profile-dialog'
-import { orgKeys, useGetOrgBySlug  } from '@/hooks/use-org'
+import { orgKeys, useGetOrgBySlug, useGetOrgInventory  } from '@/hooks/use-org'
 import { useCreateUser } from '@/hooks/use-user'
 import { toast } from '@/lib/toast'
 import { userService } from '@/services/user.service'
@@ -65,7 +63,6 @@ const fadeUpReduced: Variants = {
 
 const DEFAULT_DESCRIPTION = 'Official lost and found intake and return point. We are committed to safeguarding belongings and returning them safely to their owners.'
 const DEFAULT_LOCATION_NOTE = 'Floor 1, Reception Desk'
-const DEFAULT_STATS = { received: 120, returned: 95 }
 
 const DAY_LABELS: Record<string, string> = {
   Monday: 'Monday', Tuesday: 'Tuesday', Wednesday: 'Wednesday',
@@ -216,10 +213,9 @@ function OrgDetailPage() {
           custom={1} variants={motionVariant} initial="hidden" animate="show"
           className="flex flex-col gap-0"
         >
-          <FoundItemsList orgId={org.id} />
+          <OrgInventoryList slug={slug} />
           <GuidesAccordion />
           <PolicyRow />
-          <StatsRow prefersReduced={prefersReduced} />
           <LocationSection org={org} />
         </motion.div>
       </div>
@@ -337,8 +333,6 @@ function OrgProfileCard({ org, onChat, isAuthPending }: {
   onChat: () => void
   isAuthPending: boolean
 }) {
-  const { received, returned } = DEFAULT_STATS
-
   return (
     <div className="flex flex-col">
 
@@ -408,17 +402,6 @@ function OrgProfileCard({ org, onChat, isAuthPending }: {
         <p className="text-[15px] text-[#222] leading-relaxed mt-3 font-normal">
           {org.description ?? DEFAULT_DESCRIPTION}
         </p>
-
-        {/* Stats row */}
-        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 mt-3 text-[15px] text-[#111]">
-          <span className="font-black">{received}</span>
-          <span className="text-[#999] font-bold">·</span>
-          <span className="font-normal text-[#444]">Items received</span>
-          <span className="text-[#999] font-bold">·</span>
-          <span className="font-black text-emerald-700">{returned}</span>
-          <span className="text-[#999] font-bold">·</span>
-          <span className="font-normal text-[#444]">Items returned</span>
-        </div>
 
         {/* Location note */}
         <p className="text-sm text-[#555] font-medium mt-1.5">
@@ -494,87 +477,110 @@ function OrgProfileCard({ org, onChat, isAuthPending }: {
 
 
 /* ═══════════════════════════════════════════ */
-/*   RIGHT: Found Items List (Airbnb-style)   */
+/*   RIGHT: Org Inventory List (Responsive)   */
 /* ═══════════════════════════════════════════ */
-function FoundItemsList({ orgId }: { orgId: string }) {
-  const { data: posts, isLoading } = useGetPostsByOrg(orgId)
+function OrgInventoryList({ slug }: { slug: string }) {
+  const { data, isLoading } = useGetOrgInventory(slug)
+  const items = data?.items ?? []
 
   return (
-    <div className="bg-white rounded-2xl border border-[#DDDDDD] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+    <div className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300">
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-[#f0f0f0]">
-        <h2 className="text-lg font-black text-[#111]">Recently found items here</h2>
-        <p className="text-sm text-[#888] mt-1">Tap a card to see details</p>
+      <div className="px-6 py-4 border-b border-[#F3F4F6] flex items-center justify-between">
+        <div>
+          <h2 className="text-[15px] font-black text-[#111] tracking-tight">Inventory</h2>
+          <p className="text-[11px] text-[#888] font-semibold mt-0.5 uppercase tracking-wider">Storage status</p>
+        </div>
+        <Package className="w-4.5 h-4.5 text-brand-500" />
       </div>
 
-      {/* Items */}
-      <div className="overflow-y-auto px-5 py-4 space-y-4" style={{ height: '550px' }}>
+      {/* Items Container */}
+      <div className="px-5 py-5">
         {isLoading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-5 p-6 rounded-2xl border border-[#DDDDDD]">
-              <Skeleton className="w-28 h-28 rounded-2xl shrink-0" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-                <Skeleton className="h-3 w-1/3" />
-              </div>
-            </div>
-          ))
-        ) : !posts?.length ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-            <Package className="w-10 h-10 text-[#ddd]" strokeWidth={1.5} />
-            <p className="text-sm text-[#aaa] font-medium">No items found at this location yet</p>
+          <div className="flex flex-col md:flex-row gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+               <div key={i} className="flex md:flex-col items-center md:items-start gap-3 md:w-48 shrink-0">
+                 <Skeleton className="w-12 h-12 md:w-full md:aspect-[3/4] rounded-xl" />
+                 <Skeleton className="h-3 w-24 md:w-full rounded" />
+               </div>
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Package className="w-10 h-10 text-[#F3F4F6] mb-2" strokeWidth={1} />
+            <p className="text-xs text-[#9CA3AF] font-bold">No items in inventory</p>
           </div>
         ) : (
-          posts.map((post) => <FoundItemCard key={post.id} post={post} />)
+          /* Mobile: Vertical List | Desktop: Horizontal Scroll */
+          <div className="flex flex-col md:flex-row md:overflow-x-auto gap-3 md:gap-5 pb-1 md:pb-4 scrollbar-none snap-x">
+            {items.map((item: any) => (
+              <div 
+                key={item.id} 
+                className="flex md:flex-col items-center md:items-start gap-4 md:gap-3 p-2 md:p-0 
+                           md:w-48 shrink-0 snap-start group"
+              >
+                {/* Thumbnail */}
+                <div className="relative shrink-0 w-14 h-14 md:w-full md:aspect-[3/4] rounded-2xl overflow-hidden 
+                                bg-[#F9FAFB] border border-[#F3F4F6] flex items-center justify-center
+                                group-hover:border-brand-200 transition-all duration-300 shadow-sm">
+                  {item.imageUrls?.[0] ? (
+                    <>
+                      {/* Base Image (Clear but underneath) */}
+                      <img
+                        src={item.imageUrls[0]}
+                        alt={item.postTitle}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-125"
+                      />
+                      {/* Censor Layer (Frosted Glass) - Animates on hover to reveal motion */}
+                      <div className="absolute inset-0 z-10 backdrop-blur-xl bg-white/40 
+                                      transition-all duration-700 ease-in-out
+                                      group-hover:backdrop-blur-sm group-hover:bg-white/10" />
+                      
+                      {/* Decorative status icon */}
+                      <div className="absolute top-3 right-3 z-20 transition-transform duration-500 group-hover:scale-110">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                      </div>
+                    </>
+                  ) : (
+                    <Package className="w-6 h-6 md:w-8 md:h-8 text-[#D1D5DB]" strokeWidth={1.5} />
+                  )}
+                  {/* Status dot overlay (desktop) */}
+                  <div className="absolute top-2 right-2 hidden md:block">
+                     <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0 md:w-full">
+                  <p className="text-[13px] font-bold text-[#374151] line-clamp-1 md:line-clamp-2 leading-tight group-hover:text-brand-600 transition-colors">
+                    {item.postTitle}
+                  </p>
+                  <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-tighter mt-0.5 md:mt-1">
+                    {item.category}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
-    </div>
-  )
-}
 
-function FoundItemCard({ post }: { post: Post }) {
-  const navigate = useNavigate()
-  const timeAgo = (() => {
-    const diff = (Date.now() - new Date(post.createdAt).getTime()) / 1000
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-    return `${Math.floor(diff / 86400)}d ago`
-  })()
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={post.title}
-      className="bg-white rounded-2xl border border-[#DDDDDD] overflow-hidden
-                 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]
-                 transition-all duration-200 cursor-pointer focus:outline-none
-                 focus:ring-2 focus:ring-brand-ring focus:ring-offset-2"
-      onClick={() => navigate({ to: '/feed/$postId', params: { postId: post.id } })}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate({ to: '/feed/$postId', params: { postId: post.id } }) }}
-    >
-      <div className="flex items-center gap-5 p-6">
-        {/* Thumbnail */}
-        <div className="relative shrink-0 w-28 h-28 rounded-2xl overflow-hidden bg-[#F3F4F6] flex items-center justify-center">
-          {post.imageUrl ? (
-            <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
-          ) : (
-            <Package className="w-12 h-12 text-[#9CA3AF]" strokeWidth={1.5} />
-          )}
+      {/* Footer hint */}
+      {items.length > 0 && (
+        <div className="px-6 py-3 bg-[#F9FAFB] border-t border-[#F3F4F6] flex items-center justify-between">
+          <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest">
+            {items.length} {items.length === 1 ? 'Item' : 'Items'}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold text-brand-600">Swipe for more</span>
+            <div className="flex gap-0.5">
+              <div className="w-1.5 h-0.5 rounded-full bg-brand-400" />
+              <div className="w-1 h-0.5 rounded-full bg-brand-200" />
+              <div className="w-0.5 h-0.5 rounded-full bg-brand-100" />
+            </div>
+          </div>
         </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <p className="text-base font-bold text-[#111] truncate">{post.title}</p>
-          {post.location?.displayAddress && (
-            <p className="text-sm text-[#888] mt-1 truncate">{post.location.displayAddress}</p>
-          )}
-          <p className="text-sm text-brand-primary font-semibold mt-2">{timeAgo}</p>
-        </div>
-
-        <span className="text-[#ccc] text-2xl shrink-0">›</span>
-      </div>
+      )}
     </div>
   )
 }
@@ -683,45 +689,6 @@ function PolicyRow() {
           to the local police after <strong>7 days</strong> if unclaimed.
         </p>
       </div>
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════════ */
-/*   RIGHT: Stats Row                         */
-/* ═══════════════════════════════════════════ */
-function StatsRow({ prefersReduced }: { prefersReduced: boolean }) {
-  const { received, returned } = DEFAULT_STATS
-  const returnRate = Math.round((returned / received) * 100)
-
-  return (
-    <div className="bg-white border border-[#DDDDDD] rounded-2xl px-4 py-4 mt-3 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-      <p className="text-[11px] font-black text-[#111] tracking-widest uppercase mb-4">
-        Statistics at this location
-      </p>
-      <div className="grid grid-cols-3 gap-3">
-        <StatBox value={received}    label="Items received" color="text-[#111]" />
-        <StatBox value={returned}    label="Items returned"  color="text-emerald-600" />
-        <StatBox value={`${returnRate}%`} label="Return rate" color="text-brand-primary" />
-      </div>
-      <div className="mt-3 h-1.5 bg-[#f0f0f0] rounded-full overflow-hidden">
-        <motion.div
-          className="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full"
-          initial={{ width: prefersReduced ? `${returnRate}%` : 0 }}
-          animate={{ width: `${returnRate}%` }}
-          transition={prefersReduced ? { duration: 0 } : { delay: 0.4, duration: 0.8, ease: 'easeOut' }}
-        />
-      </div>
-      <p className="text-[10px] text-[#bbb] mt-1.5 font-medium">*Statistics are for reference only</p>
-    </div>
-  )
-}
-
-function StatBox({ value, label, color }: { value: string | number; label: string; color: string }) {
-  return (
-    <div className="bg-[#FAFAFA] rounded-xl p-3.5 flex flex-col items-center text-center">
-      <p className={`text-2xl font-black ${color}`}>{value}</p>
-      <p className="text-[10px] text-[#999] font-semibold mt-0.5 leading-tight">{label}</p>
     </div>
   )
 }

@@ -4,7 +4,6 @@ import {
   Building2,
   Menu,
   MessageCircle,
-  PackageSearch,
   Sparkles,
   User,
 } from 'lucide-react'
@@ -14,7 +13,6 @@ import { useTotalUnreadCount } from '@/hooks/use-messager'
 
 /* ── nav link manifest ──────────────────────────────────────── */
 const NAV_LINKS = [
-  { label: 'Feed',       to: '/feed',       icon: PackageSearch },
   { label: 'Pricing',       to: '/premium',       icon: Sparkles },
   { label: 'Message',       to: '/message',       icon: MessageCircle  },
   { label: 'Organizations', to: '/organizations', icon: Building2 },

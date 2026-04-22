@@ -25,4 +25,13 @@ export const orgService = {
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch organisation');
     return data.data;
   },
+  async getOrgInventory(slug: string, params: { page?: number; pageSize?: number } = {}): Promise<PagedResponse<any>> {
+    const { page = 1, pageSize = 20 } = params;
+    const { data } = await publicClient.get<ApiResponse<PagedResponse<any>>>(
+      `/api/core/orgs/public/${slug}/inventory`,
+      { params: { page, pageSize } },
+    );
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch inventory');
+    return data.data;
+  },
 };
