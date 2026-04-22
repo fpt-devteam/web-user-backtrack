@@ -52,15 +52,22 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
     : cachedConversation
   const { isConnected } = useSocket()
 
-  // Support conversations: use stored orgName first, fall back to slug lookup for legacy convs
-  const { data: org } = useGetOrgBySlug(conversation?.orgSlug ?? '', !conversation?.orgName)
+  // Support conversations: use stored orgName first, fall back to slug lookup when missing
+  const needsOrgLookup = !conversation?.orgName?.trim() && !!conversation?.orgSlug
+  const { data: org, isLoading: isOrgLoading } = useGetOrgBySlug(
+    conversation?.orgSlug ?? '',
+    needsOrgLookup,
+  )
 
   // If the conversation's partner has no displayName, fetch their public profile
   const partnerId = conversation?.partner?.id ?? ''
   const missingPartnerName = !!partnerId && !conversation?.partner?.displayName.trim()
-  const { data: partnerProfile } = useGetPublicUserProfile(partnerId, missingPartnerName)
+  const { data: partnerProfile, isLoading: isPartnerLoading } = useGetPublicUserProfile(
+    partnerId,
+    missingPartnerName,
+  )
 
-  // Resolve display name + avatar — prefer conversation data, then public profile, then fallback prop
+  // Resolve display name + avatar — prefer conversation data, then fetched profile, then fallback
   const name =
     conversation?.orgName?.trim() ||
     org?.name.trim() ||
@@ -70,16 +77,20 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
     'Unknown'
   const avatarUrl =
     conversation?.orgLogoUrl?.trim() ??
+    org?.logoUrl?.trim() ??
     conversation?.partner?.avatarUrl?.trim() ??
     conversation?.partner?.avatar?.trim() ??
     partnerProfile?.avatarUrl?.trim() ??
-    org?.logoUrl?.trim() ??
     fallback?.avatarUrl ??
     undefined
   const initial = name.charAt(0).toUpperCase()
 
-  /* ── Skeleton — only when fetching, not when using fallback ── */
-  if (conversationId && (isLoading || !conversation) && !fallback) {
+  // Still waiting for a secondary fetch that resolves the name
+  const isResolvingName =
+    (needsOrgLookup && isOrgLoading) || (missingPartnerName && isPartnerLoading)
+
+  /* ── Skeleton — show while loading conversation OR resolving name, unless fallback covers it ── */
+  if (conversationId && (isLoading || !conversation || isResolvingName) && !fallback) {
     return (
       <header className="flex items-center gap-3 px-5 py-3.5 border-b-2 border-gray-300 bg-white shrink-0">
         {onClose && (

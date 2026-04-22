@@ -18,6 +18,7 @@ export function useGetConversations() {
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? (lastPage.nextCursor ?? null) : null),
     staleTime: 1000 * 30,
+    refetchOnMount: 'always',
   })
 }
 

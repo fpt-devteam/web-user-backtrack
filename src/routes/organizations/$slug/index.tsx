@@ -118,6 +118,7 @@ function OrgDetailPage() {
   const isAuthPending = isSigningIn || isCreatingUser
 
   const [showAnonDialog, setShowAnonDialog] = useState(false)
+  const [isChatting, setIsChatting] = useState(false)
 
   if (isOrgLoading || isProfileLoading) { return <OrgDetailSkeleton /> }
   if (!org) {
@@ -126,23 +127,28 @@ function OrgDetailPage() {
   }
 
   const doCreateConversation = async () => {
-    const conversation = await messageService.createSupportConversation(org.id)
-    const convId = conversation.conversationId
-    if (!convId) throw new Error('No conversation ID returned from server')
-    navigate({
-      to: '/message',
-      search: {
-        selectedId: convId,
-        fallbackName: org.name,
-        ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
-      } as never,
-    })
+    setIsChatting(true)
+    try {
+      const conversation = await messageService.createSupportConversation(org.id)
+      const convId = conversation.conversationId
+      if (!convId) throw new Error('No conversation ID returned from server')
+      navigate({
+        to: '/message',
+        search: {
+          selectedId: convId,
+          isSupport: true,
+          fallbackName: org.name,
+          ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
+        } as never,
+      })
+    } finally {
+      setIsChatting(false)
+    }
   }
 
   const handleStartChat = async () => {
     try {
       if (firebaseUser?.isAnonymous || !profile) {
-        // Ensure user exists in DB before showing the name picker
         await createUser()
         setShowAnonDialog(true)
         return
@@ -204,7 +210,7 @@ function OrgDetailPage() {
           <OrgProfileCard
             org={org}
             onChat={handleStartChat}
-            isAuthPending={isAuthPending}
+            isAuthPending={isAuthPending || isChatting}
           />
         </motion.div>
 

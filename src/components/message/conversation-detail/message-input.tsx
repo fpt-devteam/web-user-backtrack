@@ -6,11 +6,8 @@ import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useSocket } from '@/hooks/use-socket'
-import { useNavigate } from '@tanstack/react-router'
-import { useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { messageService } from '@/services/message.service'
-import { messageKeys } from '@/hooks/use-message'
 import { toast } from '@/lib/toast'
 
 const messageSchema = z.object({
@@ -21,12 +18,8 @@ type MessageFormValues = z.infer<typeof messageSchema>
 
 interface MessageInputProps {
   conversationId?: string
-  orgId?: string
-  /** DM: send without a pre-created conversation */
-  recipientId?: string
+  isSupport?: boolean
   onSend?: () => void
-  /** Called instead of navigating when a new conversation is lazily created */
-  onConversationCreated?: (conversationId: string) => void
 }
 
 const TYPING_DEBOUNCE_MS = 1500
@@ -39,11 +32,16 @@ const QUICK_SUGGESTIONS = [
   'Could you describe it in more detail?',
 ]
 
-export function MessageInput({ conversationId, orgId, recipientId, onSend, onConversationCreated }: MessageInputProps) {
-  const { sendMessage, sendTypingStart, sendTypingStop, onMessageSendSuccess, onMessageSendSupportSuccess, onMessageSendError, isConnected, markConversationAsRead } =
-    useSocket()
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
+export function MessageInput({ conversationId, isSupport, onSend }: MessageInputProps) {
+  const {
+    sendMessage,
+    sendTypingStart,
+    sendTypingStop,
+    onMessageSendError,
+    isConnected,
+    markConversationAsRead,
+  } = useSocket()
+
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -69,43 +67,6 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
 
   /* ── Auto-focus ── */
   useEffect(() => { textareaRef.current?.focus() }, [])
-
-  /* ── Lazy conversation creation ── */
-  useEffect(() => {
-    return onMessageSendSuccess((data) => {
-      setIsSending(false)
-      if (data.isNewConversation && data.conversationId) {
-        if (onConversationCreated) {
-          onConversationCreated(data.conversationId)
-        } else {
-          navigate({
-            to: '/chat/conversation/$id',
-            params: { id: data.conversationId },
-            replace: true,
-          })
-        }
-      }
-      onSend?.()
-    })
-  }, [onMessageSendSuccess, navigate, onSend, onConversationCreated])
-
-  useEffect(() => {
-    return onMessageSendSupportSuccess((data) => {
-      setIsSending(false)
-      if (data.isNewConversation && data.conversationId) {
-        if (onConversationCreated) {
-          onConversationCreated(data.conversationId)
-        } else {
-          navigate({
-            to: '/chat/conversation/$id',
-            params: { id: data.conversationId },
-            replace: true,
-          })
-        }
-      }
-      onSend?.()
-    })
-  }, [onMessageSendSupportSuccess, navigate, onSend, onConversationCreated])
 
   /* ── Send error ── */
   useEffect(() => {
@@ -138,46 +99,22 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
 
   /* ── Submit ── */
   const onSubmit = useCallback(
-    async (values: MessageFormValues) => {
-      if (isSending || !isConnected) return
+    (values: MessageFormValues) => {
+      if (isSending || !isConnected || !conversationId) return
       setIsSending(true)
       stopTyping()
-
-      try {
-        let targetId = conversationId
-        let isSupport = false
-
-        if (!targetId && orgId) {
-          const conv = await messageService.createSupportConversation(orgId)
-          targetId = conv.conversationId
-          isSupport = true
-          void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-          onConversationCreated?.(targetId)
-        } else if (!targetId && recipientId) {
-          const conv = await messageService.createDirectConversation(recipientId)
-          targetId = conv.conversationId
-          void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-          onConversationCreated?.(targetId)
-          if (!onConversationCreated) {
-            navigate({ to: '/chat/conversation/$id', params: { id: targetId }, replace: true })
-          }
-        }
-
-        if (targetId) {
-          sendMessage({ conversationId: targetId, type: 'text', content: values.content, isSupport })
-        }
-      } catch (err) {
-        console.error('[MessageInput] failed to send:', err)
-        setIsSending(false)
-      }
-
+      sendMessage({ conversationId, type: 'text', content: values.content, isSupport })
       form.reset()
       requestAnimationFrame(() => {
-        if (textareaRef.current) { textareaRef.current.style.height = 'auto'; textareaRef.current.focus() }
-        if (conversationId) setIsSending(false)
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto'
+          textareaRef.current.focus()
+        }
+        setIsSending(false)
       })
+      onSend?.()
     },
-    [isSending, isConnected, conversationId, orgId, recipientId, sendMessage, stopTyping, form, navigate, onConversationCreated],
+    [isSending, isConnected, conversationId, isSupport, sendMessage, stopTyping, form, onSend],
   )
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -187,41 +124,25 @@ export function MessageInput({ conversationId, orgId, recipientId, onSend, onCon
     }
   }
 
+  /* ── Image capture ── */
   const handleImageCapture = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
-      if (!file) return
+      if (!file || !conversationId) return
       e.target.value = ''
 
       setIsUploading(true)
       try {
-        let targetId = conversationId
-
-        if (!targetId && orgId) {
-          const conv = await messageService.createSupportConversation(orgId)
-          targetId = conv.conversationId
-          void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-          onConversationCreated?.(targetId)
-        } else if (!targetId && recipientId) {
-          const conv = await messageService.createDirectConversation(recipientId)
-          targetId = conv.conversationId
-          void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-          onConversationCreated?.(targetId)
-        }
-
         const url = await messageService.uploadChatImage(file)
-
-        if (targetId) {
-          sendMessage({ conversationId: targetId, type: 'image', content: url })
-          onSend?.()
-        }
+        sendMessage({ conversationId, type: 'image', content: url, isSupport })
+        onSend?.()
       } catch {
         toast.error('Failed to upload image')
       } finally {
         setIsUploading(false)
       }
     },
-    [conversationId, orgId, recipientId, sendMessage, queryClient, onConversationCreated, onSend],
+    [conversationId, isSupport, sendMessage, onSend],
   )
 
   const isDisabled = isSending || !isConnected || isUploading

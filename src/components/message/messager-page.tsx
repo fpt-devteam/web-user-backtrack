@@ -9,16 +9,28 @@ import { cn } from '@/lib/utils'
 
 type MessagerPageProps = {
   readonly initialSelectedId?: string
+  readonly initialIsSupport?: boolean
   readonly fallbackName?: string
   readonly fallbackAvatarUrl?: string
 }
 
-export function MessagerPage({ initialSelectedId, fallbackName, fallbackAvatarUrl }: MessagerPageProps) {
+export function MessagerPage({
+  initialSelectedId,
+  initialIsSupport = false,
+  fallbackName,
+  fallbackAvatarUrl,
+}: MessagerPageProps) {
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null)
+  const [isSupport, setIsSupport] = useState(initialIsSupport)
+
+  const handleSelect = (id: string, support: boolean) => {
+    setSelectedId(id)
+    setIsSupport(support)
+  }
 
   return (
     <div className="flex h-full bg-white overflow-hidden">
-      <ConversationList selectedId={selectedId} onSelect={setSelectedId} />
+      <ConversationList selectedId={selectedId} onSelect={handleSelect} />
 
       <main
         className={cn(
@@ -49,7 +61,7 @@ export function MessagerPage({ initialSelectedId, fallbackName, fallbackAvatarUr
               </div>
 
               <div className="shrink-0 border-t-2 border-gray-300 bg-white">
-                <MessageInput conversationId={selectedId} />
+                <MessageInput conversationId={selectedId} isSupport={isSupport} />
               </div>
             </motion.div>
           ) : (

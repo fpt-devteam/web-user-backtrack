@@ -1,23 +1,15 @@
-import { useEffect } from 'react'
 import { Edit, Search } from 'lucide-react'
-import { useQueryClient } from '@tanstack/react-query'
-import { useGetConversations, messageKeys } from '@/hooks/use-message'
+import { useGetConversations } from '@/hooks/use-message'
 import { ConversationListItem } from './conversation-list-item'
 import { ConversationListSkeleton } from './conversation-list-skeleton'
 import { cn } from '@/lib/utils'
 
 type ConversationListProps = {
   readonly selectedId: string | null
-  readonly onSelect: (id: string) => void
+  readonly onSelect: (id: string, isSupport: boolean) => void
 }
 
 export function ConversationList({ selectedId, onSelect }: ConversationListProps) {
-  const queryClient = useQueryClient()
-
-  useEffect(() => {
-    void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-  }, [queryClient])
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetConversations()
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -71,7 +63,7 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
                 conv={conv}
                 index={i}
                 isActive={conv.conversationId === selectedId}
-                onClick={() => onSelect(conv.conversationId)}
+                onClick={() => onSelect(conv.conversationId, conv.type === 'support')}
               />
             ))}
 

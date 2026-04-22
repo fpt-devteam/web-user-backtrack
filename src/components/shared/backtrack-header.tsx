@@ -13,8 +13,8 @@ import { useTotalUnreadCount } from '@/hooks/use-message'
 
 /* ── nav link manifest ──────────────────────────────────────── */
 const NAV_LINKS = [
-  { label: 'Pricing',       to: '/premium',       icon: Sparkles },
-  { label: 'Message',       to: '/message',       icon: MessageCircle  },
+  { label: 'Pricing', to: '/premium', icon: Sparkles },
+  { label: 'Message', to: '/message', icon: MessageCircle },
   { label: 'Organizations', to: '/organizations', icon: Building2 },
 ] as const
 
@@ -42,10 +42,10 @@ function WordmarkLogo() {
 
 /* ───────────────────────────────────────────────────────────── */
 export function BacktrackHeader() {
-  const navigate     = useNavigate()
+  const navigate = useNavigate()
   const { location } = useRouterState()
   const { profile, firebaseUser } = useAuth()
-  const pathname     = location.pathname
+  const pathname = location.pathname
 
   const totalUnread = useTotalUnreadCount()
   const [scrolled, setScrolled] = useState(false)
@@ -57,8 +57,8 @@ export function BacktrackHeader() {
 
   const isActive = (to: string) => pathname === to || pathname.startsWith(to + '/')
 
-  const isRealUser   = !!profile && firebaseUser?.isAnonymous === false
-  const accountTo    = isRealUser ? '/account' : '/sign-in'
+  const isRealUser = !!profile && firebaseUser?.isAnonymous === false
+  const accountTo = isRealUser ? '/account' : '/sign-in'
   const accountLabel = isRealUser ? (profile.displayName?.split(' ')[0] ?? 'Account') : 'Log in'
   const avatarLetter = isRealUser ? (profile.displayName?.charAt(0).toUpperCase() ?? null) : null
 
@@ -66,7 +66,8 @@ export function BacktrackHeader() {
     if (pathname === '/') {
       document.getElementById('download-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else {
-      navigate({ to: '/download' })
+      navigate({ to: '/' })
+      document.getElementById('download-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
 

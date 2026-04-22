@@ -40,6 +40,7 @@ export function StartChatButton({
         to: '/message',
         search: {
           selectedId: conv.conversationId,
+          isSupport: false,
           fallbackName: fallbackName ?? undefined,
           fallbackAvatarUrl: fallbackAvatarUrl ?? undefined,
         },
