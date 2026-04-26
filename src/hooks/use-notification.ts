@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { notificationService } from '@/services/notification.service';
-import {
-  type NotificationSendPushRequest,
-  type NotificationResponse,
+import type {
+  NotificationSendPushRequest,
+  NotificationResponse,
 } from '@/types/notification.type';
 
 export const useSendNotification = () => {

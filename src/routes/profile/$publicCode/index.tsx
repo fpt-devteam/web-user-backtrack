@@ -52,7 +52,7 @@ function OwnerProfilePage() {
 
   const posts = postsData ?? []
   const displayName = profile?.displayName ?? 'User'
-  const initial = displayName[0]?.toUpperCase() ?? 'U'
+  const initial = displayName ? displayName[0].toUpperCase() : 'U'
 
   const isBusy = isSigningIn || isCreatingUser || isChatting
 
@@ -86,7 +86,7 @@ function OwnerProfilePage() {
       }
 
       // Check if display name is missing or empty
-      if (!currentProfile?.displayName) {
+      if (!currentProfile.displayName) {
         setShowAnonDialog(true)
         return
       }
