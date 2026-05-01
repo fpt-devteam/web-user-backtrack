@@ -18,12 +18,12 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
   return (
     <aside
       className={cn(
-        'flex-shrink-0 border-r-2 border-gray-300 flex flex-col h-full bg-gray-50',
-        'w-full md:w-[320px]',
+        'shrink-0 border-r border-gray-100 flex flex-col h-full bg-white',
+        'w-full md:w-[400px]',
         selectedId ? 'hidden md:flex' : 'flex',
       )}
     >
-      <div className="px-5 pt-6 pb-4 border-b-2 border-gray-300">
+      <div className="px-5 pt-6 pb-4">
         <div className="flex items-center justify-between mb-4">
           <span className="text-xl font-bold text-gray-900 tracking-tight">Messages</span>
           <button

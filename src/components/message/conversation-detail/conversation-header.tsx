@@ -92,7 +92,7 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
   /* ── Skeleton — show while loading conversation OR resolving name, unless fallback covers it ── */
   if (conversationId && (isLoading || !conversation || isResolvingName) && !fallback) {
     return (
-      <header className="flex items-center gap-3 px-5 py-3.5 border-b-2 border-gray-300 bg-white shrink-0">
+      <header className="flex items-center gap-3 px-5 py-3.5 border-b-2 border-gray-100 bg-white shrink-0">
         {onClose && (
           <button
             type="button"
@@ -119,7 +119,7 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
       initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="flex items-center gap-3 px-5 py-3.5 border-b-2 border-gray-300 bg-white shrink-0"
+      className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100 bg-white shrink-0 rounded-xl"
     >
       {/* Back button — mobile only */}
       {onClose && (

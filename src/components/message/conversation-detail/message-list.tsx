@@ -1,8 +1,9 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import type { InfiniteData } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import type { Message } from '@/types/chat.type'
+import type { Message, Conversation } from '@/types/chat.type'
 import type { CursorPagedResponse } from '@/types/pagination.type'
 import { messageKeys, useGetMessages } from '@/hooks/use-message'
 import { useSocket } from '@/hooks/use-socket'
@@ -27,6 +28,19 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
     onConversationNew,
   } = useSocket()
   const queryClient = useQueryClient()
+
+  const cachedPages = queryClient.getQueryData<InfiniteData<CursorPagedResponse<Conversation>>>(
+    messageKeys.conversations(),
+  )
+  const cachedConv = conversationId
+    ? cachedPages?.pages.flatMap((p) => p.items).find((c) => c.conversationId === conversationId)
+    : undefined
+  const partnerAvatar =
+    cachedConv?.partner?.avatarUrl?.trim() ?? cachedConv?.orgLogoUrl?.trim() ?? undefined
+  const partnerName =
+    cachedConv?.partner?.displayName?.trim() ?? cachedConv?.orgName?.trim() ?? ''
+  const partnerInitial = partnerName.charAt(0).toUpperCase()
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
@@ -322,6 +336,27 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
                   isNewGroup ? 'mt-3' : 'mt-0.5',
                 )}
               >
+                {/* Opponent avatar — shown only on the last bubble of each group */}
+                {!isMe && (
+                  <div className="w-7 h-7 shrink-0">
+                    {!isGroupedWithNext && (
+                      partnerAvatar ? (
+                        <img
+                          src={partnerAvatar}
+                          alt={partnerInitial}
+                          className="w-7 h-7 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center">
+                          <span className="text-[11px] font-semibold text-gray-600">
+                            {partnerInitial}
+                          </span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+
                 {/* Messages bubble */}
                 {message.type === 'image' ? (
                   <div
@@ -343,7 +378,7 @@ export function MessageList({ conversationId = '' }: MessageListProps) {
                     className={cn(
                       'relative max-w-[65%] px-3.5 py-2 break-words text-sm leading-relaxed',
                       isMe
-                        ? [radiusMe, 'bg-[#0095f6] text-white']
+                        ? [radiusMe, 'bg-primary text-white']
                         : [radiusThem, 'bg-gray-100 text-gray-900'],
                     )}
                     title={time}

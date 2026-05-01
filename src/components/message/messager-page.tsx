@@ -29,20 +29,20 @@ export function MessagerPage({
   }
 
   return (
-    <div className="flex h-full bg-white overflow-hidden">
+    <div className="flex h-full border border-gray-100 overflow-hidden">
       <ConversationList selectedId={selectedId} onSelect={handleSelect} />
 
       <main
         className={cn(
-          'flex-1 flex flex-col overflow-hidden bg-white',
+          'flex-1 flex flex-col overflow-hidden bg-gray-50 p-4',
           selectedId ? 'flex' : 'hidden md:flex',
         )}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" >
           {selectedId ? (
             <motion.div
               key={selectedId}
-              className="flex flex-col h-full"
+              className="flex flex-col h-full shadow-xl rounded-md bg-white"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -60,7 +60,7 @@ export function MessagerPage({
                 <MessageList conversationId={selectedId} />
               </div>
 
-              <div className="shrink-0 border-t-2 border-gray-300 bg-white">
+              <div className="shrink-0 border-t border-gray-100 bg-white rounded-b-md">
                 <MessageInput conversationId={selectedId} isSupport={isSupport} />
               </div>
             </motion.div>

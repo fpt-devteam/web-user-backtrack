@@ -78,7 +78,7 @@ export function BacktrackHeader() {
         scrolled ? 'shadow-[0_1px_12px_rgba(0,0,0,0.08)]' : 'border-b border-gray-100',
       ].join(' ')}
     >
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-[72px] flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-[72px] flex items-center justify-between gap-4">
 
         {/* ── LEFT — logo ───────────────────────────────────────── */}
         <button

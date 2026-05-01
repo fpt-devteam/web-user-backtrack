@@ -174,7 +174,7 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
       try {
         const url = await messageService.uploadChatImage(file)
         sendMessage({ conversationId, type: 'image', content: url, isSupport })
-        
+
         // Send push notification to recipient
         triggerPushNotification(url, 'image')
 
@@ -237,7 +237,7 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
                     key={s}
                     type="button"
                     onClick={() => form.setValue('content', s, { shouldValidate: true })}
-                    className="shrink-0 px-3 py-1.5 rounded-full bg-white border border-gray-300 text-xs text-gray-600 font-medium hover:bg-gray-50 hover:border-gray-400 transition-colors whitespace-nowrap"
+                    className="shrink-0 px-3 py-1.5 rounded-full bg-white border border-gray-100 text-xs text-gray-600 font-medium hover:bg-gray-50 hover:border-gray-400 transition-colors whitespace-nowrap"
                   >
                     {s}
                   </button>
@@ -260,7 +260,7 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
             {isUploading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
-              <Camera className="w-6 h-6" strokeWidth={2} />
+              <Camera className="w-6 h-6 text-primary" strokeWidth={2} />
             )}
           </button>
 
@@ -284,7 +284,7 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
                     rows={1}
                     className={cn(
                       'w-full resize-none rounded-[22px] px-4 py-2.5',
-                      'bg-gray-100 border-0 outline-none ring-0',
+                      'bg-gray-200 border-0 outline-none ring-0',
                       'text-sm text-gray-900 placeholder-gray-400 leading-relaxed',
                       'min-h-[40px] max-h-[120px]',
                       'transition-all duration-150',
@@ -307,7 +307,7 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
             {isSending ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
-              <Send className="w-6 h-6" strokeWidth={2} />
+              <Send className="w-6 h-6 text-primary" strokeWidth={2} />
             )}
           </button>
         </div>

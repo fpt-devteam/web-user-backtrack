@@ -60,10 +60,10 @@ export function ConversationListItem({ conv, index, isActive, onClick }: Convers
         type="button"
         onClick={onClick}
         className={cn(
-          'w-full flex items-center gap-3 px-5 py-3.5 border-b border-gray-200 transition-colors duration-100 text-left',
+          'w-full flex items-center gap-3 px-5 py-3.5 transition-colors duration-100 text-left',
           isActive
-            ? 'bg-blue-50 border-l-4 border-l-blue-500'
-            : 'hover:bg-gray-100 border-l-4 border-l-transparent',
+            ? 'bg-blue-50'
+            : 'hover:bg-gray-100',
         )}
       >
         <div className="relative shrink-0">
