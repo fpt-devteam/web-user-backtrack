@@ -12,6 +12,7 @@ import {
   MapPin,
   Package,
   Phone,
+  RefreshCw,
   Send,
   ShoppingBag,
   Smartphone,
@@ -19,7 +20,7 @@ import {
   User,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { ElementType } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import type { Org } from '@/types/org.type'
@@ -30,6 +31,20 @@ import { toast } from '@/lib/toast'
 import { messageService } from '@/services/message.service'
 import { userService } from '@/services/user.service'
 import { Spinner } from '@/components/ui/spinner'
+
+const RANDOM_ADJECTIVES = [
+  'Happy', 'Clever', 'Brave', 'Swift', 'Calm', 'Bright', 'Kind', 'Bold',
+  'Gentle', 'Lucky', 'Merry', 'Quiet', 'Witty', 'Jolly', 'Proud',
+]
+const RANDOM_ANIMALS = [
+  'Panda', 'Fox', 'Otter', 'Koala', 'Falcon', 'Lynx', 'Deer', 'Wolf',
+  'Crane', 'Finch', 'Heron', 'Lemur', 'Quail', 'Robin', 'Seal',
+]
+function randomName() {
+  const adj = RANDOM_ADJECTIVES[Math.floor(Math.random() * RANDOM_ADJECTIVES.length)]
+  const animal = RANDOM_ANIMALS[Math.floor(Math.random() * RANDOM_ANIMALS.length)]
+  return `${adj} ${animal}`
+}
 
 const CATEGORY_ICONS: { [k: string]: ElementType | undefined } = {
   Electronics: Smartphone,
@@ -64,25 +79,29 @@ export function SendMessageSheet({ item, org, onClose }: {
   const { sendMessage } = useSocket()
   const { mutateAsync: createUser } = useCreateUser()
   const [message, setMessage] = useState('')
-  const [displayName, setDisplayName] = useState('')
+  const [displayName, setDisplayName] = useState(() => firebaseUser?.displayName?.trim() || randomName())
   const [isPending, setIsPending] = useState(false)
 
   const isAnonymous = !profile || !!firebaseUser?.isAnonymous
+  const existingName = profile?.displayName?.trim() ?? ''
+  const needsName = isAnonymous && !existingName
+  const isNameLocked = !!(firebaseUser?.displayName?.trim())
+  const shuffleName = useCallback(() => setDisplayName(randomName()), [])
   const CategoryIcon = CATEGORY_ICONS[item.category] ?? Package
   const itemLocation = item.location?.displayAddress ?? item.displayAddress ?? org.displayAddress
   const lastSeen = formatItemDate(item.createdAt ?? item.created_at)
 
   async function handleSubmit() {
     if (!message.trim()) return
-    if (isAnonymous && !displayName.trim()) return
+    if (needsName && !displayName.trim()) return
     setIsPending(true)
     try {
       if (isAnonymous) {
         await createUser()
-        await userService.updateMe({ displayName: displayName.trim() })
+        if (needsName) await userService.updateMe({ displayName: displayName.trim() })
         await syncProfile()
       }
-      const conversation = await messageService.createSupportConversation(org.id)
+      const conversation = await messageService.createSupportConversation(org.id, item?.id)
       const convId = conversation.conversationId
       if (!convId) throw new Error('No conversation ID returned from server')
       sendMessage({ conversationId: convId, content: message, isSupport: true })
@@ -181,24 +200,43 @@ export function SendMessageSheet({ item, org, onClose }: {
             </div>
           </div>
 
-          {/* Name input — shown only for anonymous users */}
-          {isAnonymous && (
+          {/* Name input — shown only when anonymous and no existing name */}
+          {needsName && (
             <div className="px-6 pb-4">
-              <p className="text-[14px] font-bold text-[#111] mb-0.5">Your name</p>
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[14px] font-bold text-[#111]">Your name</p>
+                {!isNameLocked && (
+                  <button
+                    type="button"
+                    onClick={shuffleName}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-brand-500
+                               hover:text-brand-600 transition-colors cursor-pointer"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Shuffle
+                  </button>
+                )}
+              </div>
               <p className="text-[12px] text-[#6B7280] mb-3 leading-relaxed">
-                So the organization knows who they're talking to.
+                {isNameLocked
+                  ? 'This is your account name and cannot be changed here.'
+                  : 'A name has been suggested — keep it or enter your own.'}
               </p>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
                 <input
                   type="text"
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Enter your name"
-                  autoFocus
-                  className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]
-                             text-[13px] text-[#111] placeholder:text-[#B0B7C3]
-                             focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent transition-all"
+                  onChange={(e) => { if (!isNameLocked) setDisplayName(e.target.value) }}
+                  readOnly={isNameLocked}
+                  autoFocus={!isNameLocked}
+                  className={[
+                    'w-full h-10 pl-9 pr-3 rounded-xl border border-[#E5E7EB] text-[13px] text-[#111]',
+                    'focus:outline-none transition-all',
+                    isNameLocked
+                      ? 'bg-[#F3F4F6] cursor-default text-[#6B7280]'
+                      : 'bg-[#F9FAFB] placeholder:text-[#B0B7C3] focus:ring-2 focus:ring-brand-ring focus:border-transparent',
+                  ].join(' ')}
                 />
               </div>
             </div>
@@ -231,10 +269,10 @@ export function SendMessageSheet({ item, org, onClose }: {
           </p>
           <button
             onClick={handleSubmit}
-            disabled={!message.trim() || isPending || (isAnonymous && !displayName.trim())}
+            disabled={!message.trim() || isPending || (needsName && !displayName.trim())}
             className={[
               'w-full h-12 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all cursor-pointer',
-              message.trim() && !isPending && !(isAnonymous && !displayName.trim())
+              message.trim() && !isPending && !(needsName && !displayName.trim())
                 ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-[0_4px_16px_rgba(239,68,68,0.35)]'
                 : 'bg-rose-200 text-rose-300 cursor-not-allowed',
             ].join(' ')}

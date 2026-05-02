@@ -11,6 +11,24 @@ export type PostCategory =
   | 'Keys'
   | 'Other'
 
+/** Shape returned by GET /api/core/posts/:id */
+export interface PostDetail {
+  id: string
+  postType: PostType
+  postTitle: string
+  status?: string | null
+  category?: string | null
+  imageUrls?: Array<string> | null
+  displayAddress?: string | null
+  eventTime?: string | null
+  createdAt: string
+  author?: {
+    id: string
+    displayName: string
+    avatarUrl?: string | null
+  } | null
+}
+
 export interface FeedFilters {
   geo?: {
     location?: { latitude: number; longitude: number } | null
@@ -65,7 +83,8 @@ export interface SearchPostsRequest {
 // ── Raw API shapes (feed endpoint) ──────────────────────────────
 export interface FeedApiPostItem {
   itemName: string
-  category: string
+  postTitle?: string | null
+  category?: string | null
   color?: string | null
   brand?: string | null
   condition?: string | null
@@ -96,7 +115,7 @@ export interface FeedApiPost {
   organization?: FeedApiPostOrganization | null
   postType: PostType
   status?: string | null
-  item: FeedApiPostItem
+  item?: FeedApiPostItem | null
   imageUrls?: Array<string> | null
   location: { latitude: number; longitude: number }
   externalPlaceId?: string | null

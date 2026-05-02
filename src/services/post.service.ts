@@ -1,12 +1,12 @@
 import type { ApiResponse } from '@/types/api-response.type'
 import type { PagedResponse } from '@/types/pagination.type'
-import type { FeedApiPost, FeedApiResponse, FeedRequest, Post, SearchPostsRequest } from '@/types/post.type'
+import type { FeedApiPost, FeedApiResponse, FeedRequest, Post, PostDetail, SearchPostsRequest } from '@/types/post.type'
 import { privateClient } from '@/lib/api-client'
 
 function mapApiPost(apiPost: FeedApiPost): Post {
   return {
     id: apiPost.id,
-    title: apiPost.item.itemName,
+    title: apiPost.item?.itemName ?? '',
     postType: apiPost.postType,
     imageUrl: apiPost.imageUrls?.[0] ?? null,
     location: {
@@ -39,8 +39,8 @@ export const postService = {
     return data.data.items.map(mapApiPost)
   },
 
-  async getPostById(id: string): Promise<FeedApiPost> {
-    const { data } = await privateClient.get<ApiResponse<FeedApiPost>>(
+  async getPostById(id: string): Promise<PostDetail> {
+    const { data } = await privateClient.get<ApiResponse<PostDetail>>(
       `/api/core/posts/${id}`,
     )
     if (!data.success) throw new Error(data.error?.message ?? 'Post not found')

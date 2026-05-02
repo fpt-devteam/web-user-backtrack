@@ -38,6 +38,9 @@ export interface Conversation {
   orgName?: string | null;
   orgSlug?: string | null;
   orgLogoUrl?: string | null;
+  /** ID of the linked post/item — backend may return as postId or itemId */
+  postId?: string | null;
+  itemId?: string | null;
   /** "queue" | "active" | "resolved" | null */
   status?: string | null;
   assignedStaffId?: string | null;
