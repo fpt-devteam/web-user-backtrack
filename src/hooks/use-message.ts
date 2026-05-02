@@ -56,6 +56,18 @@ export function useTotalUnreadCount(): number {
   return data.pages.flatMap((p) => p.items).reduce((sum, conv) => sum + conv.unreadCount, 0)
 }
 
+export function useUpdateConversationPost(conversationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (postId: string) => messageService.updateConversationPost(conversationId, postId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: messageKeys.conversation(conversationId) })
+      void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+    },
+    onError: (err) => toast.fromError(err),
+  })
+}
+
 export function useGetMessages(conversationId: string) {
   return useInfiniteQuery({
     queryKey: messageKeys.messages(conversationId),

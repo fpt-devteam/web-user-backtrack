@@ -39,12 +39,21 @@ export const messageService = {
     return data.data.conversation
   },
 
-  async createSupportConversation(orgId: string): Promise<Conversation> {
+  async createSupportConversation(orgId: string, postId?: string): Promise<Conversation> {
     const { data } = await privateClient.post<ApiResponse<{ conversation: Conversation }>>(
       '/api/chat/conversations/organization',
-      { orgId },
+      { orgId, postId },
     )
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to create conversation')
+    return data.data.conversation
+  },
+
+  async updateConversationPost(id: string, postId: string): Promise<Conversation> {
+    const { data } = await privateClient.post<ApiResponse<{ conversation: Conversation }>>(
+      `/api/chat/conversations/${id}/update-post-id`,
+      { postId },
+    )
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to update conversation')
     return data.data.conversation
   },
 
