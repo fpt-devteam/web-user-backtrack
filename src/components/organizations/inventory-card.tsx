@@ -14,7 +14,6 @@ export function InventoryCard({ item, onSelect }: { item: any; onSelect?: (item:
             src={item.imageUrls[0]}
             alt={item.postTitle}
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ filter: 'blur(8px)', transform: 'scale(1.1)' }}
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
