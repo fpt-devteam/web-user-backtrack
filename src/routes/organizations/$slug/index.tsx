@@ -46,60 +46,47 @@ function OrgDetailPage() {
   const navigate = useNavigate()
 
   const { data: org, isLoading: isOrgLoading } = useGetOrgBySlug(slug)
-  const { firebaseUser, profile, syncProfile, loading: isProfileLoading } = useAuth()
+  const { syncProfile, loading: isProfileLoading } = useAuth()
 
-  const { isPending: isSigningIn } = useSignInAnonymous()
-  const { mutateAsync: createUser, isPending: isCreatingUser } = useCreateUser()
-  const isAuthPending = isSigningIn || isCreatingUser
-
-  const [showAnonDialog, setShowAnonDialog] = useState(false)
-  const [isChatting, setIsChatting] = useState(false)
+  const { mutateAsync: createUser } = useCreateUser()
 
   if (isOrgLoading || isProfileLoading) { return <OrgDetailSkeleton /> }
   if (!org) {
     navigate({ to: '/organizations' })
     return null
   }
+  const [showAnonDialog, setShowAnonDialog] = useState(false)
 
-  const doCreateConversation = async () => {
-    setIsChatting(true)
-    try {
-      const conversation = await messageService.createSupportConversation(org.id)
-      const convId = conversation.conversationId
-      if (!convId) throw new Error('No conversation ID returned from server')
-      navigate({
-        to: '/message',
-        search: {
-          selectedId: convId,
-          isSupport: true,
-          fallbackName: org.name,
-          ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
-        } as never,
-      })
-    } finally {
-      setIsChatting(false)
-    }
+  const createConversation = async () => {
+    const conversation = await messageService.createSupportConversation(org.id)
+    const convId = conversation.conversationId
+    if (!convId) throw new Error('No conversation ID returned from server')
+    navigate({
+      to: '/message',
+      search: {
+        selectedId: convId,
+        isSupport: true,
+        fallbackName: org.name,
+        ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
+      } as never,
+    })
   }
-
   const handleStartChat = async () => {
-    try {
-      if (firebaseUser?.isAnonymous || !profile) {
-        await createUser()
-        setShowAnonDialog(true)
-        return
-      }
-      await doCreateConversation()
-    } catch (err) {
-      toast.fromError(err)
+    const freshProfile = await syncProfile()
+    if (freshProfile && freshProfile.displayName) {
+      await createConversation()
+      return
     }
+    setShowAnonDialog(true)
   }
 
   const handleAnonConfirm = async (displayName: string) => {
     try {
+      await createUser()
       await userService.updateMe({ displayName })
       await syncProfile()
       setShowAnonDialog(false)
-      await doCreateConversation()
+      await createConversation()
     } catch (err) {
       toast.fromError(err)
     }
@@ -120,7 +107,7 @@ function OrgDetailPage() {
       <div className="min-h-screen bg-[#F7F7F7] pb-8">
 
         {/* Back button */}
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 pt-4 pb-1">
+        <div className="max-w-350 mx-auto px-6 sm:px-8 pt-4 pb-1">
           <button
             onClick={() => navigate({ to: '/organizations' })}
             aria-label="Back to list"
@@ -134,7 +121,7 @@ function OrgDetailPage() {
         </div>
 
         {/* Two-column grid */}
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-3
+        <div className="max-w-350 mx-auto px-6 sm:px-8 py-3
                         grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-8 items-start">
 
           {/* LEFT: Profile card */}
@@ -145,7 +132,7 @@ function OrgDetailPage() {
             <OrgProfileCard
               org={org}
               onChat={handleStartChat}
-              isAuthPending={isAuthPending || isChatting}
+              isAuthPending={isOrgLoading}
             />
           </motion.div>
 

@@ -34,7 +34,7 @@ export function MessagerPage({
 
       <main
         className={cn(
-          'flex-1 flex flex-col overflow-hidden bg-gray-50 md:p-4',
+          'flex-1 flex flex-col overflow-hidden bg-gray-50 p-4',
           selectedId ? 'flex' : 'hidden md:flex',
         )}
       >

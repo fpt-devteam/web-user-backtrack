@@ -29,7 +29,7 @@ interface AuthContextValue {
   profile: UserProfile | null;
   loading: boolean;
   logout: () => Promise<void>;
-  syncProfile: () => Promise<void>;
+  syncProfile: () => Promise<UserProfile | null>;
 }
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -97,9 +97,11 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     try {
       const backendProfile = await userService.getMe();
       setProfile(backendProfile);
+      return backendProfile;
     } catch (error) {
       console.error('Error syncing user profile:', error);
       setProfile(null);
+      return null;
     }
   }
 
