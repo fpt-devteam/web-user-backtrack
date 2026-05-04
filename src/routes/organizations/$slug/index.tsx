@@ -92,8 +92,6 @@ function OrgDetailPage() {
           >
             <OrgProfileCard
               org={org}
-              onChat={() => setShowMessageSheet(true)}
-              isAuthPending={false}
             />
           </motion.div>
 

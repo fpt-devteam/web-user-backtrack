@@ -49,6 +49,7 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
         orgName: fetchedConversation.orgName ?? cachedConversation?.orgName,
         orgSlug: fetchedConversation.orgSlug ?? cachedConversation?.orgSlug,
         orgLogoUrl: fetchedConversation.orgLogoUrl ?? cachedConversation?.orgLogoUrl,
+        supportFormData: fetchedConversation.supportFormData ?? cachedConversation?.supportFormData,
       }
     : cachedConversation
   const { isConnected } = useSocket()
@@ -69,7 +70,7 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
   )
 
   // Pinned post — backend may return postId or itemId
-  const pinnedPostId = conversation?.postId ?? conversation?.itemId ?? ''
+  const supportFormData = conversation?.supportFormData
 
   // Resolve display name + avatar — prefer conversation data, then fetched profile, then fallback
   const name =
@@ -191,12 +192,8 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
       </motion.header>
 
       {/* ── Pinned post card ── */}
-      {pinnedPostId && conversationId && (
-        <PinnedPostCard
-          postId={pinnedPostId}
-          orgSlug={conversation?.orgSlug ?? org?.slug ?? ''}
-          conversationId={conversationId}
-        />
+      {supportFormData && conversationId && (
+        <PinnedPostCard supportFormData={supportFormData} />
       )}
     </>
   )

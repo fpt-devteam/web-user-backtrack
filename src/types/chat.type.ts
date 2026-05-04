@@ -39,7 +39,7 @@ export interface Conversation {
   orgSlug?: string | null;
   orgLogoUrl?: string | null;
   /** ID of the linked post/item — backend may return as postId or itemId */
-  postId?: string | null;
+  supportFormData?: SupportFormData | null;
   itemId?: string | null;
   /** "queue" | "active" | "resolved" | null */
   status?: string | null;
@@ -53,13 +53,13 @@ export interface Conversation {
 }
 
 export interface SupportFormData {
-  postId: string | null
+  postId: string
   category: string
   subCategoryId: string
   itemName: string
   color: string
   additionalDetails: string | null
-  imageUrls: string[] | null
+  imageUrls: Array<string> | null
   lostLocation: string | null
   eventTime: Date | null
 }

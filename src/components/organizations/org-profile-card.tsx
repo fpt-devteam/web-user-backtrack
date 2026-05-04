@@ -7,7 +7,7 @@ import { BusinessHoursRow } from './business-hours-row'
 const DEFAULT_DESCRIPTION = 'Official lost and found intake and return point. We are committed to safeguarding belongings and returning them safely to their owners.'
 const DEFAULT_LOCATION_NOTE = 'Floor 1, Reception Desk'
 
-export function OrgProfileCard({ org, onChat, isAuthPending }: {
+export function OrgProfileCard({ org }: {
   org: {
     name: string
     logoUrl: string | null
@@ -22,8 +22,6 @@ export function OrgProfileCard({ org, onChat, isAuthPending }: {
     businessHours: Array<BusinessHour> | null
     location: { latitude: number; longitude: number } | null
   }
-  onChat: () => void
-  isAuthPending: boolean
 }) {
   return (
     <div className="flex flex-col">
@@ -95,30 +93,6 @@ export function OrgProfileCard({ org, onChat, isAuthPending }: {
         </p>
       </div>
 
-      {/* Chat Button */}
-      <div className="px-2 mt-5">
-        <Button
-          variant="outline"
-          onClick={onChat}
-          disabled={isAuthPending}
-          aria-label={`Start a chat with ${org.name}`}
-          className="w-full h-12 rounded-2xl text-sm font-black
-                     bg-brand-primary hover:bg-brand-hover
-                     text-white flex items-center justify-center gap-2 border-0
-                     shadow-[0_4px_16px_color-mix(in_srgb,var(--brand-primary)_35%,transparent)]
-                     transition-all duration-200
-                     focus:outline-none focus:ring-2 focus:ring-brand-ring focus:ring-offset-2 cursor-pointer"
-        >
-          {isAuthPending
-            ? <Spinner size="sm" />
-            : (
-              <>
-                <MessageCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">Chat with {org.name}</span>
-              </>
-            )}
-        </Button>
-      </div>
 
       <div className="border-t border-[#D1D1D1] mt-5 mx-2" />
 
