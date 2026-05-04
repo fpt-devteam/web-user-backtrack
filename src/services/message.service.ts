@@ -2,7 +2,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { privateClient } from '@/lib/api-client'
 import { auth, storage } from '@/lib/firebase'
 import type { ApiResponse } from '@/types/api-response.type'
-import type { Conversation, Message } from '@/types/chat.type'
+import type { Conversation, Message, SupportFormData } from '@/types/chat.type'
 import type { CursorPagedResponse } from '@/types/pagination.type'
 
 export const messageService = {
@@ -39,10 +39,10 @@ export const messageService = {
     return data.data.conversation
   },
 
-  async createSupportConversation(orgId: string, postId?: string): Promise<Conversation> {
+  async createSupportConversation(orgId: string, supportFormData?: SupportFormData): Promise<Conversation> {
     const { data } = await privateClient.post<ApiResponse<{ conversation: Conversation }>>(
       '/api/chat/conversations/organization',
-      { orgId, postId },
+      { orgId, supportFormData },
     )
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to create conversation')
     return data.data.conversation
