@@ -3,16 +3,12 @@ import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import type { Variants } from 'framer-motion'
-import { useAuth, useSignInAnonymous } from '@/hooks/use-auth'
-import { AnonymousProfileDialog } from '@/components/shared/anonymous-profile-dialog'
+import { useAuth } from '@/hooks/use-auth'
 import { orgKeys, useGetOrgBySlug } from '@/hooks/use-org'
-import { useCreateUser } from '@/hooks/use-user'
-import { toast } from '@/lib/toast'
-import { userService } from '@/services/user.service'
 import { Skeleton } from '@/components/ui/skeleton'
 import { orgService } from '@/services/org.service'
-import { messageService } from '@/services/message.service'
 import { OrgProfileCard } from '@/components/organizations/org-profile-card'
+import { SendMessageSheet } from '@/components/organizations/send-message-sheet'
 import { OrgInventoryList } from '@/components/organizations/org-inventory-list'
 import { GuidesAccordion } from '@/components/organizations/guides-accordion'
 import { PolicyRow } from '@/components/organizations/policy-row'
@@ -46,50 +42,13 @@ function OrgDetailPage() {
   const navigate = useNavigate()
 
   const { data: org, isLoading: isOrgLoading } = useGetOrgBySlug(slug)
-  const { syncProfile, loading: isProfileLoading } = useAuth()
-
-  const { mutateAsync: createUser } = useCreateUser()
+  const { loading: isProfileLoading } = useAuth()
+  const [showMessageSheet, setShowMessageSheet] = useState(false)
 
   if (isOrgLoading || isProfileLoading) { return <OrgDetailSkeleton /> }
   if (!org) {
     navigate({ to: '/organizations' })
     return null
-  }
-  const [showAnonDialog, setShowAnonDialog] = useState(false)
-
-  const createConversation = async () => {
-    const conversation = await messageService.createSupportConversation(org.id)
-    const convId = conversation.conversationId
-    if (!convId) throw new Error('No conversation ID returned from server')
-    navigate({
-      to: '/message',
-      search: {
-        selectedId: convId,
-        isSupport: true,
-        fallbackName: org.name,
-        ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
-      } as never,
-    })
-  }
-  const handleStartChat = async () => {
-    const freshProfile = await syncProfile()
-    if (freshProfile && freshProfile.displayName) {
-      await createConversation()
-      return
-    }
-    setShowAnonDialog(true)
-  }
-
-  const handleAnonConfirm = async (displayName: string) => {
-    try {
-      await createUser()
-      await userService.updateMe({ displayName })
-      await syncProfile()
-      setShowAnonDialog(false)
-      await createConversation()
-    } catch (err) {
-      toast.fromError(err)
-    }
   }
 
   const prefersReduced =
@@ -99,11 +58,13 @@ function OrgDetailPage() {
 
   return (
     <>
-      <AnonymousProfileDialog
-        open={showAnonDialog}
-        onConfirm={handleAnonConfirm}
-        onCancel={() => setShowAnonDialog(false)}
-      />
+      {showMessageSheet && (
+        <SendMessageSheet
+          item={null}
+          org={org}
+          onClose={() => setShowMessageSheet(false)}
+        />
+      )}
       <div className="min-h-screen bg-[#F7F7F7] pb-8">
 
         {/* Back button */}
@@ -131,8 +92,8 @@ function OrgDetailPage() {
           >
             <OrgProfileCard
               org={org}
-              onChat={handleStartChat}
-              isAuthPending={isOrgLoading}
+              onChat={() => setShowMessageSheet(true)}
+              isAuthPending={false}
             />
           </motion.div>
 

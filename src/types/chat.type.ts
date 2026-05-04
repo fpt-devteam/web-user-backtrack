@@ -52,6 +52,18 @@ export interface Conversation {
   updatedAt: string;
 }
 
+export interface SupportFormData {
+  postId: string | null
+  category: string
+  subCategoryId: string
+  itemName: string
+  color: string
+  additionalDetails: string | null
+  imageUrls: string[] | null
+  lostLocation: string | null
+  eventTime: Date | null
+}
+
 export interface CreateConversationRequest {
   partnerId: string;
   creatorKeyName: string;

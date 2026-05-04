@@ -3,7 +3,6 @@ import {
   Briefcase,
   Building2,
   CheckCircle2,
-  Clock,
   CreditCard,
   FileText,
   Gem,
@@ -24,13 +23,18 @@ import { useCallback, useState } from 'react'
 import type { ElementType } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import type { Org } from '@/types/org.type'
+import type { SupportFormData } from '@/types/chat.type'
 import { useAuth } from '@/hooks/use-auth'
+import { useGetSubcategories } from '@/hooks/use-subcategory'
 import { useSocket } from '@/hooks/use-socket'
 import { useCreateUser } from '@/hooks/use-user'
 import { toast } from '@/lib/toast'
 import { messageService } from '@/services/message.service'
 import { userService } from '@/services/user.service'
 import { Spinner } from '@/components/ui/spinner'
+import { PillSelect } from './pill-select'
+import { DateTimePill } from './date-time-pill'
+import { FieldLabel } from './field-label'
 
 const RANDOM_ADJECTIVES = [
   'Happy', 'Clever', 'Brave', 'Swift', 'Calm', 'Bright', 'Kind', 'Bold',
@@ -58,19 +62,19 @@ const CATEGORY_ICONS: { [k: string]: ElementType | undefined } = {
   Other: Package,
 }
 
-function formatItemDate(dateStr?: string | null): string {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  if (isNaN(d.getTime())) return ''
-  const hh = String(d.getHours()).padStart(2, '0')
-  const mm = String(d.getMinutes()).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mo = String(d.getMonth() + 1).padStart(2, '0')
-  return `${hh}:${mm} ${dd}/${mo}/${d.getFullYear()}`
-}
+const CATEGORIES = [
+  'PersonalBelongings', 'Cards', 'Accessories', 'Electronics',
+  'Others',
+] as const
+
+const inputClass = [
+  'w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-[13px] text-[#111]',
+  'bg-[#F9FAFB] placeholder:text-[#B0B7C3]',
+  'focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent transition-all',
+].join(' ')
 
 export function SendMessageSheet({ item, org, onClose }: {
-  item: any
+  item: any | null
   org: Org
   onClose: () => void
 }) {
@@ -78,22 +82,38 @@ export function SendMessageSheet({ item, org, onClose }: {
   const { firebaseUser, profile, syncProfile } = useAuth()
   const { sendMessage } = useSocket()
   const { mutateAsync: createUser } = useCreateUser()
+
   const [message, setMessage] = useState('')
   const [displayName, setDisplayName] = useState(() => firebaseUser?.displayName?.trim() || randomName())
   const [isPending, setIsPending] = useState(false)
+
+  const [category, setCategory] = useState<string>(item?.category ?? '')
+  const [subCategoryId, setSubCategoryId] = useState<string>(item?.subcategoryId ?? '')
+  const [itemName, setItemName] = useState<string>(item?.postTitle ?? item?.itemName ?? '')
+  const [color, setColor] = useState('')
+  const [lostLocation, setLostLocation] = useState('')
+  const [eventTime, setEventTime] = useState('')
+  const [additionalDetails, setAdditionalDetails] = useState('')
 
   const isAnonymous = !profile || !!firebaseUser?.isAnonymous
   const existingName = profile?.displayName?.trim() ?? ''
   const needsName = isAnonymous && !existingName
   const isNameLocked = !!(firebaseUser?.displayName?.trim())
   const shuffleName = useCallback(() => setDisplayName(randomName()), [])
-  const CategoryIcon = CATEGORY_ICONS[item.category] ?? Package
-  const itemLocation = item.location?.displayAddress ?? item.displayAddress ?? org.displayAddress
-  const lastSeen = formatItemDate(item.createdAt ?? item.created_at)
+  const CategoryIcon = CATEGORY_ICONS[item?.category] ?? Package
+  const itemLocation = item?.location?.displayAddress ?? item?.displayAddress ?? org.displayAddress
+  const { data: subcategories = [] } = useGetSubcategories(category || undefined)
+
+  const isFormValid =
+    message.trim() !== '' &&
+    category !== '' &&
+    itemName.trim() !== '' &&
+    color.trim() !== '' &&
+    subCategoryId !== '' &&
+    !(needsName && !displayName.trim())
 
   async function handleSubmit() {
-    if (!message.trim()) return
-    if (needsName && !displayName.trim()) return
+    if (!isFormValid) return
     setIsPending(true)
     try {
       if (isAnonymous) {
@@ -101,7 +121,18 @@ export function SendMessageSheet({ item, org, onClose }: {
         if (needsName) await userService.updateMe({ displayName: displayName.trim() })
         await syncProfile()
       }
-      const conversation = await messageService.createSupportConversation(org.id, item?.id)
+      const supportFormData: SupportFormData = {
+        postId: item?.id ?? null,
+        category,
+        subCategoryId,
+        itemName: itemName.trim(),
+        color: color.trim(),
+        additionalDetails: additionalDetails.trim() || null,
+        imageUrls: null,
+        lostLocation: lostLocation.trim() || null,
+        eventTime: eventTime ? new Date(eventTime) : null,
+      }
+      const conversation = await messageService.createSupportConversation(org.id, supportFormData)
       const convId = conversation.conversationId
       if (!convId) throw new Error('No conversation ID returned from server')
       sendMessage({ conversationId: convId, content: message, isSupport: true })
@@ -154,28 +185,24 @@ export function SendMessageSheet({ item, org, onClose }: {
           </div>
 
           {/* Item card */}
-          <div className="mx-6 mb-4 rounded-2xl border border-[#E5E7EB] shadow-sm bg-white p-4 flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-bold text-[#111] line-clamp-1">{item.postTitle}</p>
-              {itemLocation && (
-                <p className="text-[12px] text-[#6B7280] mt-1.5 flex items-start gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#9CA3AF]" />
-                  <span className="line-clamp-1">{itemLocation}</span>
-                </p>
-              )}
-              {lastSeen && (
-                <p className="text-[12px] text-[#6B7280] mt-1 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 shrink-0 text-[#9CA3AF]" />
-                  Last seen {lastSeen}
-                </p>
-              )}
+          {item && (
+            <div className="mx-6 mb-4 rounded-2xl border border-[#E5E7EB] shadow-sm bg-white p-4 flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-bold text-[#111] line-clamp-1">{item.postTitle}</p>
+                {itemLocation && (
+                  <p className="text-[12px] text-[#6B7280] mt-1.5 flex items-start gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#9CA3AF]" />
+                    <span className="line-clamp-1">{itemLocation}</span>
+                  </p>
+                )}
+              </div>
+              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                <CategoryIcon className="w-5 h-5 text-rose-500" />
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-              <CategoryIcon className="w-5 h-5 text-rose-500" />
-            </div>
-          </div>
+          )}
 
-          {/* Owner card */}
+          {/* Org card */}
           <div className="mx-6 mb-5 rounded-2xl border border-[#E5E7EB] shadow-sm bg-white p-4 flex items-start gap-3">
             <div className="relative shrink-0">
               <div className="w-11 h-11 rounded-full overflow-hidden bg-[#F3F4F6] flex items-center justify-center border border-[#E5E7EB]">
@@ -200,7 +227,89 @@ export function SendMessageSheet({ item, org, onClose }: {
             </div>
           </div>
 
-          {/* Name input — shown only when anonymous and no existing name */}
+          {/* Item details form */}
+          <div className="px-6 pb-4">
+            <p className="text-[14px] font-black text-[#111] mb-4">Item details</p>
+
+            <div className="mb-3">
+              <FieldLabel label="Item name" required />
+              <input
+                type="text"
+                value={itemName}
+                onChange={(e) => setItemName(e.target.value)}
+                placeholder="e.g. iPhone 14 Pro"
+                className={inputClass}
+              />
+            </div>
+
+            <div className="mb-3">
+              <FieldLabel label="Category & subcategory" required />
+              <div className="flex flex-wrap gap-2">
+                <PillSelect
+                  label="Category"
+                  value={category}
+                  onChange={(v) => { setCategory(v); setSubCategoryId('') }}
+                  options={CATEGORIES.map(c => ({ value: c, label: c }))}
+                />
+                <PillSelect
+                  label="Subcategory"
+                  value={subCategoryId}
+                  onChange={setSubCategoryId}
+                  options={subcategories.map(s => ({ value: s.id, label: s.name }))}
+                  disabled={!category || subcategories.length === 0}
+                />
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <FieldLabel label="Color" required />
+              <input
+                type="text"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                placeholder="e.g. Black, Silver"
+                className={inputClass}
+              />
+            </div>
+
+            <div className="mb-3">
+              <FieldLabel label="Lost location" />
+              <input
+                type="text"
+                value={lostLocation}
+                onChange={(e) => setLostLocation(e.target.value)}
+                placeholder="e.g. Building A, Floor 3"
+                className={inputClass}
+              />
+            </div>
+
+            <div className="mb-3">
+              <FieldLabel label="Date & time of loss" />
+              <DateTimePill
+                label="Date & time of loss"
+                value={eventTime}
+                onChange={setEventTime}
+              />
+            </div>
+
+            <div>
+              <FieldLabel label="Additional details" />
+              <textarea
+                value={additionalDetails}
+                onChange={(e) => setAdditionalDetails(e.target.value)}
+                rows={2}
+                placeholder="e.g. Has a scratch on the back, sticker on the case..."
+                className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5
+                           text-[13px] text-[#111] placeholder:text-[#B0B7C3]
+                           focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent
+                           resize-none transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-[#F3F4F6] mx-6 mb-4" />
+
+          {/* Name input — anonymous users only */}
           {needsName && (
             <div className="px-6 pb-4">
               <div className="flex items-center justify-between mb-0.5">
@@ -244,14 +353,15 @@ export function SendMessageSheet({ item, org, onClose }: {
 
           {/* Message */}
           <div className="px-6 pb-6">
-            <p className="text-[14px] font-bold text-[#111] mb-0.5">Message</p>
+            <p className="text-[14px] font-bold text-[#111] mb-0.5">
+              Message <span className="text-rose-500">*</span>
+            </p>
             <p className="text-[12px] text-[#6B7280] mb-3 leading-relaxed">
               Describe your situation or ask a question about this item.
             </p>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              autoFocus
               rows={4}
               placeholder="Example: I can describe the keychain attached to these keys, and I'm available near F-Town after 5 PM."
               className="w-full rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3
@@ -269,10 +379,10 @@ export function SendMessageSheet({ item, org, onClose }: {
           </p>
           <button
             onClick={handleSubmit}
-            disabled={!message.trim() || isPending || (needsName && !displayName.trim())}
+            disabled={!isFormValid || isPending}
             className={[
               'w-full h-12 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all cursor-pointer',
-              message.trim() && !isPending && !(needsName && !displayName.trim())
+              isFormValid && !isPending
                 ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-[0_4px_16px_rgba(239,68,68,0.35)]'
                 : 'bg-rose-200 text-rose-300 cursor-not-allowed',
             ].join(' ')}
