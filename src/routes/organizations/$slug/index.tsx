@@ -68,7 +68,7 @@ function OrgDetailPage() {
       <div className="min-h-screen bg-[#F7F7F7] pb-8">
 
         {/* Back button */}
-        <div className="max-w-350 mx-auto px-6 sm:px-8 pt-4 pb-1">
+        {/* <div className="max-w-350 mx-auto px-6 sm:px-8 pt-4 pb-1">
           <button
             onClick={() => navigate({ to: '/organizations' })}
             aria-label="Back to list"
@@ -79,7 +79,7 @@ function OrgDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-        </div>
+        </div> */}
 
         {/* Two-column grid */}
         <div className="max-w-350 mx-auto px-6 sm:px-8 py-3
@@ -102,7 +102,6 @@ function OrgDetailPage() {
           >
             <OrgInventoryList slug={slug} org={org} />
             <GuidesAccordion />
-            <PolicyRow />
             <LocationSection org={org} />
           </motion.div>
         </div>

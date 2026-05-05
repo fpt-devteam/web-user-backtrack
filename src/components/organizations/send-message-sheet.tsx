@@ -1,71 +1,27 @@
 import { motion } from 'framer-motion'
 import {
-  Briefcase,
   Building2,
   CheckCircle2,
-  CreditCard,
-  FileText,
-  Gem,
-  Key,
   Mail,
-  MapPin,
   Package,
   Phone,
-  RefreshCw,
   Send,
-  ShoppingBag,
-  Smartphone,
-  Tag,
   User,
   X,
 } from 'lucide-react'
-import { useCallback, useState } from 'react'
-import type { ElementType } from 'react'
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import type { Org } from '@/types/org.type'
 import type { SupportFormData } from '@/types/chat.type'
 import { useAuth } from '@/hooks/use-auth'
-import { useGetSubcategories } from '@/hooks/use-subcategory'
 import { useSocket } from '@/hooks/use-socket'
 import { useCreateUser } from '@/hooks/use-user'
 import { toast } from '@/lib/toast'
 import { messageService } from '@/services/message.service'
 import { userService } from '@/services/user.service'
 import { Spinner } from '@/components/ui/spinner'
-import { PillSelect } from './pill-select'
-import { DateTimePill } from './date-time-pill'
+import { DatePill, TimePill } from './date-time-pill'
 import { FieldLabel } from './field-label'
-
-const RANDOM_ADJECTIVES = [
-  'Happy', 'Clever', 'Brave', 'Swift', 'Calm', 'Bright', 'Kind', 'Bold',
-  'Gentle', 'Lucky', 'Merry', 'Quiet', 'Witty', 'Jolly', 'Proud',
-]
-const RANDOM_ANIMALS = [
-  'Panda', 'Fox', 'Otter', 'Koala', 'Falcon', 'Lynx', 'Deer', 'Wolf',
-  'Crane', 'Finch', 'Heron', 'Lemur', 'Quail', 'Robin', 'Seal',
-]
-function randomName() {
-  const adj = RANDOM_ADJECTIVES[Math.floor(Math.random() * RANDOM_ADJECTIVES.length)]
-  const animal = RANDOM_ANIMALS[Math.floor(Math.random() * RANDOM_ANIMALS.length)]
-  return `${adj} ${animal}`
-}
-
-const CATEGORY_ICONS: { [k: string]: ElementType | undefined } = {
-  Electronics: Smartphone,
-  Clothing: Tag,
-  Accessories: Gem,
-  Documents: FileText,
-  Wallet: CreditCard,
-  Suitcase: Briefcase,
-  Bags: ShoppingBag,
-  Keys: Key,
-  Other: Package,
-}
-
-const CATEGORIES = [
-  'PersonalBelongings', 'Cards', 'Accessories', 'Electronics',
-  'Others',
-] as const
 
 const inputClass = [
   'w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-[13px] text-[#111]',
@@ -83,34 +39,38 @@ export function SendMessageSheet({ item, org, onClose }: {
   const { sendMessage } = useSocket()
   const { mutateAsync: createUser } = useCreateUser()
 
-  const [message, setMessage] = useState('')
-  const [displayName, setDisplayName] = useState(() => firebaseUser?.displayName?.trim() || randomName())
+  const isAnonymous = !profile || !!firebaseUser?.isAnonymous
+  const existingName = profile?.displayName?.trim() || firebaseUser?.displayName?.trim() || ''
+  const isNameLocked = !!existingName
+
+  const [displayName, setDisplayName] = useState(existingName)
+  const [message, setMessage] = useState('Chào ban quản lý, em là chủ nhân của món đồ này. Em có thể đến phòng ban nào và vào khung giờ nào để xin nhận lại đồ ạ?')
   const [isPending, setIsPending] = useState(false)
 
-  const [category, setCategory] = useState<string>(item?.category ?? '')
-  const [subCategoryId, setSubCategoryId] = useState<string>(item?.subcategoryId ?? '')
   const [itemName, setItemName] = useState<string>(item?.postTitle ?? item?.itemName ?? '')
   const [color, setColor] = useState('')
   const [lostLocation, setLostLocation] = useState('')
-  const [eventTime, setEventTime] = useState('')
+  const [lostDate, setLostDate] = useState('')
+  const [lostTime, setLostTime] = useState('')
   const [additionalDetails, setAdditionalDetails] = useState('')
 
-  const isAnonymous = !profile || !!firebaseUser?.isAnonymous
-  const existingName = profile?.displayName?.trim() ?? ''
-  const needsName = isAnonymous && !existingName
-  const isNameLocked = !!(firebaseUser?.displayName?.trim())
-  const shuffleName = useCallback(() => setDisplayName(randomName()), [])
-  const CategoryIcon = CATEGORY_ICONS[item?.category] ?? Package
-  const itemLocation = item?.location?.displayAddress ?? item?.displayAddress ?? org.displayAddress
-  const { data: subcategories = [] } = useGetSubcategories(category || undefined)
+  const itemImageUrl = item?.imageUrls?.[0] ?? null
+
+  const todayStr = (() => {
+    const t = new Date()
+    return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+  })()
+  const maxTimeToday = (() => {
+    const t = new Date()
+    return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
+  })()
+  const timePillMax = lostDate === todayStr ? maxTimeToday : undefined
 
   const isFormValid =
+    displayName.trim() !== '' &&
     message.trim() !== '' &&
-    category !== '' &&
     itemName.trim() !== '' &&
-    color.trim() !== '' &&
-    subCategoryId !== '' &&
-    !(needsName && !displayName.trim())
+    color.trim() !== ''
 
   async function handleSubmit() {
     if (!isFormValid) return
@@ -118,19 +78,25 @@ export function SendMessageSheet({ item, org, onClose }: {
     try {
       if (isAnonymous) {
         await createUser()
-        if (needsName) await userService.updateMe({ displayName: displayName.trim() })
+        if (!existingName) await userService.updateMe({ displayName: displayName.trim() })
         await syncProfile()
       }
+
+      let eventTime: Date | null = null
+      if (lostDate) {
+        eventTime = new Date(lostTime ? `${lostDate}T${lostTime}` : `${lostDate}T00:00`)
+      }
+
       const supportFormData: SupportFormData = {
-        postId: item?.id ?? null,
-        category,
-        subCategoryId,
+        postId: item?.id ?? (null as any),
+        category: item?.category ?? '',
+        subCategoryId: item?.subcategoryId ?? '',
         itemName: itemName.trim(),
         color: color.trim(),
         additionalDetails: additionalDetails.trim() || null,
         imageUrls: null,
         lostLocation: lostLocation.trim() || null,
-        eventTime: eventTime ? new Date(eventTime) : null,
+        eventTime,
       }
       const conversation = await messageService.createSupportConversation(org.id, supportFormData)
       const convId = conversation.conversationId
@@ -153,15 +119,15 @@ export function SendMessageSheet({ item, org, onClose }: {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <motion.div
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl
-                   max-h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+        className="bg-white w-full md:max-w-3xl sm:max-w-lg rounded-t-3xl sm:rounded-3xl
+                   max-h-[92vh] flex flex-col overflow-hidden shadow-2xl"
       >
         {/* Header */}
         <div className="relative flex items-center justify-center px-6 py-4 border-b border-[#F3F4F6] shrink-0">
@@ -177,206 +143,178 @@ export function SendMessageSheet({ item, org, onClose }: {
         </div>
 
         <div className="overflow-y-auto flex-1">
-          <div className="px-6 pt-5 pb-4">
-            <h3 className="text-[20px] font-black text-[#111] leading-tight">Send a message</h3>
-            <p className="text-[13px] text-[#6B7280] mt-1 leading-relaxed">
-              Start a conversation with this organization about the item below.
-            </p>
-          </div>
+          <div className="flex flex-col md:flex-row md:divide-x md:divide-[#F3F4F6]">
 
-          {/* Item card */}
-          {item && (
-            <div className="mx-6 mb-4 rounded-2xl border border-[#E5E7EB] shadow-sm bg-white p-4 flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-bold text-[#111] line-clamp-1">{item.postTitle}</p>
-                {itemLocation && (
-                  <p className="text-[12px] text-[#6B7280] mt-1.5 flex items-start gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#9CA3AF]" />
-                    <span className="line-clamp-1">{itemLocation}</span>
+            {/* Section 1: Item preview + Org info */}
+            <div className="md:w-[42%] shrink-0 p-5 md:p-6">
+              <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-3">
+                Item &amp; Organization
+              </p>
+
+              {/* Item blurred image card */}
+              {item && (
+                <div className="relative rounded-2xl overflow-hidden mb-4 aspect-4/3 bg-[#F3F4F6]">
+                  {itemImageUrl ? (
+                    <>
+                      <img
+                        src={itemImageUrl}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover scale-110"
+                        style={{ filter: 'blur(24px)' }}
+                      />
+                      <div className="absolute inset-0 bg-black/30" />
+                      <div className="absolute inset-0 flex items-end p-4">
+                        <p className="text-white font-bold text-[14px] leading-snug line-clamp-2 drop-shadow-lg">
+                          {item.postTitle}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
+                      <Package className="w-10 h-10 text-[#C4C9D4]" strokeWidth={1.5} />
+                      <p className="text-[13px] font-bold text-[#9CA3AF] text-center line-clamp-2">
+                        {item.postTitle}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Org info */}
+              <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 flex items-start gap-3">
+                <div className="relative shrink-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-[#F3F4F6] flex items-center justify-center border border-[#E5E7EB]">
+                    {org.logoUrl
+                      ? <img src={org.logoUrl} alt={org.name} className="w-full h-full object-cover" />
+                      : <Building2 className="w-5 h-5 text-[#C4C9D4]" />}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center border-2 border-white">
+                    <CheckCircle2 className="w-2.5 h-2.5 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-[#111] truncate">{org.name}</p>
+                  <p className="text-[11px] text-[#9CA3AF] mt-1 flex items-center gap-1.5 truncate">
+                    <Mail className="w-3 h-3 shrink-0" />
+                    <span className="truncate">{org.contactEmail ?? 'Email not available'}</span>
                   </p>
-                )}
-              </div>
-              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-                <CategoryIcon className="w-5 h-5 text-rose-500" />
+                  <p className="text-[11px] text-[#9CA3AF] mt-0.5 flex items-center gap-1.5">
+                    <Phone className="w-3 h-3 shrink-0" />
+                    {org.phone ?? 'Phone not available'}
+                  </p>
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Org card */}
-          <div className="mx-6 mb-5 rounded-2xl border border-[#E5E7EB] shadow-sm bg-white p-4 flex items-start gap-3">
-            <div className="relative shrink-0">
-              <div className="w-11 h-11 rounded-full overflow-hidden bg-[#F3F4F6] flex items-center justify-center border border-[#E5E7EB]">
-                {org.logoUrl
-                  ? <img src={org.logoUrl} alt={org.name} className="w-full h-full object-cover" />
-                  : <Building2 className="w-5 h-5 text-[#C4C9D4]" />}
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center border-2 border-white">
-                <CheckCircle2 className="w-2.5 h-2.5 text-white" />
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-bold text-[#111]">{org.name}</p>
-              <p className="text-[12px] text-[#9CA3AF] mt-1 flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 shrink-0" />
-                {org.contactEmail ?? 'Email not available'}
+            {/* Section 2: User form */}
+            <div className="flex-1 p-5 md:p-6 border-t border-[#F3F4F6] md:border-t-0">
+              <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-3">
+                Your Information
               </p>
-              <p className="text-[12px] text-[#9CA3AF] mt-0.5 flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 shrink-0" />
-                {org.phone ?? 'Phone not available'}
-              </p>
-            </div>
-          </div>
 
-          {/* Item details form */}
-          <div className="px-6 pb-4">
-            <p className="text-[14px] font-black text-[#111] mb-4">Item details</p>
-
-            <div className="mb-3">
-              <FieldLabel label="Item name" required />
-              <input
-                type="text"
-                value={itemName}
-                onChange={(e) => setItemName(e.target.value)}
-                placeholder="e.g. iPhone 14 Pro"
-                className={inputClass}
-              />
-            </div>
-
-            <div className="mb-3">
-              <FieldLabel label="Category & subcategory" required />
-              <div className="flex flex-wrap gap-2">
-                <PillSelect
-                  label="Category"
-                  value={category}
-                  onChange={(v) => { setCategory(v); setSubCategoryId('') }}
-                  options={CATEGORIES.map(c => ({ value: c, label: c }))}
-                />
-                <PillSelect
-                  label="Subcategory"
-                  value={subCategoryId}
-                  onChange={setSubCategoryId}
-                  options={subcategories.map(s => ({ value: s.id, label: s.name }))}
-                  disabled={!category || subcategories.length === 0}
-                />
+              {/* Name */}
+              <div className="mb-3">
+                <FieldLabel label="Your name" required />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => { if (!isNameLocked) setDisplayName(e.target.value) }}
+                    readOnly={isNameLocked}
+                    placeholder="Your full name"
+                    className={[
+                      'w-full h-10 pl-9 pr-3 rounded-xl border border-[#E5E7EB] text-[13px] text-[#111]',
+                      'focus:outline-none transition-all',
+                      isNameLocked
+                        ? 'bg-[#F3F4F6] cursor-default text-[#6B7280]'
+                        : 'bg-[#F9FAFB] placeholder:text-[#B0B7C3] focus:ring-2 focus:ring-brand-ring focus:border-transparent',
+                    ].join(' ')}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="mb-3">
-              <FieldLabel label="Color" required />
-              <input
-                type="text"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                placeholder="e.g. Black, Silver"
-                className={inputClass}
-              />
-            </div>
-
-            <div className="mb-3">
-              <FieldLabel label="Lost location" />
-              <input
-                type="text"
-                value={lostLocation}
-                onChange={(e) => setLostLocation(e.target.value)}
-                placeholder="e.g. Building A, Floor 3"
-                className={inputClass}
-              />
-            </div>
-
-            <div className="mb-3">
-              <FieldLabel label="Date & time of loss" />
-              <DateTimePill
-                label="Date & time of loss"
-                value={eventTime}
-                onChange={setEventTime}
-              />
-            </div>
-
-            <div>
-              <FieldLabel label="Additional details" />
-              <textarea
-                value={additionalDetails}
-                onChange={(e) => setAdditionalDetails(e.target.value)}
-                rows={2}
-                placeholder="e.g. Has a scratch on the back, sticker on the case..."
-                className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5
-                           text-[13px] text-[#111] placeholder:text-[#B0B7C3]
-                           focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent
-                           resize-none transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="border-t border-[#F3F4F6] mx-6 mb-4" />
-
-          {/* Name input — anonymous users only */}
-          {needsName && (
-            <div className="px-6 pb-4">
-              <div className="flex items-center justify-between mb-0.5">
-                <p className="text-[14px] font-bold text-[#111]">Your name</p>
-                {!isNameLocked && (
-                  <button
-                    type="button"
-                    onClick={shuffleName}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-brand-500
-                               hover:text-brand-600 transition-colors cursor-pointer"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    Shuffle
-                  </button>
-                )}
+              {/* Item name + Color side by side */}
+              <div className="mb-3 grid grid-cols-2 gap-2">
+                <div>
+                  <FieldLabel label="Item name" required />
+                  <input
+                    type="text"
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                    placeholder="e.g. iPhone 14 Pro"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <FieldLabel label="Color" required />
+                  <input
+                    type="text"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    placeholder="e.g. Black"
+                    className={inputClass}
+                  />
+                </div>
               </div>
-              <p className="text-[12px] text-[#6B7280] mb-3 leading-relaxed">
-                {isNameLocked
-                  ? 'This is your account name and cannot be changed here.'
-                  : 'A name has been suggested — keep it or enter your own.'}
-              </p>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
+
+              {/* Date + Time side by side */}
+              <div className="mb-3">
+                <FieldLabel label="Date &amp; time of loss" />
+                <div className="flex flex-wrap gap-2">
+                  <DatePill label="Date" value={lostDate} onChange={setLostDate} disableFuture />
+                  <TimePill label="Time" value={lostTime} onChange={setLostTime} maxTime={timePillMax} />
+                </div>
+              </div>
+
+              {/* Lost location */}
+              <div className="mb-3">
+                <FieldLabel label="Lost location" />
                 <input
                   type="text"
-                  value={displayName}
-                  onChange={(e) => { if (!isNameLocked) setDisplayName(e.target.value) }}
-                  readOnly={isNameLocked}
-                  autoFocus={!isNameLocked}
-                  className={[
-                    'w-full h-10 pl-9 pr-3 rounded-xl border border-[#E5E7EB] text-[13px] text-[#111]',
-                    'focus:outline-none transition-all',
-                    isNameLocked
-                      ? 'bg-[#F3F4F6] cursor-default text-[#6B7280]'
-                      : 'bg-[#F9FAFB] placeholder:text-[#B0B7C3] focus:ring-2 focus:ring-brand-ring focus:border-transparent',
-                  ].join(' ')}
+                  value={lostLocation}
+                  onChange={(e) => setLostLocation(e.target.value)}
+                  placeholder="e.g. Building A, Floor 3"
+                  className={inputClass}
+                />
+              </div>
+
+              {/* Additional details */}
+              <div className="mb-3">
+                <FieldLabel label="Additional details" />
+                <textarea
+                  value={additionalDetails}
+                  onChange={(e) => setAdditionalDetails(e.target.value)}
+                  rows={2}
+                  placeholder="e.g. Scratch on the back, sticker on the case..."
+                  className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5
+                             text-[13px] text-[#111] placeholder:text-[#B0B7C3]
+                             focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent
+                             resize-none transition-all"
+                />
+              </div>
+
+              {/* Message */}
+              <div>
+                <FieldLabel label="Message" required />
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={3}
+                  placeholder="Nhập tin nhắn của bạn..."
+                  className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5
+                             text-[13px] text-[#111] placeholder:text-[#B0B7C3]
+                             focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent
+                             resize-none transition-all"
                 />
               </div>
             </div>
-          )}
-
-          {/* Message */}
-          <div className="px-6 pb-6">
-            <p className="text-[14px] font-bold text-[#111] mb-0.5">
-              Message <span className="text-rose-500">*</span>
-            </p>
-            <p className="text-[12px] text-[#6B7280] mb-3 leading-relaxed">
-              Describe your situation or ask a question about this item.
-            </p>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={4}
-              placeholder="Example: I can describe the keychain attached to these keys, and I'm available near F-Town after 5 PM."
-              className="w-full rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3
-                         text-[13px] text-[#111] placeholder:text-[#B0B7C3]
-                         focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent
-                         resize-none transition-all"
-            />
           </div>
         </div>
 
         {/* Footer */}
         <div className="px-6 pb-6 pt-3 border-t border-[#F3F4F6] shrink-0">
-          <p className="text-center text-[11px] text-[#9CA3AF] mb-3 leading-relaxed">
-            Your message will open a direct conversation with this organization.
-          </p>
           <button
             onClick={handleSubmit}
             disabled={!isFormValid || isPending}

@@ -53,11 +53,9 @@ function DetailCard({ icon: Icon, label, value, accent = false }: {
   )
 }
 
-function HeroCarousel({ images, title, isLost, category, onClose }: {
+function HeroCarousel({ images, title, onClose }: {
   images: Array<string>
   title: string
-  isLost: boolean
-  category: string | null
   onClose: () => void
 }) {
   const [idx, setIdx] = useState(0)
@@ -129,39 +127,24 @@ function HeroCarousel({ images, title, isLost, category, onClose }: {
         <span className="text-[10px] font-bold text-white uppercase tracking-wider">Pinned item</span>
       </div>
 
-      {/* Title + badges + dots */}
+      {/* Title + dots */}
       <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
         <p className="text-white font-black text-[18px] leading-tight drop-shadow-sm truncate mb-1.5">
           {title}
         </p>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold
-              ${isLost ? 'bg-rose-500/80 text-white' : 'bg-emerald-500/80 text-white'}`}
-            >
-              <span className="w-1 h-1 rounded-full bg-white inline-block" />
-              {isLost ? 'Lost' : 'Found'}
-            </span>
-            {category && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                {category}
-              </span>
-            )}
+        {/* Dot indicators */}
+        {images.length > 1 && (
+          <div className="flex items-center gap-1">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIdx(i)}
+                className={`rounded-full transition-all ${i === idx ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50'}`}
+              />
+            ))}
           </div>
-          {/* Dot indicators */}
-          {images.length > 1 && (
-            <div className="flex items-center gap-1">
-              {images.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setIdx(i)}
-                  className={`rounded-full transition-all ${i === idx ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50'}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
@@ -189,7 +172,6 @@ export function PinnedPostCard({ supportFormData }: PinnedPostCardProps) {
   if (!post) return null
 
   const images = post.imageUrls ?? []
-  const isLost = post.postType === 'Lost'
   const eventTimeStr = formatEventTime(supportFormData.eventTime)
 
   return (
@@ -225,13 +207,9 @@ export function PinnedPostCard({ supportFormData }: PinnedPostCardProps) {
           <p className="text-xs font-semibold text-gray-800 truncate leading-snug">
             {post.postTitle}
           </p>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${isLost ? 'bg-rose-400' : 'bg-emerald-400'}`} />
-            <span className="text-[10px] text-gray-400">
-              {isLost ? 'Lost item' : 'Found item'}
-              {post.category ? ` · ${post.category}` : ''}
-            </span>
-          </div>
+          {eventTimeStr && (
+            <p className="text-[10px] text-gray-400 mt-0.5 truncate">{eventTimeStr}</p>
+          )}
         </div>
 
         <Pin className="w-3.5 h-3.5 text-gray-300 shrink-0 rotate-45" strokeWidth={2} />
@@ -256,7 +234,7 @@ export function PinnedPostCard({ supportFormData }: PinnedPostCardProps) {
                          max-h-[92vh] flex flex-col overflow-hidden shadow-2xl"
             >
               {/* Hero header — image carousel */}
-              <HeroCarousel images={images} title={post.postTitle} isLost={isLost} category={post.category ?? null} onClose={() => setShowPopup(false)} />
+              <HeroCarousel images={images} title={post.postTitle} onClose={() => setShowPopup(false)} />
 
               {/* Body */}
               <div className="overflow-y-auto flex-1">

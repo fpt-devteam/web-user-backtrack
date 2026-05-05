@@ -21,8 +21,8 @@ export function OrgInventoryList({ slug, org }: { slug: string; org: Org }) {
     <>
       <div className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#F3F4F6] flex items-center justify-between">
-          <h2 className="text-[18px] font-black text-[#111] tracking-tight">Inventory</h2>
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <h2 className="text-lg font-black text-black tracking-tight">Inventory</h2>
           <Package className="w-4.5 h-4.5 text-brand-500" />
         </div>
 
@@ -32,15 +32,15 @@ export function OrgInventoryList({ slug, org }: { slug: string; org: Org }) {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="flex flex-col gap-2">
-                  <Skeleton className="w-full aspect-[4/3] rounded-xl" />
+                  <Skeleton className="w-full aspect-4/3 rounded-xl" />
                   <Skeleton className="h-3 w-3/4 rounded" />
                   <Skeleton className="h-2 w-1/2 rounded" />
                 </div>
               ))}
             </div>
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Package className="w-12 h-12 text-[#E5E7EB] mb-3" strokeWidth={1} />
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Package className="w-12 h-12 text-[#E5E7EB] mb-4" strokeWidth={1} />
               <p className="text-sm text-[#9CA3AF] font-bold">No items in inventory</p>
             </div>
           ) : (
