@@ -5,9 +5,8 @@ import { HelpCircle, LogOut, QrCode, CreditCard } from 'lucide-react'
 import { AboutTab } from '@/components/account/about-tab'
 import { SettingsTab } from '@/components/account/settings-tab'
 import { QrTab } from '@/components/account/qr-tab'
-import { SubscriptionCard } from '@/components/account/subscription/subscription-card'
-import { PaymentHistory } from '@/components/account/subscription/payment-history'
 import { useAuth } from '@/hooks/use-auth'
+import { BillingTab } from '@/components/account/subscription/billing-tab'
 
 export const Route = createFileRoute('/account/')({
   component: AccountPage,
@@ -51,7 +50,7 @@ function AccountPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-20 py-12 lg:py-16">
+      <div className="max-w-7xl mx-auto px-6 lg:px-20 py-12 lg:py-16">
         <div className="flex flex-col lg:flex-row lg:items-start">
 
           {/* ── LEFT SIDEBAR ── */}
@@ -128,13 +127,13 @@ function AccountPage() {
 
             {tab === 'billing' && (
               <section>
-                <h2 className="text-[1.75rem] font-extrabold text-[#222] tracking-tight mb-8">
-                  Billing
-                </h2>
-                <div className="flex flex-col gap-4">
-                  <SubscriptionCard />
-                  <PaymentHistory />
+                <div className="mb-8">
+                  <h2 className="text-[1.75rem] font-extrabold text-[#222] tracking-tight mb-1">
+                    Billing
+                  </h2>
+                  <p className="text-[#6a6a6a] text-sm">Manage your subscription and billing details.</p>
                 </div>
+                <BillingTab />
               </section>
             )}
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { WordmarkLogo } from '../shared/backtrack-header'
 
 interface SplashProps {
   onComplete?: () => void
@@ -74,7 +75,12 @@ export function Splash({ onComplete, duration = 20500, className }: SplashProps)
 
           {/* App name */}
           <h1 className="animate-fade-in text-4xl font-bold tracking-tight text-white">
-            Backtrack
+            <img
+              src="/backtrack-logo.svg"
+              alt="Backtrack"
+              className="h-7 w-auto select-none"
+              draggable={false}
+            />
           </h1>
 
           <p className="animate-fade-in-delay text-lg text-white/80">

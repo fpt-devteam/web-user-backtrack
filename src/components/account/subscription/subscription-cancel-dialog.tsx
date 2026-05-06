@@ -7,7 +7,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { formatDate } from './subscription-plan-card'
+import { formatDate } from '@/lib/utils'
 
 interface CancelDialogProps {
   open: boolean

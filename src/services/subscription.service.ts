@@ -50,4 +50,13 @@ export const subscriptionService = {
     if (!data.success) throw new Error(data.error?.message ?? 'Failed to fetch plans');
     return data.data;
   },
+
+  async createCustomerPortalSession(userId: string, returnUrl: string): Promise<string> {
+    const { data } = await privateClient.post<ApiResponse<{ url: string }>>(
+      '/api/core/subscriptions/customer-portal',
+      { subscriber: { subscriberType: 'User', userId }, returnUrl },
+    );
+    if (!data.success) throw new Error(data.error?.message ?? 'Failed to open billing portal');
+    return data.data.url;
+  },
 };

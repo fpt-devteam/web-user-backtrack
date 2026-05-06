@@ -19,7 +19,7 @@ const NAV_LINKS = [
 ] as const
 
 /* ── Wordmark ───────────────────────────────────────────────── */
-function WordmarkLogo() {
+export function WordmarkLogo() {
   return (
     <img
       src="/backtrack-logo.svg"

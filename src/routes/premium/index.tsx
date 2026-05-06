@@ -18,17 +18,105 @@ export const Route = createFileRoute('/premium/')({
 function MonthlyIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" fill="none" className={className} aria-hidden>
-      <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.8" />
-      <rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" opacity="0.35" />
-      <rect x="28" y="4" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.8" />
-      <rect x="31" y="7" width="10" height="10" rx="1.5" fill="currentColor" opacity="0.35" />
-      <rect x="4" y="28" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.8" />
-      <rect x="7" y="31" width="10" height="10" rx="1.5" fill="currentColor" opacity="0.35" />
-      <rect x="28" y="28" width="4" height="4" rx="1" fill="currentColor" opacity="0.5" />
-      <rect x="34" y="28" width="10" height="4" rx="1" fill="currentColor" opacity="0.3" />
-      <rect x="28" y="34" width="6" height="4" rx="1" fill="currentColor" opacity="0.3" />
-      <rect x="36" y="34" width="8" height="4" rx="1" fill="currentColor" opacity="0.3" />
-      <rect x="28" y="40" width="16" height="4" rx="1" fill="currentColor" opacity="0.3" />
+      <rect
+        x="4"
+        y="4"
+        width="16"
+        height="16"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <rect
+        x="7"
+        y="7"
+        width="10"
+        height="10"
+        rx="1.5"
+        fill="currentColor"
+        opacity="0.35"
+      />
+      <rect
+        x="28"
+        y="4"
+        width="16"
+        height="16"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <rect
+        x="31"
+        y="7"
+        width="10"
+        height="10"
+        rx="1.5"
+        fill="currentColor"
+        opacity="0.35"
+      />
+      <rect
+        x="4"
+        y="28"
+        width="16"
+        height="16"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <rect
+        x="7"
+        y="31"
+        width="10"
+        height="10"
+        rx="1.5"
+        fill="currentColor"
+        opacity="0.35"
+      />
+      <rect
+        x="28"
+        y="28"
+        width="4"
+        height="4"
+        rx="1"
+        fill="currentColor"
+        opacity="0.5"
+      />
+      <rect
+        x="34"
+        y="28"
+        width="10"
+        height="4"
+        rx="1"
+        fill="currentColor"
+        opacity="0.3"
+      />
+      <rect
+        x="28"
+        y="34"
+        width="6"
+        height="4"
+        rx="1"
+        fill="currentColor"
+        opacity="0.3"
+      />
+      <rect
+        x="36"
+        y="34"
+        width="8"
+        height="4"
+        rx="1"
+        fill="currentColor"
+        opacity="0.3"
+      />
+      <rect
+        x="28"
+        y="40"
+        width="16"
+        height="4"
+        rx="1"
+        fill="currentColor"
+        opacity="0.3"
+      />
     </svg>
   )
 }
@@ -38,15 +126,57 @@ function YearlyIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 48 48" fill="none" className={className} aria-hidden>
       <circle cx="24" cy="10" r="6" stroke="currentColor" strokeWidth="1.8" />
       <circle cx="24" cy="10" r="3" fill="currentColor" opacity="0.4" />
-      <line x1="24" y1="16" x2="24" y2="26" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <line x1="24" y1="26" x2="10" y2="36" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <line x1="24" y1="26" x2="38" y2="36" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <line
+        x1="24"
+        y1="16"
+        x2="24"
+        y2="26"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <line
+        x1="24"
+        y1="26"
+        x2="10"
+        y2="36"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <line
+        x1="24"
+        y1="26"
+        x2="38"
+        y2="36"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
       <circle cx="10" cy="38" r="4" stroke="currentColor" strokeWidth="1.8" />
       <circle cx="10" cy="38" r="2" fill="currentColor" opacity="0.4" />
       <circle cx="38" cy="38" r="4" stroke="currentColor" strokeWidth="1.8" />
       <circle cx="38" cy="38" r="2" fill="currentColor" opacity="0.4" />
-      <line x1="24" y1="22" x2="14" y2="30" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeOpacity="0.4" />
-      <line x1="24" y1="22" x2="34" y2="30" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeOpacity="0.4" />
+      <line
+        x1="24"
+        y1="22"
+        x2="14"
+        y2="30"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeOpacity="0.4"
+      />
+      <line
+        x1="24"
+        y1="22"
+        x2="34"
+        y2="30"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeOpacity="0.4"
+      />
     </svg>
   )
 }
@@ -95,7 +225,9 @@ function PlanCard({
       {/* Plan name + tagline */}
       <h2 className="text-xl font-bold text-[#222] mb-1">{plan.name}</h2>
       <p className="text-sm text-[#999] mb-6">
-        {isYearly ? 'Best value — save more every year' : 'Flexible billing, cancel anytime'}
+        {isYearly
+          ? 'Best value — save more every year'
+          : 'Flexible billing, cancel anytime'}
       </p>
 
       {/* Price */}
@@ -104,8 +236,7 @@ function PlanCard({
           ${plan.price}
         </span>
         <div className="pb-1 text-[#999] text-sm leading-tight">
-          {plan.currency.toUpperCase()} /{' '}
-          {plan.billingInterval.toLowerCase()}
+          {plan.currency.toUpperCase()} / {plan.billingInterval.toLowerCase()}
         </div>
       </div>
 
@@ -133,7 +264,10 @@ function PlanCard({
       <ul className="space-y-3">
         {plan.features.map((feature) => (
           <li key={feature} className="flex items-start gap-3">
-            <Check className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+            <Check
+              className="w-4 h-4 text-brand-500 shrink-0 mt-0.5"
+              strokeWidth={2.5}
+            />
             <span className="text-sm text-[#555] leading-snug">{feature}</span>
           </li>
         ))}
@@ -153,7 +287,9 @@ function PlanSkeleton() {
       <Skeleton className="w-32 h-12" />
       <Skeleton className="w-full h-14 rounded-2xl" />
       <div className="space-y-3 mt-2">
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="w-full h-4" />)}
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="w-full h-4" />
+        ))}
       </div>
     </div>
   )
@@ -212,7 +348,7 @@ function PricingPage() {
           break
 
         case 'forbidden':
-          toast.error('You don\'t have permission to perform this action.')
+          toast.error("You don't have permission to perform this action.")
           break
 
         case 'conflict':
@@ -225,7 +361,9 @@ function PricingPage() {
           break
 
         case 'rate_limited':
-          toast.warning('Too many requests. Please wait a moment and try again.')
+          toast.warning(
+            'Too many requests. Please wait a moment and try again.',
+          )
           break
 
         case 'server_error':
@@ -233,7 +371,9 @@ function PricingPage() {
           break
 
         case 'network_error':
-          toast.error('Network error. Please check your connection and try again.')
+          toast.error(
+            'Network error. Please check your connection and try again.',
+          )
           break
 
         default:
@@ -243,24 +383,19 @@ function PricingPage() {
   }
 
   const sortedPlans = plans
-    ? [...plans].sort((a) => a.billingInterval === 'Monthly' ? -1 : 1)
+    ? [...plans].sort((a) => (a.billingInterval === 'Monthly' ? -1 : 1))
     : []
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <main className="px-5 lg:px-10 py-14 lg:py-20 w-full max-w-4xl mx-auto">
-
         {/* Header */}
         <div className="text-center mb-12 lg:mb-14">
-          <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 text-brand-600 text-xs font-semibold px-4 py-2 rounded-full mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-brand-400" />
-            Upgrade your Backtrack
-          </div>
           <h1 className="text-3xl lg:text-5xl font-extrabold text-[#111] mb-4 leading-tight tracking-tight">
             Plans that grow with you
           </h1>
           <p className="text-[#999] text-base lg:text-lg max-w-md mx-auto">
-            Start protecting what matters. Upgrade or cancel anytime.
+            Start protecting what matters.
           </p>
         </div>
 
@@ -287,7 +422,10 @@ function PricingPage() {
         {/* Trust signals */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8">
           {TRUST.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-2 text-[#999] text-xs">
+            <div
+              key={label}
+              className="flex items-center gap-2 text-[#999] text-xs"
+            >
               <Icon className="w-3.5 h-3.5" />
               <span>{label}</span>
             </div>
@@ -302,7 +440,6 @@ function PricingPage() {
           </button>
           .
         </p>
-
       </main>
     </div>
   )

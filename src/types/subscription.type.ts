@@ -49,12 +49,21 @@ export type OngoingSubscriptionStatusType = typeof OngoingSubscriptionStatus[key
 
 export type SubscriptionInfo = {
   id: string;
+  subscriberType: string;
   userId: string;
-  planType: SubscriptionPlanType;
+  planId: string;
+  planSnapshot: {
+    name: string;
+    price: number;
+    currency: string;
+    billingInterval: 'Monthly' | 'Yearly';
+    features: string[];
+  };
+  status: OngoingSubscriptionStatusType;
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
-  status: OngoingSubscriptionStatusType;
   cancelAtPeriodEnd: boolean;
+  createdAt: string;
 };
 
 export interface PaymentItem {

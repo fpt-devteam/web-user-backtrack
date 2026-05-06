@@ -6,10 +6,7 @@ import { SubscriptionCancelDialog } from './subscription-cancel-dialog'
 import { OngoingSubscriptionStatus } from '@/types/subscription.type'
 import type { SubscriptionInfo, OngoingSubscriptionStatusType } from '@/types/subscription.type'
 import { Skeleton } from '@/components/ui/skeleton'
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+import { formatDate } from '@/lib/utils'
 
 const statusConfig: Record<
   OngoingSubscriptionStatusType,
@@ -84,7 +81,7 @@ function ActiveCard({ sub, onCancelClick }: { sub: SubscriptionInfo; onCancelCli
                 Premium
               </p>
               <p className="text-base font-extrabold text-[#111] leading-tight">
-                {sub.planType} Plan
+                {sub.planSnapshot.name}
               </p>
             </div>
           </div>

@@ -22,7 +22,6 @@ import { Route as PremiumSuccessIndexRouteImport } from './routes/premium/succes
 import { Route as PremiumCheckoutIndexRouteImport } from './routes/premium/checkout/index'
 import { Route as OrganizationsSlugIndexRouteImport } from './routes/organizations/$slug/index'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
-import { Route as AccountBillingIndexRouteImport } from './routes/account/billing/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -89,11 +88,6 @@ const FoundIdIndexRoute = FoundIdIndexRouteImport.update({
   path: '/found/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AccountBillingIndexRoute = AccountBillingIndexRouteImport.update({
-  id: '/account/billing/',
-  path: '/account/billing/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -104,7 +98,6 @@ export interface FileRoutesByFullPath {
   '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
-  '/account/billing/': typeof AccountBillingIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
   '/organizations/$slug/': typeof OrganizationsSlugIndexRoute
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
@@ -120,7 +113,6 @@ export interface FileRoutesByTo {
   '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
-  '/account/billing': typeof AccountBillingIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
   '/organizations/$slug': typeof OrganizationsSlugIndexRoute
   '/premium/checkout': typeof PremiumCheckoutIndexRoute
@@ -137,7 +129,6 @@ export interface FileRoutesById {
   '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
-  '/account/billing/': typeof AccountBillingIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
   '/organizations/$slug/': typeof OrganizationsSlugIndexRoute
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
@@ -155,7 +146,6 @@ export interface FileRouteTypes {
     | '/premium/'
     | '/sign-in/'
     | '/sign-up/'
-    | '/account/billing/'
     | '/found/$id/'
     | '/organizations/$slug/'
     | '/premium/checkout/'
@@ -171,7 +161,6 @@ export interface FileRouteTypes {
     | '/premium'
     | '/sign-in'
     | '/sign-up'
-    | '/account/billing'
     | '/found/$id'
     | '/organizations/$slug'
     | '/premium/checkout'
@@ -187,7 +176,6 @@ export interface FileRouteTypes {
     | '/premium/'
     | '/sign-in/'
     | '/sign-up/'
-    | '/account/billing/'
     | '/found/$id/'
     | '/organizations/$slug/'
     | '/premium/checkout/'
@@ -204,7 +192,6 @@ export interface RootRouteChildren {
   PremiumIndexRoute: typeof PremiumIndexRoute
   SignInIndexRoute: typeof SignInIndexRoute
   SignUpIndexRoute: typeof SignUpIndexRoute
-  AccountBillingIndexRoute: typeof AccountBillingIndexRoute
   FoundIdIndexRoute: typeof FoundIdIndexRoute
   OrganizationsSlugIndexRoute: typeof OrganizationsSlugIndexRoute
   PremiumCheckoutIndexRoute: typeof PremiumCheckoutIndexRoute
@@ -305,13 +292,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FoundIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/account/billing/': {
-      id: '/account/billing/'
-      path: '/account/billing'
-      fullPath: '/account/billing/'
-      preLoaderRoute: typeof AccountBillingIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -324,7 +304,6 @@ const rootRouteChildren: RootRouteChildren = {
   PremiumIndexRoute: PremiumIndexRoute,
   SignInIndexRoute: SignInIndexRoute,
   SignUpIndexRoute: SignUpIndexRoute,
-  AccountBillingIndexRoute: AccountBillingIndexRoute,
   FoundIdIndexRoute: FoundIdIndexRoute,
   OrganizationsSlugIndexRoute: OrganizationsSlugIndexRoute,
   PremiumCheckoutIndexRoute: PremiumCheckoutIndexRoute,

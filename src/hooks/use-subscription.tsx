@@ -45,3 +45,16 @@ export function usePlans() {
     staleTime: 1000 * 60 * 10,
   });
 }
+
+export function useCustomerPortal() {
+  return useMutation({
+    mutationFn: ({ userId, returnUrl }: { userId: string; returnUrl: string }) =>
+      subscriptionService.createCustomerPortalSession(userId, returnUrl),
+    onSuccess: (url) => {
+      window.location.href = url;
+    },
+    onError: (error) => {
+      toast.fromError(error);
+    },
+  });
+}

@@ -3,14 +3,7 @@ import { usePaymentHistory } from '@/hooks/use-subscription'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import type { PaymentItem } from '@/types/subscription.type'
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
+import { formatDate } from '@/lib/utils'
 
 function formatAmount(amount: number, currency: string) {
   return new Intl.NumberFormat('en-US', {

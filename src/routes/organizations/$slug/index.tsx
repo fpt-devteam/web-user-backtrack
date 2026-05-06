@@ -65,22 +65,7 @@ function OrgDetailPage() {
           onClose={() => setShowMessageSheet(false)}
         />
       )}
-      <div className="min-h-screen bg-[#F7F7F7] pb-8">
-
-        {/* Back button */}
-        {/* <div className="max-w-350 mx-auto px-6 sm:px-8 pt-4 pb-1">
-          <button
-            onClick={() => navigate({ to: '/organizations' })}
-            aria-label="Back to list"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#444] hover:text-[#111]
-                       transition-colors duration-200 cursor-pointer focus:outline-none
-                       focus:ring-2 focus:ring-brand-ring focus:ring-offset-2 rounded-lg px-1 py-1 -ml-1"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-        </div> */}
-
+      <div className="min-h-screen bg-gray-50 pt-8">
         {/* Two-column grid */}
         <div className="max-w-350 mx-auto px-6 sm:px-8 py-3
                         grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-8 items-start">
