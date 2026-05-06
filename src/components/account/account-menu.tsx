@@ -76,7 +76,6 @@ export function AccountMenu({ onLogout }: Readonly<AccountMenuProps>) {
           icon: WalletCardsIcon,
           label: 'Billing',
           description: 'Manage payment methods and invoices',
-          onClick: () => navigate({ to: '/account/billing' }),
         },
       ],
     },
