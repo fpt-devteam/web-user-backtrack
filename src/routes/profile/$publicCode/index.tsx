@@ -163,20 +163,9 @@ function OwnerProfilePage() {
         onConfirm={handleAnonConfirm}
         onCancel={() => setShowAnonDialog(false)}
       />
-      {/* ── Back button ── */}
-      <button
-        onClick={() => navigate({ to: '/' })}
-        className="fixed top-5 left-5 z-40 w-10 h-10 flex items-center justify-center rounded-full
-                   bg-white shadow-md border border-gray-200 hover:bg-gray-50 transition-colors"
-        aria-label="Go back"
-      >
-        <ArrowLeft className="w-4 h-4 text-gray-700" />
-      </button>
 
       {/* ── Main layout ── */}
       <div className="max-w-5xl mx-auto px-5 py-16 sm:py-20">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Meet your host</h1>
-
         <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-8 items-start">
 
           {/* ── LEFT: Avatar card ── */}
@@ -188,33 +177,13 @@ function OwnerProfilePage() {
                   {initial}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute bottom-0 right-0 w-9 h-9 bg-[#FF385C] rounded-full border-4 border-white flex items-center justify-center shadow">
+              <div className="absolute bottom-0 right-0 w-9 h-9 bg-primary rounded-full border-4 border-white flex items-center justify-center shadow">
                 <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
               </div>
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900">{displayName}</h2>
             <p className="text-sm text-gray-500 mt-0.5">Verified member</p>
-
-            <div className="w-full border-t border-gray-100 my-6" />
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 w-full">
-              <div className="flex flex-col items-center">
-                <span className="text-xl font-bold text-gray-900">{posts.length}</span>
-                <span className="text-xs text-gray-500 mt-0.5">Posts</span>
-              </div>
-              <div className="flex flex-col items-center border-x border-gray-100">
-                <span className="text-xl font-bold text-gray-900 flex items-center gap-0.5">
-                  4.9 <Star className="w-4 h-4 fill-gray-900 text-gray-900" />
-                </span>
-                <span className="text-xs text-gray-500 mt-0.5">Rating</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xl font-bold text-gray-900">1</span>
-                <span className="text-xs text-gray-500 mt-0.5">Year</span>
-              </div>
-            </div>
 
             <div className="w-full border-t border-gray-100 my-6" />
 
@@ -264,10 +233,6 @@ function OwnerProfilePage() {
                     {profile.phone}
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <span className="w-4 h-4 flex items-center justify-center text-gray-500 shrink-0 text-xs font-mono">#</span>
-                  Backtrack code: <span className="font-semibold ml-1">{publicCode}</span>
-                </div>
               </div>
             </div>
 
@@ -290,45 +255,11 @@ function OwnerProfilePage() {
             </div>
 
             {/* Safety note */}
-            <div className="flex items-start gap-3 bg-gray-50 rounded-2xl p-4 max-w-md">
-              <img
-                src="https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatform-1.0-largePng/original/6dbf56da-2f50-46cf-9e91-ed81d3bb2a2f.png"
-                alt=""
-                className="w-10 h-10 object-contain shrink-0"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
+            <div className="flex items-start gap-3 bg-amber-50 rounded-2xl p-4 max-w-md">
+              <Star className="w-5 h-5 text-yellow-400 shrink-0" />
               <p className="text-xs text-gray-500 leading-relaxed">
                 To help keep everyone safe, always meet in public places when returning found items or use official drop-off points.
               </p>
-            </div>
-
-            <hr className="border-gray-200" />
-
-            {/* Active items */}
-            <div>
-              <h3 className="text-base font-semibold text-gray-900 mb-4">
-                Active items
-                {posts.length > 0 && (
-                  <span className="ml-2 text-xs font-semibold text-gray-400">({posts.length})</span>
-                )}
-              </h3>
-
-              {isPostsLoading ? (
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="w-[200px] h-[240px] rounded-2xl shrink-0" />
-                  ))}
-                </div>
-              ) : posts.length > 0 ? (
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
-                  {posts.map((post) => <PostCard key={post.id} post={post} />)}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <PackageSearch className="w-8 h-8 text-gray-200 mb-2" />
-                  <p className="text-sm text-gray-400">No active items</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
