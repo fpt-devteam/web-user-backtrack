@@ -116,7 +116,7 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
         category: NOTIFICATION_CATEGORY.Push,
         type: NOTIFICATION_EVENT.ChatEvent,
         data: {
-          screenPath: '/(chat)/:conversationId',
+          screenPath: `/(chat)/${conversationId}`,
           conversationId,
         },
       })
