@@ -67,9 +67,9 @@ export function ConversationListItem({ conv, index, isActive, onClick }: Convers
         )}
       >
         <div className="relative shrink-0">
-          <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden ring-2 ring-gray-200">
+          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden ring-2 ring-gray-200">
             {avatarUrl ? (
-              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              <img src={avatarUrl} alt={displayName} className="w-full h-full object-contain" />
             ) : (
               <span className="text-base font-bold text-gray-600">
                 {displayName[0].toUpperCase() ?? '?'}

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import {
   Building2,
   CheckCircle2,
+  ImagePlus,
   Mail,
   Package,
   Phone,
@@ -9,7 +10,7 @@ import {
   User,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import type { Org } from '@/types/org.type'
 import type { SupportFormData } from '@/types/chat.type'
@@ -53,6 +54,30 @@ export function SendMessageSheet({ item, org, onClose }: {
   const [lostDate, setLostDate] = useState('')
   const [lostTime, setLostTime] = useState('')
   const [additionalDetails, setAdditionalDetails] = useState('')
+  const [evidenceFiles, setEvidenceFiles] = useState<Array<File>>([])
+  const [evidencePreviews, setEvidencePreviews] = useState<Array<string>>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function handleEvidenceSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    const remaining = 3 - evidenceFiles.length
+    const toAdd = files.slice(0, remaining)
+    setEvidenceFiles((prev) => [...prev, ...toAdd])
+    toAdd.forEach((f) => {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        setEvidencePreviews((prev) => [...prev, ev.target?.result as string])
+      }
+      reader.readAsDataURL(f)
+    })
+    e.target.value = ''
+  }
+
+  function removeEvidence(idx: number) {
+    setEvidenceFiles((prev) => prev.filter((_, i) => i !== idx))
+    setEvidencePreviews((prev) => prev.filter((_, i) => i !== idx))
+  }
 
   const itemImageUrl = item?.imageUrls?.[0] ?? null
 
@@ -70,7 +95,9 @@ export function SendMessageSheet({ item, org, onClose }: {
     displayName.trim() !== '' &&
     message.trim() !== '' &&
     itemName.trim() !== '' &&
-    color.trim() !== ''
+    color.trim() !== '' &&
+    lostDate !== '' &&
+    lostLocation.trim() !== ''
 
   async function handleSubmit() {
     if (!isFormValid) return
@@ -87,6 +114,10 @@ export function SendMessageSheet({ item, org, onClose }: {
         eventTime = new Date(lostTime ? `${lostDate}T${lostTime}` : `${lostDate}T00:00`)
       }
 
+      const uploadedUrls = evidenceFiles.length
+        ? await Promise.all(evidenceFiles.map((f) => messageService.uploadChatImage(f)))
+        : null
+
       const supportFormData: SupportFormData = {
         postId: item?.id ?? (null as any),
         category: item?.category ?? '',
@@ -94,7 +125,7 @@ export function SendMessageSheet({ item, org, onClose }: {
         itemName: itemName.trim(),
         color: color.trim(),
         additionalDetails: additionalDetails.trim() || null,
-        imageUrls: null,
+        imageUrls: uploadedUrls,
         lostLocation: lostLocation.trim() || null,
         eventTime,
       }
@@ -131,14 +162,14 @@ export function SendMessageSheet({ item, org, onClose }: {
       >
         {/* Header */}
         <div className="relative flex items-center justify-center px-6 py-4 border-b border-[#F3F4F6] shrink-0">
-          <h2 className="text-[15px] font-black text-[#111]">Contact Organization</h2>
+          <h2 className="text-[15px] font-black text-black">Contact Organization</h2>
           <button
             onClick={onClose}
             className="absolute right-4 w-8 h-8 rounded-full flex items-center justify-center
                        hover:bg-[#F3F4F6] transition-colors cursor-pointer"
             aria-label="Close"
           >
-            <X className="w-4 h-4 text-[#111]" />
+            <X className="w-4 h-4 text-black" />
           </button>
         </div>
 
@@ -161,7 +192,6 @@ export function SendMessageSheet({ item, org, onClose }: {
                         alt=""
                         aria-hidden="true"
                         className="absolute inset-0 w-full h-full object-cover scale-110"
-                        style={{ filter: 'blur(24px)' }}
                       />
                       <div className="absolute inset-0 bg-black/30" />
                       <div className="absolute inset-0 flex items-end p-4">
@@ -186,11 +216,8 @@ export function SendMessageSheet({ item, org, onClose }: {
                 <div className="relative shrink-0">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-[#F3F4F6] flex items-center justify-center border border-[#E5E7EB]">
                     {org.logoUrl
-                      ? <img src={org.logoUrl} alt={org.name} className="w-full h-full object-cover" />
+                      ? <img src={org.logoUrl} alt={org.name} className="w-full h-full object-contain" />
                       : <Building2 className="w-5 h-5 text-[#C4C9D4]" />}
-                  </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center border-2 border-white">
-                    <CheckCircle2 className="w-2.5 h-2.5 text-white" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -261,7 +288,7 @@ export function SendMessageSheet({ item, org, onClose }: {
 
               {/* Date + Time side by side */}
               <div className="mb-3">
-                <FieldLabel label="Date &amp; time of loss" />
+                <FieldLabel label="Date &amp; time of loss" required />
                 <div className="flex flex-wrap gap-2">
                   <DatePill label="Date" value={lostDate} onChange={setLostDate} disableFuture />
                   <TimePill label="Time" value={lostTime} onChange={setLostTime} maxTime={timePillMax} />
@@ -270,7 +297,7 @@ export function SendMessageSheet({ item, org, onClose }: {
 
               {/* Lost location */}
               <div className="mb-3">
-                <FieldLabel label="Lost location" />
+                <FieldLabel label="Lost location" required />
                 <input
                   type="text"
                   value={lostLocation}
@@ -292,6 +319,46 @@ export function SendMessageSheet({ item, org, onClose }: {
                              text-[13px] text-[#111] placeholder:text-[#B0B7C3]
                              focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent
                              resize-none transition-all"
+                />
+              </div>
+
+              {/* Evidence images */}
+              <div className="mb-3">
+                <FieldLabel label="Evidence photos" />
+                <div className="flex flex-wrap gap-2">
+                  {evidencePreviews.map((src, idx) => (
+                    <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#E5E7EB] bg-[#F3F4F6] shrink-0">
+                      <img src={src} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeEvidence(idx)}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors cursor-pointer"
+                        aria-label="Remove image"
+                      >
+                        <X className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                  {evidenceFiles.length < 3 && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-16 h-16 rounded-xl border border-dashed border-[#D1D5DB] bg-[#F9FAFB]
+                                 flex flex-col items-center justify-center gap-1 hover:bg-[#F3F4F6]
+                                 hover:border-[#9CA3AF] transition-all cursor-pointer shrink-0"
+                    >
+                      <ImagePlus className="w-5 h-5 text-[#9CA3AF]" />
+                    </button>
+                  )}
+                </div>
+                <p className="text-[11px] text-[#9CA3AF] mt-1.5">Up to 3 photos as proof of ownership</p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleEvidenceSelect}
                 />
               </div>
 

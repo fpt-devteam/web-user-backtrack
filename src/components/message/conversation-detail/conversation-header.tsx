@@ -140,9 +140,9 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
         )}
         {/* Avatar + online dot */}
         <div className="relative shrink-0">
-          <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center ring-2 ring-gray-200">
+          <div className="w-10 h-10 rounded-full bg-white overflow-hidden flex items-center justify-center ring-2 ring-gray-200">
             {avatarUrl ? (
-              <img src={avatarUrl} alt={name || 'Chat'} className="w-full h-full object-cover" />
+              <img src={avatarUrl} alt={name || 'Chat'} className="w-full h-full object-contain" />
             ) : (
               <span className="text-sm font-bold text-gray-500">{initial}</span>
             )}
