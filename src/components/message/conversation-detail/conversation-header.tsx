@@ -193,7 +193,7 @@ export function ConversationHeader({ conversationId, fallback, onClose }: Conver
 
       {/* ── Pinned post card ── */}
       {supportFormData && conversationId && (
-        <PinnedPostCard supportFormData={supportFormData} />
+        <PinnedPostCard supportFormData={supportFormData} orgSlug={conversation?.orgSlug ?? undefined} />
       )}
     </>
   )

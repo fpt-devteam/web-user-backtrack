@@ -18,9 +18,11 @@ import { useGetPost } from '@/hooks/use-post'
 import { useGetSubcategories } from '@/hooks/use-subcategory'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { SupportFormData } from '@/types/chat.type'
+import QRCode from 'react-qr-code'
 
 interface PinnedPostCardProps {
   supportFormData: SupportFormData
+  orgSlug?: string
 }
 
 function formatEventTime(value: Date | string | null | undefined): string {
@@ -150,11 +152,16 @@ function HeroCarousel({ images, title, onClose }: {
   )
 }
 
-export function PinnedPostCard({ supportFormData }: PinnedPostCardProps) {
+export function PinnedPostCard({ supportFormData, orgSlug }: PinnedPostCardProps) {
   const { data: post, isLoading } = useGetPost(supportFormData.postId)
   const [showPopup, setShowPopup] = useState(false)
   const { data: subcategories = [] } = useGetSubcategories(supportFormData.category || undefined)
   const subcategoryName = subcategories.find(s => s.id === supportFormData.subCategoryId)?.name
+  const staffItemUrl =
+    orgSlug?.trim() && supportFormData.postId
+      ? `https://backtrack-console.vercel.app/console/${orgSlug}/staff/item/${supportFormData.postId}`
+      : null
+  const qrValue = staffItemUrl ?? `backtrack-item:${supportFormData.postId}`
 
   if (isLoading) {
     return (
@@ -230,7 +237,7 @@ export function PinnedPostCard({ supportFormData }: PinnedPostCardProps) {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 60, opacity: 0 }}
               transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl
+              className="bg-white w-full sm:max-w-xl xl:max-w-2xl 2xl:max-w-3xl rounded-t-3xl sm:rounded-3xl
                          max-h-[92vh] flex flex-col overflow-hidden shadow-2xl"
             >
               {/* Hero header — image carousel */}
@@ -243,7 +250,16 @@ export function PinnedPostCard({ supportFormData }: PinnedPostCardProps) {
                     Item details
                   </p>
 
-                  <DetailCard icon={Package} label="Item name" value={supportFormData.itemName} accent />
+                  <div className="grid grid-cols-[4fr_1fr] gap-3">
+                    <DetailCard icon={Package} label="Item name" value={supportFormData.itemName} accent />
+
+                    <div className="rounded-2xl bg-gray-50 p-2.5 flex flex-col items-center justify-center">
+                      <QRCode value={qrValue} size={70} />
+                      <p className="mt-1.5 text-[10px] text-gray-400 text-center">
+                        Show this QR to staff.
+                      </p>
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <DetailCard icon={Tag} label="Category" value={supportFormData.category} />
