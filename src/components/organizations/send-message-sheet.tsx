@@ -10,7 +10,7 @@ import {
   User,
   X,
 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import type { Org } from '@/types/org.type'
 import type { SupportFormData } from '@/types/chat.type'
@@ -23,6 +23,7 @@ import { userService } from '@/services/user.service'
 import { Spinner } from '@/components/ui/spinner'
 import { DatePill, TimePill } from './date-time-pill'
 import { FieldLabel } from './field-label'
+import QRCode from 'react-qr-code'
 
 const inputClass = [
   'w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-[13px] text-[#111]',
@@ -80,6 +81,12 @@ export function SendMessageSheet({ item, org, onClose }: {
   }
 
   const itemImageUrl = item?.imageUrls?.[0] ?? null
+  const itemId = item?.id as string | undefined
+
+  const staffItemUrl = useMemo(() => {
+    if (!org?.slug || !itemId) return null
+    return `https://backtrack-console.vercel.app/console/${org.slug}/staff/item/${itemId}`
+  }, [org?.slug, itemId])
 
   const todayStr = (() => {
     const t = new Date()
@@ -232,6 +239,20 @@ export function SendMessageSheet({ item, org, onClose }: {
                   </p>
                 </div>
               </div>
+
+              {/* Staff-only QR (user shows staff to scan) */}
+              {staffItemUrl ? (
+                <div className="mt-4 rounded-2xl border border-[#E5E7EB] bg-white p-4">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-3">
+                      <QRCode value={staffItemUrl} size={132} />
+                    </div>
+                    <p className="mt-2 text-[11px] font-semibold text-[#9CA3AF] text-center">
+                    Show this QR to staff.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {/* Section 2: User form */}
