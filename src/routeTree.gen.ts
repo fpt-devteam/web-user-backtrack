@@ -15,6 +15,7 @@ import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
 import { Route as MessageIndexRouteImport } from './routes/message/index'
+import { Route as LostRequestsIndexRouteImport } from './routes/lost-requests/index'
 import { Route as HelpIndexRouteImport } from './routes/help/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProfilePublicCodeIndexRouteImport } from './routes/profile/$publicCode/index'
@@ -51,6 +52,11 @@ const OrganizationsIndexRoute = OrganizationsIndexRouteImport.update({
 const MessageIndexRoute = MessageIndexRouteImport.update({
   id: '/message/',
   path: '/message/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LostRequestsIndexRoute = LostRequestsIndexRouteImport.update({
+  id: '/lost-requests/',
+  path: '/lost-requests/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpIndexRoute = HelpIndexRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
   '/help/': typeof HelpIndexRoute
+  '/lost-requests/': typeof LostRequestsIndexRoute
   '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
   '/help': typeof HelpIndexRoute
+  '/lost-requests': typeof LostRequestsIndexRoute
   '/message': typeof MessageIndexRoute
   '/organizations': typeof OrganizationsIndexRoute
   '/premium': typeof PremiumIndexRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
   '/help/': typeof HelpIndexRoute
+  '/lost-requests/': typeof LostRequestsIndexRoute
   '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account/'
     | '/help/'
+    | '/lost-requests/'
     | '/message/'
     | '/organizations/'
     | '/premium/'
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/help'
+    | '/lost-requests'
     | '/message'
     | '/organizations'
     | '/premium'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account/'
     | '/help/'
+    | '/lost-requests/'
     | '/message/'
     | '/organizations/'
     | '/premium/'
@@ -187,6 +199,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
   HelpIndexRoute: typeof HelpIndexRoute
+  LostRequestsIndexRoute: typeof LostRequestsIndexRoute
   MessageIndexRoute: typeof MessageIndexRoute
   OrganizationsIndexRoute: typeof OrganizationsIndexRoute
   PremiumIndexRoute: typeof PremiumIndexRoute
@@ -241,6 +254,13 @@ declare module '@tanstack/react-router' {
       path: '/message'
       fullPath: '/message/'
       preLoaderRoute: typeof MessageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lost-requests/': {
+      id: '/lost-requests/'
+      path: '/lost-requests'
+      fullPath: '/lost-requests/'
+      preLoaderRoute: typeof LostRequestsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help/': {
@@ -299,6 +319,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountIndexRoute: AccountIndexRoute,
   HelpIndexRoute: HelpIndexRoute,
+  LostRequestsIndexRoute: LostRequestsIndexRoute,
   MessageIndexRoute: MessageIndexRoute,
   OrganizationsIndexRoute: OrganizationsIndexRoute,
   PremiumIndexRoute: PremiumIndexRoute,

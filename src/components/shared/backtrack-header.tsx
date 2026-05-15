@@ -4,6 +4,7 @@ import {
   Building2,
   Menu,
   MessageCircle,
+  Search,
   Sparkles,
   User,
 } from 'lucide-react'
@@ -15,6 +16,7 @@ import { useTotalUnreadCount } from '@/hooks/use-message'
 const NAV_LINKS = [
   { label: 'Pricing', to: '/premium', icon: Sparkles },
   { label: 'Message', to: '/message', icon: MessageCircle },
+  { label: 'Lost Request', to: '/lost-requests', icon: Search },
   { label: 'Organizations', to: '/organizations', icon: Building2 },
 ] as const
 

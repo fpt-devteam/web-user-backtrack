@@ -1,4 +1,4 @@
-import { Package } from 'lucide-react'
+import { Package, Search } from 'lucide-react'
 import { useState } from 'react'
 import type { Org } from '@/types/org.type'
 import { useGetOrgInventory } from '@/hooks/use-org'
@@ -14,6 +14,7 @@ export function OrgInventoryList({ slug, org }: { slug: string; org: Org }) {
   const items = data?.items ?? []
   const [showModal, setShowModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [showLostRequest, setShowLostRequest] = useState(false)
 
   const previewItems = items.slice(0, INVENTORY_PREVIEW_COUNT)
 
@@ -66,6 +67,28 @@ export function OrgInventoryList({ slug, org }: { slug: string; org: Org }) {
         )}
       </div>
 
+      {/* Non-inventory lost request */}
+      <div className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] mt-4 p-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-black text-black tracking-tight">Non-inventory lost request</h2>
+            <button
+              onClick={() => setShowLostRequest(true)}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-bold
+                         bg-rose-500 hover:bg-rose-600 text-white shadow-[0_4px_12px_rgba(239,68,68,0.2)]
+                         transition-all cursor-pointer active:scale-[0.97]"
+            >
+              Lost request
+            </button>
+          </div>
+          <Search className="w-4.5 h-4.5 text-brand-500" />
+        </div>
+
+        <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
+          Can't find your item in the inventory? Submit a lost request and we'll notify you as soon as it's found.
+        </p>
+      </div>
+
       {showModal && (
         <InventoryModal
           items={items}
@@ -81,6 +104,15 @@ export function OrgInventoryList({ slug, org }: { slug: string; org: Org }) {
           onClose={() => setSelectedItem(null)}
         />
       )}
+
+      {showLostRequest && (
+        <SendMessageSheet
+          item={null}
+          org={org}
+          onClose={() => setShowLostRequest(false)}
+        />
+      )}
     </>
   )
 }
+
