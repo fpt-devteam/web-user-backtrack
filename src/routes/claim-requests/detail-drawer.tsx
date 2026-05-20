@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sheet'
 
 /* ── types ──────────────────────────────────────────────────── */
-export interface LostRequestItem {
+export interface ClaimRequestItem {
   id: string
   itemName: string
   description: string
@@ -22,15 +22,15 @@ export interface LostRequestItem {
   reporterEmail: string
 }
 
-interface LostRequestDetailDrawerProps {
-  request: LostRequestItem | null
+interface ClaimRequestDetailDrawerProps {
+  request: ClaimRequestItem | null
   open: boolean
   onClose: () => void
 }
 
 /* ── progress steps ─────────────────────────────────────────── */
 const STEPS = [
-  { key: 'submitted', label: 'Request Submitted', desc: 'Your lost request has been submitted successfully.' },
+  { key: 'submitted', label: 'Request Submitted', desc: 'Your claim request has been submitted successfully.' },
   { key: 'reviewing', label: 'Under Review', desc: 'The organization is reviewing your request.' },
   { key: 'searching', label: 'Searching', desc: 'Staff is actively looking for your item.' },
   { key: 'found', label: 'Item Found', desc: 'Your item has been found! Please come to collect it.' },
@@ -59,7 +59,7 @@ function formatDate(iso: string) {
 }
 
 /* ── component ──────────────────────────────────────────────── */
-export function LostRequestDetailDrawer({ request, open, onClose }: Readonly<LostRequestDetailDrawerProps>) {
+export function ClaimRequestDetailDrawer({ request, open, onClose }: Readonly<ClaimRequestDetailDrawerProps>) {
   if (!request) return null
 
   const filteredSteps = STEPS.filter(s => {
@@ -85,7 +85,7 @@ export function LostRequestDetailDrawer({ request, open, onClose }: Readonly<Los
         showCloseButton={false}
         className="w-[92%] sm:max-w-[66%] p-0 flex flex-col gap-0 bg-white"
       >
-        <SheetTitle className="sr-only">Lost Request Detail</SheetTitle>
+        <SheetTitle className="sr-only">Claim Request Detail</SheetTitle>
         <SheetDescription className="sr-only">Details for {request.itemName}</SheetDescription>
 
         {/* ── Header ─────────────────────────────────────────── */}
@@ -236,7 +236,7 @@ export function LostRequestDetailDrawer({ request, open, onClose }: Readonly<Los
               {/* Location */}
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.6} />
-                <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Lost Location</p>
+                <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Claim Location</p>
                 <p className="text-[13px] text-[#374151] font-medium ml-auto">{request.lostLocation}</p>
               </div>
 

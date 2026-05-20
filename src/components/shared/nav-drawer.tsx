@@ -144,7 +144,7 @@ export function NavDrawer() {
     ? [
         { icon: User,          title: 'My Account',        subtitle: 'View and edit your profile',    onClick: () => go('/account')        },
         { icon: MessageCircle, title: 'Messages',          subtitle: 'View your conversations',       onClick: () => go('/message')        },
-        { icon: Search,        title: 'Lost Requests',     subtitle: 'Track your lost item requests', onClick: () => go('/lost-requests')  },
+        { icon: Search,        title: 'Claim Requests',     subtitle: 'Track your claim requests', onClick: () => go('/claim-requests')  },
         { icon: Building2,     title: 'Organizations',     subtitle: 'Manage your organizations',     onClick: () => go('/organizations')  },
         { icon: Sparkles,      title: 'Backtrack Premium', subtitle: 'Upgrade for more features',     onClick: () => go('/premium')        },
         { icon: Download,      title: 'Download App',      subtitle: 'Get the full mobile experience'                                     },
@@ -152,7 +152,7 @@ export function NavDrawer() {
     : [
         { icon: User,          title: 'Sign In / Sign Up',  subtitle: 'Manage your account',           onClick: () => go('/sign-in')        },
         { icon: MessageCircle, title: 'Messages',           subtitle: 'View your conversations',       onClick: () => go('/message')        },
-        { icon: Search,        title: 'Lost Requests',      subtitle: 'Track your lost item requests', onClick: () => go('/lost-requests')  },
+        { icon: Search,        title: 'Claim Requests',      subtitle: 'Track your claim requests', onClick: () => go('/claim-requests')  },
         { icon: Building2,     title: 'Organizations',      subtitle: 'Manage your organizations',     onClick: () => go('/organizations')  },
         { icon: Sparkles,      title: 'Backtrack Premium',  subtitle: 'Upgrade for more features',     onClick: () => go('/premium')        },
         { icon: Download,      title: 'Download App',       subtitle: 'Get the full mobile experience'                                     },

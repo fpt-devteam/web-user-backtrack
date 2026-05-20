@@ -15,8 +15,8 @@ import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
 import { Route as MessageIndexRouteImport } from './routes/message/index'
-import { Route as LostRequestsIndexRouteImport } from './routes/lost-requests/index'
 import { Route as HelpIndexRouteImport } from './routes/help/index'
+import { Route as ClaimRequestsIndexRouteImport } from './routes/claim-requests/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as ProfilePublicCodeIndexRouteImport } from './routes/profile/$publicCode/index'
 import { Route as PremiumSuccessIndexRouteImport } from './routes/premium/success/index'
@@ -54,14 +54,14 @@ const MessageIndexRoute = MessageIndexRouteImport.update({
   path: '/message/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LostRequestsIndexRoute = LostRequestsIndexRouteImport.update({
-  id: '/lost-requests/',
-  path: '/lost-requests/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HelpIndexRoute = HelpIndexRouteImport.update({
   id: '/help/',
   path: '/help/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClaimRequestsIndexRoute = ClaimRequestsIndexRouteImport.update({
+  id: '/claim-requests/',
+  path: '/claim-requests/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountIndexRoute = AccountIndexRouteImport.update({
@@ -98,8 +98,8 @@ const FoundIdIndexRoute = FoundIdIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
+  '/claim-requests/': typeof ClaimRequestsIndexRoute
   '/help/': typeof HelpIndexRoute
-  '/lost-requests/': typeof LostRequestsIndexRoute
   '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
@@ -114,8 +114,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountIndexRoute
+  '/claim-requests': typeof ClaimRequestsIndexRoute
   '/help': typeof HelpIndexRoute
-  '/lost-requests': typeof LostRequestsIndexRoute
   '/message': typeof MessageIndexRoute
   '/organizations': typeof OrganizationsIndexRoute
   '/premium': typeof PremiumIndexRoute
@@ -131,8 +131,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
+  '/claim-requests/': typeof ClaimRequestsIndexRoute
   '/help/': typeof HelpIndexRoute
-  '/lost-requests/': typeof LostRequestsIndexRoute
   '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
@@ -149,8 +149,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account/'
+    | '/claim-requests/'
     | '/help/'
-    | '/lost-requests/'
     | '/message/'
     | '/organizations/'
     | '/premium/'
@@ -165,8 +165,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/claim-requests'
     | '/help'
-    | '/lost-requests'
     | '/message'
     | '/organizations'
     | '/premium'
@@ -181,8 +181,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/account/'
+    | '/claim-requests/'
     | '/help/'
-    | '/lost-requests/'
     | '/message/'
     | '/organizations/'
     | '/premium/'
@@ -198,8 +198,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountIndexRoute: typeof AccountIndexRoute
+  ClaimRequestsIndexRoute: typeof ClaimRequestsIndexRoute
   HelpIndexRoute: typeof HelpIndexRoute
-  LostRequestsIndexRoute: typeof LostRequestsIndexRoute
   MessageIndexRoute: typeof MessageIndexRoute
   OrganizationsIndexRoute: typeof OrganizationsIndexRoute
   PremiumIndexRoute: typeof PremiumIndexRoute
@@ -256,18 +256,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lost-requests/': {
-      id: '/lost-requests/'
-      path: '/lost-requests'
-      fullPath: '/lost-requests/'
-      preLoaderRoute: typeof LostRequestsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/help/': {
       id: '/help/'
       path: '/help'
       fullPath: '/help/'
       preLoaderRoute: typeof HelpIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/claim-requests/': {
+      id: '/claim-requests/'
+      path: '/claim-requests'
+      fullPath: '/claim-requests/'
+      preLoaderRoute: typeof ClaimRequestsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/': {
@@ -318,8 +318,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountIndexRoute: AccountIndexRoute,
+  ClaimRequestsIndexRoute: ClaimRequestsIndexRoute,
   HelpIndexRoute: HelpIndexRoute,
-  LostRequestsIndexRoute: LostRequestsIndexRoute,
   MessageIndexRoute: MessageIndexRoute,
   OrganizationsIndexRoute: OrganizationsIndexRoute,
   PremiumIndexRoute: PremiumIndexRoute,

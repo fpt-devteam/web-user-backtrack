@@ -14,7 +14,7 @@ export function OrgInventoryList({ slug, org }: { slug: string; org: Org }) {
   const items = data?.items ?? []
   const [showModal, setShowModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<any>(null)
-  const [showLostRequest, setShowLostRequest] = useState(false)
+  const [showClaimRequest, setShowClaimRequest] = useState(false)
 
   const previewItems = items.slice(0, INVENTORY_PREVIEW_COUNT)
 
@@ -67,25 +67,25 @@ export function OrgInventoryList({ slug, org }: { slug: string; org: Org }) {
         )}
       </div>
 
-      {/* Non-inventory lost request */}
+      {/* Non-inventory claim request */}
       <div className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] mt-4 p-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-black text-black tracking-tight">Non-inventory lost request</h2>
+            <h2 className="text-lg font-black text-black tracking-tight">Non-inventory claim request</h2>
             <button
-              onClick={() => setShowLostRequest(true)}
+              onClick={() => setShowClaimRequest(true)}
               className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-bold
                          bg-rose-500 hover:bg-rose-600 text-white shadow-[0_4px_12px_rgba(239,68,68,0.2)]
                          transition-all cursor-pointer active:scale-[0.97]"
             >
-              Lost request
+              Claim request
             </button>
           </div>
           <Search className="w-4.5 h-4.5 text-brand-500" />
         </div>
 
         <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
-          Can't find your item in the inventory? Submit a lost request and we'll notify you as soon as it's found.
+          Can't find your item in the inventory? Submit a claim request and we'll notify you as soon as it's found.
         </p>
       </div>
 
@@ -105,11 +105,11 @@ export function OrgInventoryList({ slug, org }: { slug: string; org: Org }) {
         />
       )}
 
-      {showLostRequest && (
+      {showClaimRequest && (
         <SendMessageSheet
           item={null}
           org={org}
-          onClose={() => setShowLostRequest(false)}
+          onClose={() => setShowClaimRequest(false)}
         />
       )}
     </>
