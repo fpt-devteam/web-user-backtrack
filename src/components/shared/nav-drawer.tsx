@@ -62,7 +62,7 @@ function UserSection({
   email?: string | null
   role: string
 }) {
-  const name     = displayName ?? email ?? 'User'
+  const name = displayName ?? email ?? 'User'
   const initials = getInitials(displayName, email)
 
   return (
@@ -126,7 +126,7 @@ function SecondaryItem({ icon: Icon, label, onClick }: Readonly<SecondaryMenuIte
 // ── NavDrawer ─────────────────────────────────────────────────
 
 export function NavDrawer() {
-  const navigate  = useNavigate()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const { profile, logout } = useAuth()
 
@@ -142,25 +142,23 @@ export function NavDrawer() {
 
   const primaryItems: Array<PrimaryMenuItem> = isSignedIn
     ? [
-        { icon: User,          title: 'My Account',        subtitle: 'View and edit your profile',    onClick: () => go('/account')        },
-        { icon: MessageCircle, title: 'Messages',          subtitle: 'View your conversations',       onClick: () => go('/message')        },
-        { icon: Search,        title: 'Claim Requests',     subtitle: 'Track your claim requests', onClick: () => go('/claim-requests')  },
-        { icon: Building2,     title: 'Organizations',     subtitle: 'Manage your organizations',     onClick: () => go('/organizations')  },
-        { icon: Sparkles,      title: 'Backtrack Premium', subtitle: 'Upgrade for more features',     onClick: () => go('/premium')        },
-        { icon: Download,      title: 'Download App',      subtitle: 'Get the full mobile experience'                                     },
-      ]
+      { icon: User, title: 'My Account', subtitle: 'View and edit your profile', onClick: () => go('/account') },
+      { icon: Search, title: 'Claim Requests', subtitle: 'Track your claim requests', onClick: () => go('/claim-requests') },
+      { icon: Building2, title: 'Organizations', subtitle: 'Manage your organizations', onClick: () => go('/organizations') },
+      { icon: Sparkles, title: 'Backtrack Premium', subtitle: 'Upgrade for more features', onClick: () => go('/premium') },
+      { icon: Download, title: 'Download App', subtitle: 'Get the full mobile experience' },
+    ]
     : [
-        { icon: User,          title: 'Sign In / Sign Up',  subtitle: 'Manage your account',           onClick: () => go('/sign-in')        },
-        { icon: MessageCircle, title: 'Messages',           subtitle: 'View your conversations',       onClick: () => go('/message')        },
-        { icon: Search,        title: 'Claim Requests',      subtitle: 'Track your claim requests', onClick: () => go('/claim-requests')  },
-        { icon: Building2,     title: 'Organizations',      subtitle: 'Manage your organizations',     onClick: () => go('/organizations')  },
-        { icon: Sparkles,      title: 'Backtrack Premium',  subtitle: 'Upgrade for more features',     onClick: () => go('/premium')        },
-        { icon: Download,      title: 'Download App',       subtitle: 'Get the full mobile experience'                                     },
-      ]
+      { icon: User, title: 'Sign In / Sign Up', subtitle: 'Manage your account', onClick: () => go('/sign-in') },
+      { icon: Search, title: 'Claim Requests', subtitle: 'Track your claim requests', onClick: () => go('/claim-requests') },
+      { icon: Building2, title: 'Organizations', subtitle: 'Manage your organizations', onClick: () => go('/organizations') },
+      { icon: Sparkles, title: 'Backtrack Premium', subtitle: 'Upgrade for more features', onClick: () => go('/premium') },
+      { icon: Download, title: 'Download App', subtitle: 'Get the full mobile experience' },
+    ]
 
   const secondaryItems: Array<SecondaryMenuItem> = [
-    { icon: Info,       label: 'How it Works' },
-    { icon: HelpCircle, label: 'Help Center',  onClick: () => go('/help') },
+    { icon: Info, label: 'How it Works' },
+    { icon: HelpCircle, label: 'Help Center', onClick: () => go('/help') },
   ]
 
   return (

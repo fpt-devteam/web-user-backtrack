@@ -24,31 +24,32 @@ export function StartChatButton({
   const navigate = useNavigate();
 
   const handleStartChat = async () => {
-    if (!partnerId) {
-      console.error('[StartChatButton] partnerId is empty — cannot create conversation');
-      toast.error('Unable to start chat: user ID is missing');
-      return;
-    }
-    try {
-      if (!profile) {
-        await signInAnonymous();
-        await createUser();
-        await syncProfile();
-      }
-      const conv = await createDirectConv(partnerId);
-      navigate({
-        to: '/message',
-        search: {
-          selectedId: conv.conversationId,
-          isSupport: false,
-          fallbackName: fallbackName ?? undefined,
-          fallbackAvatarUrl: fallbackAvatarUrl ?? undefined,
-        },
-      });
-    } catch (err) {
-      console.error('[StartChatButton] handleStartChat error:', err);
-      toast.error('Failed to start chat. Please try again.');
-    }
+    // Temporarily disabled:
+    // if (!partnerId) {
+    //   console.error('[StartChatButton] partnerId is empty — cannot create conversation');
+    //   toast.error('Unable to start chat: user ID is missing');
+    //   return;
+    // }
+    // try {
+    //   if (!profile) {
+    //     await signInAnonymous();
+    //     await createUser();
+    //     await syncProfile();
+    //   }
+    //   const conv = await createDirectConv(partnerId);
+    //   navigate({
+    //     to: '/message',
+    //     search: {
+    //       selectedId: conv.conversationId,
+    //       isSupport: false,
+    //       fallbackName: fallbackName ?? undefined,
+    //       fallbackAvatarUrl: fallbackAvatarUrl ?? undefined,
+    //     },
+    //   });
+    // } catch (err) {
+    //   console.error('[StartChatButton] handleStartChat error:', err);
+    //   toast.error('Failed to start chat. Please try again.');
+    // }
   };
 
   return (

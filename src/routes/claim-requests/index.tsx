@@ -1,12 +1,25 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
 import { Clock, Package, Search, MapPin, ChevronRight, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Pagination } from '@/components/ui/pagination'
 import type { Variants } from 'framer-motion'
-import { ClaimRequestDetailDrawer } from './detail-drawer'
-import type { ClaimRequestItem } from './detail-drawer'
+
+export interface ClaimRequestItem {
+  id: string
+  itemName: string
+  description: string
+  color: string
+  lostLocation: string
+  createdAt: string
+  status: 'pending' | 'found'
+  type: 'in-inventory' | 'non-inventory'
+  images: string[]
+  reporterName: string
+  reporterPhone: string
+  reporterEmail: string
+}
 
 export const Route = createFileRoute('/claim-requests/')(
   { component: ClaimRequestsPage },
@@ -25,7 +38,7 @@ const fadeUp: Variants = {
 // Tab types and constants removed (Search & Sort used instead)
 
 /* ── hardcoded data ─────────────────────────────────────────── */
-const MOCK_REQUESTS = [
+export const MOCK_REQUESTS: ClaimRequestItem[] = [
   {
     id: '1',
     itemName: 'iPhone 14 Pro Max',
@@ -150,10 +163,10 @@ function StatusBadge({ status }: { status: 'pending' | 'found' }) {
 
 /* ── page ────────────────────────────────────────────────────── */
 function ClaimRequestsPage() {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedRequest, setSelectedRequest] = useState<ClaimRequestItem | null>(null)
 
   const ITEMS_PER_PAGE = 10
 
@@ -249,7 +262,7 @@ function ClaimRequestsPage() {
                 variants={fadeUp}
                 initial="hidden"
                 animate="show"
-                onClick={() => setSelectedRequest(req)}
+                onClick={() => navigate({ to: '/claim-requests/$id', params: { id: req.id } })}
                 className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden cursor-pointer
                            shadow-[0_2px_12px_rgba(0,0,0,0.04)]
                            hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-shadow duration-200"
@@ -333,13 +346,6 @@ function ClaimRequestsPage() {
           </div>
         )}
       </div>
-
-      {/* Detail Drawer */}
-      <ClaimRequestDetailDrawer
-        request={selectedRequest}
-        open={selectedRequest !== null}
-        onClose={() => setSelectedRequest(null)}
-      />
     </div>
   )
 }

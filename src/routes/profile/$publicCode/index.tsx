@@ -57,56 +57,59 @@ function OwnerProfilePage() {
   const isBusy = isSigningIn || isCreatingUser || isChatting
 
   const doCreateConversation = async () => {
-    if (!userId) { toast.error('Cannot start chat: user ID is missing'); return }
-    setIsChatting(true)
-    try {
-      const conv = await messageService.createDirectConversation(userId)
-      navigate({
-        to: '/message',
-        search: {
-          selectedId: conv.conversationId,
-          isSupport: false,
-          fallbackName: displayName,
-          ...(profile?.avatarUrl ? { fallbackAvatarUrl: profile.avatarUrl } : {}),
-        } as never,
-      })
-    } finally {
-      setIsChatting(false)
-    }
+    // Temporarily disabled:
+    // if (!userId) { toast.error('Cannot start chat: user ID is missing'); return }
+    // setIsChatting(true)
+    // try {
+    //   const conv = await messageService.createDirectConversation(userId)
+    //   navigate({
+    //     to: '/message',
+    //     search: {
+    //       selectedId: conv.conversationId,
+    //       isSupport: false,
+    //       fallbackName: displayName,
+    //       ...(profile?.avatarUrl ? { fallbackAvatarUrl: profile.avatarUrl } : {}),
+    //     } as never,
+    //   })
+    // } finally {
+    //   setIsChatting(false)
+    // }
   }
 
   const handleStartChat = async () => {
-    try {
-      let currentProfile = myProfile;
-
-      if (!currentProfile) {
-        await signInAnonymous()
-        currentProfile = await createUser()
-        await syncProfile()
-      }
-
-      // Check if display name is missing or empty
-      if (!currentProfile.displayName) {
-        setShowAnonDialog(true)
-        return
-      }
-
-      // If they already have a name, just start the chat
-      await doCreateConversation()
-    } catch (err) {
-      toast.fromError(err)
-    }
+    // Temporarily disabled:
+    // try {
+    //   let currentProfile = myProfile;
+    //
+    //   if (!currentProfile) {
+    //     await signInAnonymous()
+    //     currentProfile = await createUser()
+    //     await syncProfile()
+    //   }
+    //
+    //   // Check if display name is missing or empty
+    //   if (!currentProfile.displayName) {
+    //     setShowAnonDialog(true)
+    //     return
+    //   }
+    //
+    //   // If they already have a name, just start the chat
+    //   await doCreateConversation()
+    // } catch (err) {
+    //   toast.fromError(err)
+    // }
   }
 
   const handleAnonConfirm = async (chosenName: string) => {
-    try {
-      await userService.updateMe({ displayName: chosenName })
-      await syncProfile()
-      setShowAnonDialog(false)
-      await doCreateConversation()
-    } catch (err) {
-      toast.fromError(err)
-    }
+    // Temporarily disabled:
+    // try {
+    //   await userService.updateMe({ displayName: chosenName })
+    //   await syncProfile()
+    //   setShowAnonDialog(false)
+    //   await doCreateConversation()
+    // } catch (err) {
+    //   toast.fromError(err)
+    // }
   }
 
   useEffect(() => {

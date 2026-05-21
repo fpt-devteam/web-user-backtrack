@@ -320,3 +320,38 @@ code {
     @apply bg-background text-foreground;
   }
 }
+
+/* ─── Auto-hiding custom scrollbar ─── */
+.autohide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s;
+}
+
+.autohide-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.autohide-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.autohide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  transition: background-color 0.3s;
+}
+
+.autohide-scrollbar:hover {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+}
+
+.autohide-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+}
+
+.autohide-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.6);
+}

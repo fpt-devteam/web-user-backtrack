@@ -15,7 +15,6 @@ import { useTotalUnreadCount } from '@/hooks/use-message'
 /* ── nav link manifest ──────────────────────────────────────── */
 const NAV_LINKS = [
   { label: 'Pricing', to: '/premium', icon: Sparkles },
-  { label: 'Message', to: '/message', icon: MessageCircle },
   { label: 'Claim Request', to: '/claim-requests', icon: Search },
   { label: 'Organizations', to: '/organizations', icon: Building2 },
 ] as const
@@ -102,7 +101,9 @@ export function BacktrackHeader() {
             return (
               <button
                 key={to}
-                onClick={() => navigate({ to: to as string })}
+                onClick={() => {
+                  navigate({ to: to as string })
+                }}
                 aria-current={active ? 'page' : undefined}
                 className={[
                   'relative flex flex-col items-center justify-center gap-1 px-3 lg:px-5 h-16 sm:h-[72px] cursor-pointer',
@@ -120,11 +121,6 @@ export function BacktrackHeader() {
                     strokeWidth={active ? 2.2 : 1.8}
                     aria-hidden="true"
                   />
-                  {to === '/message' && totalUnread > 0 && (
-                    <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
-                      {totalUnread > 99 ? '99+' : totalUnread}
-                    </span>
-                  )}
                 </span>
 
                 <span

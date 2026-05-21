@@ -14,7 +14,6 @@ import { Route as SignUpIndexRouteImport } from './routes/sign-up/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
-import { Route as MessageIndexRouteImport } from './routes/message/index'
 import { Route as HelpIndexRouteImport } from './routes/help/index'
 import { Route as ClaimRequestsIndexRouteImport } from './routes/claim-requests/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
@@ -23,6 +22,7 @@ import { Route as PremiumSuccessIndexRouteImport } from './routes/premium/succes
 import { Route as PremiumCheckoutIndexRouteImport } from './routes/premium/checkout/index'
 import { Route as OrganizationsSlugIndexRouteImport } from './routes/organizations/$slug/index'
 import { Route as FoundIdIndexRouteImport } from './routes/found/$id/index'
+import { Route as ClaimRequestsIdIndexRouteImport } from './routes/claim-requests/$id/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -47,11 +47,6 @@ const PremiumIndexRoute = PremiumIndexRouteImport.update({
 const OrganizationsIndexRoute = OrganizationsIndexRouteImport.update({
   id: '/organizations/',
   path: '/organizations/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MessageIndexRoute = MessageIndexRouteImport.update({
-  id: '/message/',
-  path: '/message/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpIndexRoute = HelpIndexRouteImport.update({
@@ -94,17 +89,22 @@ const FoundIdIndexRoute = FoundIdIndexRouteImport.update({
   path: '/found/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClaimRequestsIdIndexRoute = ClaimRequestsIdIndexRouteImport.update({
+  id: '/claim-requests/$id/',
+  path: '/claim-requests/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account/': typeof AccountIndexRoute
   '/claim-requests/': typeof ClaimRequestsIndexRoute
   '/help/': typeof HelpIndexRoute
-  '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
+  '/claim-requests/$id/': typeof ClaimRequestsIdIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
   '/organizations/$slug/': typeof OrganizationsSlugIndexRoute
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
@@ -116,11 +116,11 @@ export interface FileRoutesByTo {
   '/account': typeof AccountIndexRoute
   '/claim-requests': typeof ClaimRequestsIndexRoute
   '/help': typeof HelpIndexRoute
-  '/message': typeof MessageIndexRoute
   '/organizations': typeof OrganizationsIndexRoute
   '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
+  '/claim-requests/$id': typeof ClaimRequestsIdIndexRoute
   '/found/$id': typeof FoundIdIndexRoute
   '/organizations/$slug': typeof OrganizationsSlugIndexRoute
   '/premium/checkout': typeof PremiumCheckoutIndexRoute
@@ -133,11 +133,11 @@ export interface FileRoutesById {
   '/account/': typeof AccountIndexRoute
   '/claim-requests/': typeof ClaimRequestsIndexRoute
   '/help/': typeof HelpIndexRoute
-  '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
+  '/claim-requests/$id/': typeof ClaimRequestsIdIndexRoute
   '/found/$id/': typeof FoundIdIndexRoute
   '/organizations/$slug/': typeof OrganizationsSlugIndexRoute
   '/premium/checkout/': typeof PremiumCheckoutIndexRoute
@@ -151,11 +151,11 @@ export interface FileRouteTypes {
     | '/account/'
     | '/claim-requests/'
     | '/help/'
-    | '/message/'
     | '/organizations/'
     | '/premium/'
     | '/sign-in/'
     | '/sign-up/'
+    | '/claim-requests/$id/'
     | '/found/$id/'
     | '/organizations/$slug/'
     | '/premium/checkout/'
@@ -167,11 +167,11 @@ export interface FileRouteTypes {
     | '/account'
     | '/claim-requests'
     | '/help'
-    | '/message'
     | '/organizations'
     | '/premium'
     | '/sign-in'
     | '/sign-up'
+    | '/claim-requests/$id'
     | '/found/$id'
     | '/organizations/$slug'
     | '/premium/checkout'
@@ -183,11 +183,11 @@ export interface FileRouteTypes {
     | '/account/'
     | '/claim-requests/'
     | '/help/'
-    | '/message/'
     | '/organizations/'
     | '/premium/'
     | '/sign-in/'
     | '/sign-up/'
+    | '/claim-requests/$id/'
     | '/found/$id/'
     | '/organizations/$slug/'
     | '/premium/checkout/'
@@ -200,11 +200,11 @@ export interface RootRouteChildren {
   AccountIndexRoute: typeof AccountIndexRoute
   ClaimRequestsIndexRoute: typeof ClaimRequestsIndexRoute
   HelpIndexRoute: typeof HelpIndexRoute
-  MessageIndexRoute: typeof MessageIndexRoute
   OrganizationsIndexRoute: typeof OrganizationsIndexRoute
   PremiumIndexRoute: typeof PremiumIndexRoute
   SignInIndexRoute: typeof SignInIndexRoute
   SignUpIndexRoute: typeof SignUpIndexRoute
+  ClaimRequestsIdIndexRoute: typeof ClaimRequestsIdIndexRoute
   FoundIdIndexRoute: typeof FoundIdIndexRoute
   OrganizationsSlugIndexRoute: typeof OrganizationsSlugIndexRoute
   PremiumCheckoutIndexRoute: typeof PremiumCheckoutIndexRoute
@@ -247,13 +247,6 @@ declare module '@tanstack/react-router' {
       path: '/organizations'
       fullPath: '/organizations/'
       preLoaderRoute: typeof OrganizationsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/message/': {
-      id: '/message/'
-      path: '/message'
-      fullPath: '/message/'
-      preLoaderRoute: typeof MessageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help/': {
@@ -312,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FoundIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/claim-requests/$id/': {
+      id: '/claim-requests/$id/'
+      path: '/claim-requests/$id'
+      fullPath: '/claim-requests/$id/'
+      preLoaderRoute: typeof ClaimRequestsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -320,11 +320,11 @@ const rootRouteChildren: RootRouteChildren = {
   AccountIndexRoute: AccountIndexRoute,
   ClaimRequestsIndexRoute: ClaimRequestsIndexRoute,
   HelpIndexRoute: HelpIndexRoute,
-  MessageIndexRoute: MessageIndexRoute,
   OrganizationsIndexRoute: OrganizationsIndexRoute,
   PremiumIndexRoute: PremiumIndexRoute,
   SignInIndexRoute: SignInIndexRoute,
   SignUpIndexRoute: SignUpIndexRoute,
+  ClaimRequestsIdIndexRoute: ClaimRequestsIdIndexRoute,
   FoundIdIndexRoute: FoundIdIndexRoute,
   OrganizationsSlugIndexRoute: OrganizationsSlugIndexRoute,
   PremiumCheckoutIndexRoute: PremiumCheckoutIndexRoute,

@@ -66,7 +66,14 @@ export function BacktrackFooter() {
                   {items.map(({ label, to }) => (
                     <li key={label}>
                       <button
-                        onClick={() => navigate({ to })}
+                        onClick={() => {
+                          if (to === '/message') {
+                            // Temporarily disabled:
+                            // navigate({ to })
+                          } else {
+                            navigate({ to })
+                          }
+                        }}
                         className="text-sm text-[#555] hover:text-[#111] font-medium
                                    transition-colors duration-150 cursor-pointer text-left"
                       >
