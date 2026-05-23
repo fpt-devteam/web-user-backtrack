@@ -1,10 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
-import { Clock, Package, Search, MapPin, ChevronRight, X } from 'lucide-react'
+import { Clock, Package, Search, ChevronRight, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Pagination } from '@/components/ui/pagination'
 import type { Variants } from 'framer-motion'
+import { useGetConversations } from '@/hooks/use-message'
+import { Skeleton } from '@/components/ui/skeleton'
+
 
 export interface ClaimRequestItem {
   id: string
@@ -13,12 +16,18 @@ export interface ClaimRequestItem {
   color: string
   lostLocation: string
   createdAt: string
-  status: 'pending' | 'found'
+  updatedAt?: string
+  status: 'submitted' | 'searching' | 'found' | 'pending'
   type: 'in-inventory' | 'non-inventory'
   images: string[]
   reporterName: string
   reporterPhone: string
   reporterEmail: string
+  conversationId?: string
+  category?: string
+  subCategoryId?: string
+  eventTime?: string | Date | null
+  orgLogoUrl?: string
 }
 
 export const Route = createFileRoute('/claim-requests/')(
@@ -46,7 +55,7 @@ export const MOCK_REQUESTS: ClaimRequestItem[] = [
     color: 'Black',
     lostLocation: 'Building A, Floor 3',
     createdAt: '2026-05-15T10:30:00Z',
-    status: 'pending' as const,
+    status: 'submitted' as const,
     type: 'in-inventory' as const,
     images: [
       'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=200&h=200&fit=crop',
@@ -55,6 +64,7 @@ export const MOCK_REQUESTS: ClaimRequestItem[] = [
     reporterName: 'Nguyen Van An',
     reporterPhone: '0912 345 678',
     reporterEmail: 'an.nguyen@example.com',
+    conversationId: 'mock-uuid-for-testing', // Replace with a real conversation UUID to test real chat integration
   },
   {
     id: '2',
@@ -63,7 +73,7 @@ export const MOCK_REQUESTS: ClaimRequestItem[] = [
     color: 'White',
     lostLocation: 'Library, Study Room B2',
     createdAt: '2026-05-14T14:20:00Z',
-    status: 'pending' as const,
+    status: 'searching' as const,
     type: 'non-inventory' as const,
     images: [
       'https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=200&h=200&fit=crop',
@@ -95,7 +105,7 @@ export const MOCK_REQUESTS: ClaimRequestItem[] = [
     color: 'Blue / White',
     lostLocation: 'Parking Lot B',
     createdAt: '2026-05-12T16:45:00Z',
-    status: 'pending' as const,
+    status: 'submitted' as const,
     type: 'non-inventory' as const,
     images: [
       'https://images.unsplash.com/photo-1578507065211-1c4e99a5fd24?w=200&h=200&fit=crop',
@@ -137,24 +147,33 @@ function formatDate(iso: string) {
   })
 }
 
-function StatusBadge({ status }: { status: 'pending' | 'found' }) {
-  const isPending = status === 'pending'
+function StatusBadge({ status }: { status: 'submitted' | 'searching' | 'found' | 'pending' }) {
+  const isFound = status === 'found'
+  const isSearching = status === 'searching'
+  const isSubmitted = status === 'submitted'
+
+  if (isFound) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-600">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        Item Found
+      </span>
+    )
+  }
+
+  if (isSearching) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide bg-blue-50 text-blue-600">
+        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+        Searching
+      </span>
+    )
+  }
+
   return (
-    <span
-      className={[
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide',
-        isPending
-          ? 'bg-amber-50 text-amber-600'
-          : 'bg-emerald-50 text-emerald-600',
-      ].join(' ')}
-    >
-      <span
-        className={[
-          'w-1.5 h-1.5 rounded-full',
-          isPending ? 'bg-amber-400' : 'bg-emerald-400',
-        ].join(' ')}
-      />
-      {isPending ? 'Pending' : 'Found'}
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide bg-amber-50 text-amber-600">
+      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+      {isSubmitted ? 'Submitted' : 'Pending'}
     </span>
   )
 }
@@ -166,15 +185,60 @@ function ClaimRequestsPage() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'submitted' | 'searching' | 'found'>('all')
   const [currentPage, setCurrentPage] = useState(1)
 
   const ITEMS_PER_PAGE = 10
 
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetConversations()
+
+  const conversations = data?.pages.flatMap((p) => p.items ?? []).filter(Boolean) ?? []
+
+  // Filter for support conversations
+  const supportConversations = conversations.filter(
+    (c) => c.type === 'support'
+  )
+
+  const mappedRequests: ClaimRequestItem[] = supportConversations.map((c) => {
+    const sfd = c.supportFormData
+    return {
+      id: c.conversationId,
+      itemName: sfd?.itemName || 'N/A',
+      description: c.lastMessage?.content || 'N/A',
+      color: sfd?.color ?? '',
+      lostLocation: sfd?.lostLocation ?? '',
+      createdAt: c.createdAt ?? c.updatedAt ?? new Date().toISOString(),
+      updatedAt: c.updatedAt ?? c.createdAt ?? new Date().toISOString(),
+      status: (
+        c.status === 'closed'
+          ? 'found'
+          : c.status === 'in_progress'
+            ? 'searching'
+            : c.status === 'queue'
+              ? 'submitted'
+              : 'submitted'
+      ) as 'submitted' | 'searching' | 'found' | 'pending',
+      type: (sfd?.postId ? 'in-inventory' : 'non-inventory') as 'in-inventory' | 'non-inventory',
+      images: sfd?.imageUrls ?? [],
+      reporterName: c.partner?.displayName ?? '',
+      reporterPhone: '0912 345 678',
+      reporterEmail: c.partner?.email || 'an.nguyen@example.com',
+      conversationId: c.conversationId,
+      category: sfd?.category,
+      subCategoryId: sfd?.subCategoryId,
+      eventTime: sfd?.eventTime,
+      orgLogoUrl: c.orgLogoUrl ?? undefined,
+    }
+  })
+
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, sortBy])
+  }, [searchQuery, sortBy, statusFilter])
 
-  const filteredRequests = MOCK_REQUESTS.filter((req) => {
+  const filteredRequests = mappedRequests.filter((req) => {
+    if (statusFilter !== 'all' && req.status !== statusFilter) {
+      return false
+    }
     const query = searchQuery.trim().toLowerCase()
     if (!query) return true
     return (
@@ -232,6 +296,32 @@ function ClaimRequestsPage() {
               )}
             </div>
 
+            {/* Status Filter Dropdown */}
+            <div className="w-full sm:w-56 shrink-0">
+              <Select value={statusFilter} onValueChange={(value: 'all' | 'submitted' | 'searching' | 'found') => setStatusFilter(value)}>
+                <SelectTrigger className="w-full bg-white rounded-2xl border border-[#E5E7EB] h-[46px] px-4 text-[13px] font-bold text-[#111] shadow-[0_1px_4px_rgba(0,0,0,0.02)] hover:bg-[#F9FAFB] transition-colors cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#6B7280] font-normal">Status:</span>
+                    <SelectValue placeholder="All Statuses" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg">
+                  <SelectItem value="all" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
+                    All
+                  </SelectItem>
+                  <SelectItem value="submitted" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
+                    Submitted
+                  </SelectItem>
+                  <SelectItem value="searching" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
+                    Searching
+                  </SelectItem>
+                  <SelectItem value="found" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
+                    Found
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Sort Dropdown */}
             <div className="w-full sm:w-56 shrink-0">
               <Select value={sortBy} onValueChange={(value: 'newest' | 'oldest') => setSortBy(value)}>
@@ -254,72 +344,106 @@ function ClaimRequestsPage() {
           </motion.div>
 
           {/* Request cards */}
-          <div className="flex flex-col gap-4">
-            {paginatedRequests.map((req, i) => (
-              <motion.div
-                key={req.id}
-                custom={i + 1}
-                variants={fadeUp}
-                initial="hidden"
-                animate="show"
-                onClick={() => navigate({ to: '/claim-requests/$id', params: { id: req.id } })}
-                className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden cursor-pointer
-                           shadow-[0_2px_12px_rgba(0,0,0,0.04)]
-                           hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-shadow duration-200"
-              >
-                <div className="p-5 flex gap-5 items-center">
-                  {/* Left: Image Container */}
-                  <div className="w-[100px] h-[100px] rounded-2xl bg-[#F3F4F6] overflow-hidden shrink-0 flex items-center justify-center border border-[#E5E7EB]">
-                    {req.images && req.images.length > 0 ? (
-                      <img
-                        src={req.images[0]}
-                        alt={req.itemName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Package className="w-8 h-8 text-[#9CA3AF]" strokeWidth={1.5} />
-                    )}
+          {isLoading ? (
+            <div className="flex flex-col gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-3xl border border-[#E5E7EB] p-5 flex gap-5 items-center">
+                  <Skeleton className="w-[100px] h-[100px] rounded-2xl shrink-0" />
+                  <div className="flex-1 py-1 flex flex-col gap-2">
+                    <div className="flex justify-between items-start">
+                      <Skeleton className="h-5 w-1/3 rounded" />
+                      <Skeleton className="h-5 w-16 rounded" />
+                    </div>
+                    <Skeleton className="h-4 w-3/4 rounded" />
+                    <div className="flex gap-4 mt-2">
+                      <Skeleton className="h-3 w-24 rounded" />
+                      <Skeleton className="h-3 w-32 rounded" />
+                    </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {paginatedRequests.map((req, i) => (
+                <motion.div
+                  key={req.id}
+                  custom={i + 1}
+                  variants={fadeUp}
+                  initial="hidden"
+                  animate="show"
+                  onClick={() => navigate({ to: '/claim-requests/$id', params: { id: req.id } })}
+                  className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden cursor-pointer
+                             shadow-[0_2px_12px_rgba(0,0,0,0.04)]
+                             hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-shadow duration-200"
+                >
+                  <div className="p-5 flex gap-5 items-center">
+                    {/* Left: Image Container */}
+                    <div className="w-[100px] h-[100px] rounded-2xl bg-[#F3F4F6] overflow-hidden shrink-0 flex items-center justify-center border border-[#E5E7EB]">
+                      {req.images && req.images.length > 0 ? (
+                        <img
+                          src={req.images[0]}
+                          alt={req.itemName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Package className="w-8 h-8 text-[#9CA3AF]" strokeWidth={1.5} />
+                      )}
+                    </div>
 
-                  {/* Middle: Content */}
-                  <div className="flex-1 min-w-0 py-1">
-                    {/* Top row: title + status */}
-                    <div className="flex items-start justify-between gap-3 mb-1.5">
-                      <h3 className="text-[15px] font-bold text-[#111] truncate">{req.itemName}</h3>
-                      <div className="shrink-0">
-                        <StatusBadge status={req.status} />
+                    {/* Middle: Content */}
+                    <div className="flex-1 min-w-0 py-1">
+                      {/* Top row: title + status */}
+                      <div className="flex items-start justify-between gap-3 mb-1.5">
+                        <h3 className="text-[15px] font-bold text-[#111] truncate">{req.itemName}</h3>
+                        <div className="shrink-0">
+                          <StatusBadge status={req.status} />
+                        </div>
+                      </div>
+
+                      {/* Body */}
+                      <p className="text-[13px] text-[#6B7280] leading-relaxed mb-3 line-clamp-2">
+                        {req.description}
+                      </p>
+
+                      {/* Footer meta */}
+                      <div className="flex items-center gap-4 text-[12px] text-[#9CA3AF]">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
+                          {formatDate(req.updatedAt ?? req.createdAt)}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Body */}
-                    <p className="text-[13px] text-[#6B7280] leading-relaxed mb-3 line-clamp-2">
-                      {req.description}
-                    </p>
-
-                    {/* Footer meta */}
-                    <div className="flex items-center gap-4 text-[12px] text-[#9CA3AF]">
-                      <span className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5" />
-                        {req.lostLocation}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5" />
-                        {formatDate(req.createdAt)}
-                      </span>
+                    {/* Right: Chevron Arrow */}
+                    <div className="shrink-0 pl-1">
+                      <ChevronRight className="w-5 h-5 text-[#9CA3AF]" strokeWidth={1.8} />
                     </div>
                   </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
 
-                  {/* Right: Chevron Arrow */}
-                  <div className="shrink-0 pl-1">
-                    <ChevronRight className="w-5 h-5 text-[#9CA3AF]" strokeWidth={1.8} />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {/* Load more button */}
+          {!isLoading && hasNextPage && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="px-6 py-3 rounded-2xl text-xs font-bold bg-white border border-[#E5E7EB] text-[#111] hover:bg-[#F9FAFB] active:scale-[0.98] shadow-sm transition-all cursor-pointer flex items-center gap-2"
+              >
+                {isFetchingNextPage ? (
+                  <>Loading...</>
+                ) : (
+                  <>Load more claim requests</>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* Empty state */}
-          {sortedRequests.length === 0 && (
+          {!isLoading && sortedRequests.length === 0 && (
             <motion.div
               custom={1} variants={fadeUp} initial="hidden" animate="show"
               className="flex flex-col items-center justify-center py-20 text-center"

@@ -45,7 +45,11 @@ export function SendMessageSheet({ item, org, onClose }: {
   const isNameLocked = !!existingName
 
   const [displayName, setDisplayName] = useState(existingName)
-  const [message, setMessage] = useState('Chào ban quản lý, em là chủ nhân của món đồ này. Em có thể đến phòng ban nào và vào khung giờ nào để xin nhận lại đồ ạ?')
+  const [message, setMessage] = useState(
+    item
+      ? 'Chào ban quản lý, em là chủ nhân của món đồ này. Em có thể đến phòng ban nào và vào khung giờ nào để xin nhận lại đồ ạ?'
+      : 'Dạ em chào Ban quản lý. Em có làm thất lạc món đồ này ở khu vực của mình. Nếu có ai nhặt được và gửi lại, nhờ Ban quản lý liên hệ giúp em với được không ạ? Em xin chân thành cảm ơn!'
+  )
   const [isPending, setIsPending] = useState(false)
 
   const [itemName, setItemName] = useState<string>(item?.postTitle ?? item?.itemName ?? '')
@@ -99,53 +103,47 @@ export function SendMessageSheet({ item, org, onClose }: {
     lostLocation.trim() !== ''
 
   async function handleSubmit() {
-    // Temporarily disabled:
-    // if (!isFormValid) return
-    // setIsPending(true)
-    // try {
-    //   if (isAnonymous) {
-    //     await createUser()
-    //     if (!existingName) await userService.updateMe({ displayName: displayName.trim() })
-    //     await syncProfile()
-    //   }
-    //
-    //   let eventTime: Date | null = null
-    //   if (lostDate) {
-    //     eventTime = new Date(lostTime ? `${lostDate}T${lostTime}` : `${lostDate}T00:00`)
-    //   }
-    //
-    //   const uploadedUrls = evidenceFiles.length
-    //     ? await Promise.all(evidenceFiles.map((f) => messageService.uploadChatImage(f)))
-    //     : null
-    //
-    //   const supportFormData: SupportFormData = {
-    //     postId: item?.id ?? (null as any),
-    //     category: item?.category ?? '',
-    //     subCategoryId: item?.subcategoryId ?? '',
-    //     itemName: itemName.trim(),
-    //     color: color.trim(),
-    //     additionalDetails: additionalDetails.trim() || null,
-    //     imageUrls: uploadedUrls,
-    //     lostLocation: lostLocation.trim() || null,
-    //     eventTime,
-    //   }
-    //   const conversation = await messageService.createSupportConversation(org.id, supportFormData)
-    //   const convId = conversation.conversationId
-    //   if (!convId) throw new Error('No conversation ID returned from server')
-    //   sendMessage({ conversationId: convId, content: message, isSupport: true })
-    //   navigate({
-    //     to: '/message',
-    //     search: {
-    //       selectedId: convId,
-    //       isSupport: true,
-    //       fallbackName: org.name,
-    //       ...(org.logoUrl ? { fallbackAvatarUrl: org.logoUrl } : {}),
-    //     } as never,
-    //   })
-    // } catch (err) {
-    //   toast.fromError(err)
-    //   setIsPending(false)
-    // }
+    if (!isFormValid) return
+    setIsPending(true)
+    try {
+      if (isAnonymous) {
+        await createUser()
+        if (!existingName) await userService.updateMe({ displayName: displayName.trim() })
+        await syncProfile()
+      }
+
+      let eventTime: Date | null = null
+      if (lostDate) {
+        eventTime = new Date(lostTime ? `${lostDate}T${lostTime}` : `${lostDate}T00:00`)
+      }
+
+      const uploadedUrls = evidenceFiles.length
+        ? await Promise.all(evidenceFiles.map((f) => messageService.uploadChatImage(f)))
+        : null
+
+      const supportFormData: SupportFormData = {
+        postId: item?.id ?? (null as any),
+        category: item?.category ?? '',
+        subCategoryId: item?.subcategoryId ?? '',
+        itemName: itemName.trim(),
+        color: color.trim(),
+        additionalDetails: additionalDetails.trim() || null,
+        imageUrls: uploadedUrls,
+        lostLocation: lostLocation.trim() || null,
+        eventTime,
+      }
+      const conversation = await messageService.createSupportConversation(org.id, supportFormData)
+      const convId = conversation.conversationId
+      if (!convId) throw new Error('No conversation ID returned from server')
+      sendMessage({ conversationId: convId, content: message, isSupport: true })
+      navigate({
+        to: '/claim-requests/$id',
+        params: { id: convId },
+      })
+    } catch (err) {
+      toast.fromError(err)
+      setIsPending(false)
+    }
   }
 
   return (

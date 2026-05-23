@@ -1,10 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
-  ArrowLeft,
   Check,
   Clock,
   Mail,
-  MapPin,
   MoreVertical,
   Package,
   Palette,
@@ -15,10 +13,20 @@ import {
   User,
   X,
   FileText,
+  Tag,
 } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { MOCK_REQUESTS } from '../index'
 import type { ClaimRequestItem } from '../index'
+import { ConversationHeader } from '@/components/message/conversation-detail/conversation-header'
+import { MessageList } from '@/components/message/conversation-detail/message-list'
+import { MessageInput } from '@/components/message/conversation-detail/message-input'
+import { useGetConversationById } from '@/hooks/use-message'
+import { Spinner } from '@/components/ui/spinner'
+import { useAuth } from '@/hooks/use-auth'
+import { useGetSubcategories } from '@/hooks/use-subcategory'
+
+
 
 export const Route = createFileRoute('/claim-requests/$id/')({
   component: ClaimRequestDetailPage,
@@ -28,17 +36,14 @@ export const Route = createFileRoute('/claim-requests/$id/')({
 const STEPS = [
   { key: 'submitted', label: 'Request Submitted', desc: 'Your claim request has been submitted successfully.' },
   { key: 'reviewing', label: 'Under Review', desc: 'The organization is reviewing your request.' },
-  { key: 'searching', label: 'Searching', desc: 'Staff is actively looking for your item.' },
   { key: 'found', label: 'Item Found', desc: 'Your item has been found! Please come to collect it.' },
 ] as const
 
-function getCompletedSteps(status: 'pending' | 'found', type: 'in-inventory' | 'non-inventory'): number {
-  if (type === 'in-inventory') {
-    // 3 steps total: submitted, reviewing, found
-    return status === 'found' ? 3 : 2
-  }
-  // 4 steps total: submitted, reviewing, searching, found
-  return status === 'found' ? 4 : 2
+function getCompletedSteps(
+  status: 'submitted' | 'searching' | 'found' | 'pending',
+  type: 'in-inventory' | 'non-inventory'
+): number {
+  return status === 'found' ? 3 : 1
 }
 
 /* ── helpers ─────────────────────────────────────────────────── */
@@ -164,8 +169,46 @@ function getInitialChatMessages(request: ClaimRequestItem): ChatMessage[] {
 function ClaimRequestDetailPage() {
   const { id } = Route.useParams()
   const navigate = useNavigate()
+  const { profile } = useAuth()
 
-  const request = MOCK_REQUESTS.find((r) => r.id === id)
+  const mockRequest = MOCK_REQUESTS.find((r) => r.id === id)
+  const { data: conversation, isLoading } = useGetConversationById(id, !mockRequest)
+
+  let request = mockRequest
+  if (!mockRequest && conversation) {
+    const sfd = conversation.supportFormData
+    request = {
+      id: conversation.conversationId,
+      itemName: sfd?.itemName || 'N/A',
+      description: sfd?.additionalDetails || 'N/A',
+      color: sfd?.color ?? '',
+      lostLocation: sfd?.lostLocation ?? '',
+      createdAt: conversation.createdAt ?? conversation.updatedAt ?? new Date().toISOString(),
+      updatedAt: conversation.updatedAt ?? conversation.createdAt ?? new Date().toISOString(),
+      status: (
+        conversation.status === 'closed'
+          ? 'found'
+          : conversation.status === 'in_progress'
+            ? 'searching'
+            : conversation.status === 'queue'
+              ? 'submitted'
+              : 'submitted'
+      ) as 'submitted' | 'searching' | 'found' | 'pending',
+      type: (sfd?.postId ? 'in-inventory' : 'non-inventory') as 'in-inventory' | 'non-inventory',
+      images: sfd?.imageUrls ?? [],
+      reporterName: conversation.partner?.displayName ?? profile?.displayName ?? 'You',
+      reporterPhone: profile?.phone || '0912 345 678',
+      reporterEmail: conversation.partner?.email || profile?.email || 'an.nguyen@example.com',
+      conversationId: conversation.conversationId,
+      category: sfd?.category,
+      subCategoryId: sfd?.subCategoryId,
+      eventTime: sfd?.eventTime,
+      orgLogoUrl: conversation.orgLogoUrl ?? undefined,
+    }
+  }
+
+  const { data: subcategories = [] } = useGetSubcategories(request?.category || undefined)
+  const subcategoryName = subcategories.find((s) => s.id === request?.subCategoryId)?.name
 
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputVal, setInputVal] = useState('')
@@ -182,17 +225,25 @@ function ClaimRequestDetailPage() {
     }
   }, [request])
 
-  if (!request) {
-    useEffect(() => {
+  useEffect(() => {
+    if (!isLoading && !request) {
       navigate({ to: '/claim-requests' })
-    }, [])
+    }
+  }, [isLoading, request, navigate])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-gray-50">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
+
+  if (!request) {
     return null
   }
 
-  const filteredSteps = STEPS.filter(s => {
-    if (request.type === 'in-inventory' && s.key === 'searching') return false
-    return true
-  })
+  const filteredSteps = STEPS
 
   const completedSteps = getCompletedSteps(request.status, request.type)
 
@@ -287,16 +338,7 @@ function ClaimRequestDetailPage() {
   return (
     <div className="flex flex-col h-full bg-[#F9FAFB] py-3 pr-3 pl-10 gap-3 overflow-hidden">
 
-      {/* Back Button */}
-      <div className="shrink-0 pl-1">
-        <button
-          onClick={() => navigate({ to: '/claim-requests' })}
-          className="flex items-center gap-2 text-xs font-bold text-[#9CA3AF] hover:text-black transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Claim Requests
-        </button>
-      </div>
+
 
       {/* Main Content Area */}
       <div className="flex-1 flex gap-3 min-h-0">
@@ -307,31 +349,40 @@ function ClaimRequestDetailPage() {
           {/* ── Header Card ── */}
           <div className="bg-white p-6 rounded-2xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex items-center justify-between">
             <div className="flex items-center gap-4 min-w-0">
-              <div className="w-14 h-14 rounded-2xl bg-[#F3F4F6] border border-gray-100 flex items-center justify-center shrink-0">
-                <Package className="w-7 h-7 text-[#9CA3AF]" strokeWidth={1.8} />
-              </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-[18px] font-black text-[#111] tracking-tight">{request.itemName}</h2>
                   <span
                     className={[
                       'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border',
-                      request.status === 'pending'
-                        ? 'bg-amber-50 text-amber-600 border-amber-100/50'
-                        : 'bg-emerald-50 text-emerald-600 border-emerald-100/50',
+                      request.status === 'found'
+                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50'
+                        : request.status === 'searching'
+                        ? 'bg-blue-50 text-blue-600 border-blue-100/50'
+                        : 'bg-amber-50 text-amber-600 border-amber-100/50',
                     ].join(' ')}
                   >
                     <span
                       className={[
                         'w-1.5 h-1.5 rounded-full',
-                        request.status === 'pending' ? 'bg-amber-400' : 'bg-emerald-400',
+                        request.status === 'found'
+                          ? 'bg-emerald-400'
+                          : request.status === 'searching'
+                          ? 'bg-blue-400 animate-pulse'
+                          : 'bg-amber-400',
                       ].join(' ')}
                     />
-                    {request.status}
+                    {request.status === 'found'
+                      ? 'Item Found'
+                      : request.status === 'searching'
+                      ? 'Searching'
+                      : request.status === 'submitted'
+                      ? 'Submitted'
+                      : 'Pending'}
                   </span>
                 </div>
                 <p className="text-[12px] text-[#9CA3AF] mt-1.5 font-medium">
-                  Request ID: #LR-2026-0515-000{request.id} &nbsp;•&nbsp; Submitted on {formatDate(request.createdAt)}
+                  Last updated {formatDate(request.updatedAt ?? request.createdAt)}
                 </p>
               </div>
             </div>
@@ -452,31 +503,46 @@ function ClaimRequestDetailPage() {
                 <p className="text-[13px] text-black leading-relaxed flex-1">{request.description}</p>
               </div>
 
+              {/* Category */}
+              {request.category && (
+                <div className="flex items-center gap-4 py-3.5">
+                  <div className="flex items-center gap-2.5 w-44 shrink-0 text-[#6B7280]">
+                    <Tag className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
+                    <span className="text-[13px] font-semibold">Category</span>
+                  </div>
+                  <p className="text-[13px] text-black font-medium flex-1">
+                    {subcategoryName ? `${request.category} (${subcategoryName})` : request.category}
+                  </p>
+                </div>
+              )}
+
               {/* Color */}
               <div className="flex items-center gap-4 py-3.5">
                 <div className="flex items-center gap-2.5 w-44 shrink-0 text-[#6B7280]">
                   <Palette className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
                   <span className="text-[13px] font-semibold">Color</span>
                 </div>
-                <p className="text-[13px] text-black font-medium flex-1">{request.color}</p>
+                <p className="text-[13px] text-black font-medium flex-1">{request.color || 'N/A'}</p>
               </div>
 
-              {/* Location */}
-              <div className="flex items-center gap-4 py-3.5">
-                <div className="flex items-center gap-2.5 w-44 shrink-0 text-[#6B7280]">
-                  <MapPin className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
-                  <span className="text-[13px] font-semibold">Claim Location</span>
+              {/* Time Lost / Event Time */}
+              {request.eventTime && (
+                <div className="flex items-center gap-4 py-3.5">
+                  <div className="flex items-center gap-2.5 w-44 shrink-0 text-[#6B7280]">
+                    <Clock className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
+                    <span className="text-[13px] font-semibold">Time Lost</span>
+                  </div>
+                  <p className="text-[13px] text-black font-medium flex-1">{formatDate(request.eventTime.toString())}</p>
                 </div>
-                <p className="text-[13px] text-black font-medium flex-1">{request.lostLocation}</p>
-              </div>
+              )}
 
               {/* Submitted time */}
               <div className="flex items-center gap-4 py-3.5 last:pb-0">
                 <div className="flex items-center gap-2.5 w-44 shrink-0 text-[#6B7280]">
                   <Clock className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
-                  <span className="text-[13px] font-semibold">Submitted</span>
+                  <span className="text-[13px] font-semibold">Last Updated</span>
                 </div>
-                <p className="text-[13px] text-black font-medium flex-1">{formatDate(request.createdAt)}</p>
+                <p className="text-[13px] text-black font-medium flex-1">{formatDate(request.updatedAt ?? request.createdAt)}</p>
               </div>
             </div>
           </div>
@@ -520,67 +586,79 @@ function ClaimRequestDetailPage() {
 
         {/* RIGHT COLUMN: Chat Box (1/3 width, full height) */}
         <div className="w-1/3 h-full flex flex-col">
-          <div className="flex-1 bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
-
-            {/* Chat Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-black tracking-tight">Chat</h2>
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/50">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Online
-                </span>
+          {request.conversationId ? (
+            <div className="flex-1 bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
+              <ConversationHeader conversationId={request.conversationId} />
+              <div className="flex-1 min-h-0">
+                <MessageList conversationId={request.conversationId} />
               </div>
-              <button className="w-8 h-8 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-400 hover:text-black transition-colors cursor-pointer">
-                <MoreVertical className="w-4 h-4" />
-              </button>
+              <div className="shrink-0 border-t border-gray-100 bg-white rounded-b-2xl">
+                <MessageInput conversationId={request.conversationId} isSupport={false} />
+              </div>
             </div>
+          ) : (
+            <div className="flex-1 bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
 
-            {/* Chat Logs */}
-            <div className="flex-1 overflow-y-auto autohide-scrollbar px-6 py-4 bg-gray-50/20">
-              {renderChatFeed()}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Chat Input Footer */}
-            <form
-              onSubmit={handleSend}
-              className="p-4 border-t border-gray-100 shrink-0 bg-white"
-            >
-              <div className="flex items-center gap-2.5 bg-gray-50/50 border border-gray-200/80 rounded-2xl px-3 py-1.5 focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
-                <input
-                  type="text"
-                  placeholder="Type your message..."
-                  value={inputVal}
-                  onChange={(e) => setInputVal(e.target.value)}
-                  className="flex-1 min-w-0 bg-transparent py-2 px-1 text-[13px] text-[#111] placeholder-[#9CA3AF] border-0 focus:outline-hidden focus:ring-0"
-                />
-                <button
-                  type="button"
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100/50 transition-colors cursor-pointer"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100/50 transition-colors cursor-pointer"
-                >
-                  <Smile className="w-4 h-4" />
-                </button>
-                <button
-                  type="submit"
-                  disabled={!inputVal.trim()}
-                  className={`h-9 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer select-none active:scale-[0.98]
-                ${inputVal.trim()
-                      ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
-                    }`}
-                >
-                  Send
+              {/* Chat Header */}
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-black text-black tracking-tight">Chat</h2>
+                  <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/50">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Online
+                  </span>
+                </div>
+                <button className="w-8 h-8 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-400 hover:text-black transition-colors cursor-pointer">
+                  <MoreVertical className="w-4 h-4" />
                 </button>
               </div>
-            </form>
-          </div>
+
+              {/* Chat Logs */}
+              <div className="flex-1 overflow-y-auto autohide-scrollbar px-6 py-4 bg-gray-50/20">
+                {renderChatFeed()}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Chat Input Footer */}
+              <form
+                onSubmit={handleSend}
+                className="p-4 border-t border-gray-100 shrink-0 bg-white"
+              >
+                <div className="flex items-center gap-2.5 bg-gray-50/50 border border-gray-200/80 rounded-2xl px-3 py-1.5 focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-all">
+                  <input
+                    type="text"
+                    placeholder="Type your message..."
+                    value={inputVal}
+                    onChange={(e) => setInputVal(e.target.value)}
+                    className="flex-1 min-w-0 bg-transparent py-2 px-1 text-[13px] text-[#111] placeholder-[#9CA3AF] border-0 focus:outline-hidden focus:ring-0"
+                  />
+                  <button
+                    type="button"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100/50 transition-colors cursor-pointer"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100/50 transition-colors cursor-pointer"
+                  >
+                    <Smile className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!inputVal.trim()}
+                    className={`h-9 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer select-none active:scale-[0.98]
+                  ${inputVal.trim()
+                        ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                      }`}
+                  >
+                    Send
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
 
       </div>
