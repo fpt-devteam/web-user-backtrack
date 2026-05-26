@@ -17,6 +17,7 @@ import type { SupportFormData } from '@/types/chat.type'
 import { useAuth } from '@/hooks/use-auth'
 import { useSocket } from '@/hooks/use-socket'
 import { useCreateUser } from '@/hooks/use-user'
+import { useGetSubcategories } from '@/hooks/use-subcategory'
 import { toast } from '@/lib/toast'
 import { messageService } from '@/services/message.service'
 import { userService } from '@/services/user.service'
@@ -44,7 +45,15 @@ export function SendMessageSheet({ item, org, onClose }: {
   const existingName = profile?.displayName?.trim() || firebaseUser?.displayName?.trim() || ''
   const isNameLocked = !!existingName
 
-  const [displayName, setDisplayName] = useState(existingName)
+  const [displayName, setDisplayName] = useState(() => {
+    return existingName || localStorage.getItem('anonymous_displayName') || ''
+  })
+  const [phone, setPhone] = useState(() => {
+    return profile?.phone?.trim() || localStorage.getItem('anonymous_phone') || ''
+  })
+  const [email, setEmail] = useState(() => {
+    return profile?.email?.trim() || firebaseUser?.email?.trim() || localStorage.getItem('anonymous_email') || ''
+  })
   const [message, setMessage] = useState(
     item
       ? 'Chào ban quản lý, em là chủ nhân của món đồ này. Em có thể đến phòng ban nào và vào khung giờ nào để xin nhận lại đồ ạ?'
@@ -61,6 +70,15 @@ export function SendMessageSheet({ item, org, onClose }: {
   const [evidenceFiles, setEvidenceFiles] = useState<Array<File>>([])
   const [evidencePreviews, setEvidencePreviews] = useState<Array<string>>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(item?.category ?? '')
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>(item?.subcategoryId ?? '')
+  const { data: subcategories = [] } = useGetSubcategories(selectedCategory || undefined)
+
+  function handleCategoryChange(val: string) {
+    setSelectedCategory(val)
+    setSelectedSubCategoryId('')
+  }
 
   function handleEvidenceSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
@@ -94,13 +112,19 @@ export function SendMessageSheet({ item, org, onClose }: {
   })()
   const timePillMax = lostDate === todayStr ? maxTimeToday : undefined
 
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+  const isPhoneValid = /^\+?[0-9\s-]{8,20}$/.test(phone.trim())
+
   const isFormValid =
     displayName.trim() !== '' &&
     message.trim() !== '' &&
     itemName.trim() !== '' &&
     color.trim() !== '' &&
     lostDate !== '' &&
-    lostLocation.trim() !== ''
+    lostLocation.trim() !== '' &&
+    isEmailValid &&
+    isPhoneValid &&
+    (item ? true : selectedCategory !== '' && selectedSubCategoryId !== '')
 
   async function handleSubmit() {
     if (!isFormValid) return
@@ -108,9 +132,18 @@ export function SendMessageSheet({ item, org, onClose }: {
     try {
       if (isAnonymous) {
         await createUser()
-        if (!existingName) await userService.updateMe({ displayName: displayName.trim() })
+        // Save display name and phone number to backend profile
+        await userService.updateMe({
+          displayName: displayName.trim(),
+          phone: phone.trim()
+        })
         await syncProfile()
       }
+
+      // Save anonymous user contact info to localStorage for subsequent forms
+      localStorage.setItem('anonymous_displayName', displayName.trim())
+      localStorage.setItem('anonymous_phone', phone.trim())
+      localStorage.setItem('anonymous_email', email.trim())
 
       let eventTime: Date | null = null
       if (lostDate) {
@@ -122,15 +155,18 @@ export function SendMessageSheet({ item, org, onClose }: {
         : null
 
       const supportFormData: SupportFormData = {
-        postId: item?.id ?? (null as any),
-        category: item?.category ?? '',
-        subCategoryId: item?.subcategoryId ?? '',
+        postId: item?.id ?? undefined,
+        category: item?.category ?? selectedCategory,
+        subCategoryId: item?.subcategoryId ?? selectedSubCategoryId,
         itemName: itemName.trim(),
         color: color.trim(),
         additionalDetails: additionalDetails.trim() || null,
         imageUrls: uploadedUrls,
         lostLocation: lostLocation.trim() || null,
         eventTime,
+        contactName: displayName.trim(),
+        contactPhone: phone.trim(),
+        contactEmail: email.trim(),
       }
       const conversation = await messageService.createSupportConversation(org.id, supportFormData)
       const convId = conversation.conversationId
@@ -260,6 +296,36 @@ export function SendMessageSheet({ item, org, onClose }: {
                 </div>
               </div>
 
+              {/* Email & Phone side-by-side */}
+              <div className="mb-3 grid grid-cols-2 gap-2">
+                <div>
+                  <FieldLabel label="Email" required />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="e.g. name@example.com"
+                      className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E5E7EB] text-[13px] text-[#111] bg-[#F9FAFB] placeholder:text-[#B0B7C3] focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <FieldLabel label="Phone" required />
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none" />
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g. 0912345678"
+                      className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E5E7EB] text-[13px] text-[#111] bg-[#F9FAFB] placeholder:text-[#B0B7C3] focus:outline-none focus:ring-2 focus:ring-brand-ring focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Item name + Color side by side */}
               <div className="mb-3 grid grid-cols-2 gap-2">
                 <div>
@@ -283,6 +349,42 @@ export function SendMessageSheet({ item, org, onClose }: {
                   />
                 </div>
               </div>
+
+              {/* Category & Subcategory selection (Only when starting general claim request without selecting an item) */}
+              {!item && (
+                <div className="mb-3 grid grid-cols-2 gap-2">
+                  <div>
+                    <FieldLabel label="Category" required />
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="">Select category</option>
+                      <option value="PersonalBelongings">Personal belongings</option>
+                      <option value="Cards">Cards</option>
+                      <option value="Electronics">Electronics</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+                  <div>
+                    <FieldLabel label="Subcategory" required />
+                    <select
+                      value={selectedSubCategoryId}
+                      onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                      disabled={!selectedCategory}
+                      className={inputClass}
+                    >
+                      <option value="">Select subcategory</option>
+                      {subcategories.map((sub) => (
+                        <option key={sub.id} value={sub.id}>
+                          {sub.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
 
               {/* Date + Time side by side */}
               <div className="mb-3">

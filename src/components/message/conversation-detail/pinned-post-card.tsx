@@ -1,21 +1,15 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  CalendarClock,
   ChevronLeft,
   ChevronRight,
-  MapPin,
   Package,
   PackageSearch,
-  Palette,
   Pin,
-  StickyNote,
-  Tag,
   X,
 } from 'lucide-react'
 import { useState } from 'react'
 import type { ElementType } from 'react'
 import { useGetPost } from '@/hooks/use-post'
-import { useGetSubcategories } from '@/hooks/use-subcategory'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { SupportFormData } from '@/types/chat.type'
 import QRCode from 'react-qr-code'
@@ -153,10 +147,8 @@ function HeroCarousel({ images, title, onClose }: {
 }
 
 export function PinnedPostCard({ supportFormData, orgSlug }: PinnedPostCardProps) {
-  const { data: post, isLoading } = useGetPost(supportFormData.postId)
+  const { data: post, isLoading } = useGetPost(supportFormData.postId ?? '')
   const [showPopup, setShowPopup] = useState(false)
-  const { data: subcategories = [] } = useGetSubcategories(supportFormData.category || undefined)
-  const subcategoryName = subcategories.find(s => s.id === supportFormData.subCategoryId)?.name
   const staffItemUrl =
     orgSlug?.trim() && supportFormData.postId
       ? `https://backtrack-console.vercel.app/console/${orgSlug}/staff/item/${supportFormData.postId}`
@@ -260,28 +252,6 @@ export function PinnedPostCard({ supportFormData, orgSlug }: PinnedPostCardProps
                       </p>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <DetailCard icon={Tag} label="Category" value={supportFormData.category} />
-                    {subcategoryName && (
-                      <DetailCard icon={Tag} label="Subcategory" value={subcategoryName} />
-                    )}
-                  </div>
-
-                  <DetailCard icon={Palette} label="Color" value={supportFormData.color} />
-
-                  {supportFormData.lostLocation && (
-                    <DetailCard icon={MapPin} label="Lost location" value={supportFormData.lostLocation} />
-                  )}
-
-                  {eventTimeStr && (
-                    <DetailCard icon={CalendarClock} label="Date & time of loss" value={eventTimeStr} />
-                  )}
-
-                  {supportFormData.additionalDetails && (
-                    <DetailCard icon={StickyNote} label="Additional details" value={supportFormData.additionalDetails} />
-                  )}
-
                 </div>
               </div>
             </motion.div>

@@ -53,7 +53,7 @@ export interface Conversation {
 }
 
 export interface SupportFormData {
-  postId: string
+  postId?: string | null
   category: string
   subCategoryId: string
   itemName: string
@@ -62,6 +62,9 @@ export interface SupportFormData {
   imageUrls: Array<string> | null
   lostLocation: string | null
   eventTime: Date | null
+  contactName?: string | null
+  contactPhone?: string | null
+  contactEmail?: string | null
 }
 
 export interface CreateConversationRequest {
