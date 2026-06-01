@@ -497,7 +497,7 @@ export function SendMessageSheet({ item, org, onClose }: {
               : (
                 <>
                   <Send className="w-4 h-4" />
-                  Send message
+                  Send claim request
                 </>
               )}
           </button>

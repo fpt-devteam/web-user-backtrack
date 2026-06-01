@@ -41,9 +41,15 @@ export interface Conversation {
   /** ID of the linked post/item — backend may return as postId or itemId */
   supportFormData?: SupportFormData | null;
   itemId?: string | null;
-  /** "queue" | "active" | "resolved" | null */
+  /** "queue" | "in_progress" | "in_verified" | "closed" | null */
   status?: string | null;
   assignedStaffId?: string | null;
+  /** When the claim was first picked up by staff (entered "In Review") */
+  firstAssignedAt?: string | null;
+  /** When the item was verified as a match */
+  verifiedAt?: string | null;
+  /** When the claim was resolved / closed */
+  resolvedAt?: string | null;
   /** null for "support" conversations */
   partner?: Partner | null;
   lastMessage?: LastMessage | null;

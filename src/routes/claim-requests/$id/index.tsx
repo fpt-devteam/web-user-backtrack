@@ -25,6 +25,14 @@ import { useGetConversationById } from '@/hooks/use-message'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/use-auth'
 import { useGetSubcategories } from '@/hooks/use-subcategory'
+import {
+  normalizeStatus,
+  STATUS_BADGE,
+  STATUS_DOT,
+  STATUS_LABEL,
+  STATUS_PULSE,
+} from '@/components/claim-requests/claim.constants'
+import type { ClaimStatus } from '@/components/claim-requests/claim.constants'
 
 
 
@@ -32,18 +40,29 @@ export const Route = createFileRoute('/claim-requests/$id/')({
   component: ClaimRequestDetailPage,
 })
 
-/* ── progress steps ─────────────────────────────────────────── */
+/* ── progress steps (the 4 claim stages) ─────────────────────── */
 const STEPS = [
-  { key: 'submitted', label: 'Request Submitted', desc: 'Your claim request has been submitted successfully.' },
-  { key: 'reviewing', label: 'Under Review', desc: 'The organization is reviewing your request.' },
-  { key: 'found', label: 'Item Found', desc: 'Your item has been found! Please come to collect it.' },
+  { key: 'queue',       label: 'Request Submitted', desc: 'Your claim request has been submitted successfully.' },
+  { key: 'in_progress', label: 'Under Review',      desc: 'The organization is reviewing your request.' },
+  { key: 'in_verified', label: 'Verified',          desc: 'Your item has been verified as a match.' },
+  { key: 'closed',      label: 'Resolved',          desc: 'Your claim is resolved — the item has been returned.' },
 ] as const
 
-function getCompletedSteps(
-  status: 'submitted' | 'searching' | 'found' | 'pending',
-  type: 'in-inventory' | 'non-inventory'
-): number {
-  return status === 'found' ? 3 : 1
+/** How many steps are fully completed for a given status (the rest are upcoming). */
+const STEP_PROGRESS: Record<ClaimStatus, number> = {
+  queue:       1,
+  in_progress: 2,
+  in_verified: 3,
+  closed:      4,
+}
+
+/** Map the legacy mock status onto the canonical 4-stage claim status. */
+function legacyToClaimStatus(status: ClaimRequestItem['status']): ClaimStatus {
+  switch (status) {
+    case 'searching': return 'in_progress'
+    case 'found':     return 'in_verified'
+    default:          return 'queue'
+  }
 }
 
 /* ── helpers ─────────────────────────────────────────────────── */
@@ -207,6 +226,10 @@ function ClaimRequestDetailPage() {
     }
   }
 
+  const claimStatus: ClaimStatus = mockRequest
+    ? legacyToClaimStatus(mockRequest.status)
+    : normalizeStatus(conversation?.status)
+
   const { data: subcategories = [] } = useGetSubcategories(request?.category || undefined)
   const subcategoryName = subcategories.find((s) => s.id === request?.subCategoryId)?.name
 
@@ -245,16 +268,16 @@ function ClaimRequestDetailPage() {
 
   const filteredSteps = STEPS
 
-  const completedSteps = getCompletedSteps(request.status, request.type)
+  const completedSteps = STEP_PROGRESS[claimStatus]
 
-  const getStepTime = (idx: number) => {
-    const base = new Date(request.createdAt)
-    if (idx === 0) return base
-    if (idx === 1) return new Date(base.getTime() + 1000 * 60 * 60 * 2) // +2h
-    if (idx === 2) return new Date(base.getTime() + 1000 * 60 * 60 * 24) // +1d
-    if (idx === 3) return new Date(base.getTime() + 1000 * 60 * 60 * 48) // +2d
-    return base
-  }
+  // Real per-step timestamps: Submitted, In Review, Verified, Resolved.
+  // A step shows its time only once that timestamp exists (e.g. verifiedAt may be null).
+  const stepTimes: Array<string | null | undefined> = [
+    conversation?.createdAt ?? request.createdAt,
+    conversation?.firstAssignedAt,
+    conversation?.verifiedAt,
+    conversation?.resolvedAt,
+  ]
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
@@ -353,32 +376,12 @@ function ClaimRequestDetailPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-[18px] font-black text-[#111] tracking-tight">{request.itemName}</h2>
                   <span
-                    className={[
-                      'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border',
-                      request.status === 'found'
-                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50'
-                        : request.status === 'searching'
-                        ? 'bg-blue-50 text-blue-600 border-blue-100/50'
-                        : 'bg-amber-50 text-amber-600 border-amber-100/50',
-                    ].join(' ')}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${STATUS_BADGE[claimStatus]}`}
                   >
                     <span
-                      className={[
-                        'w-1.5 h-1.5 rounded-full',
-                        request.status === 'found'
-                          ? 'bg-emerald-400'
-                          : request.status === 'searching'
-                          ? 'bg-blue-400 animate-pulse'
-                          : 'bg-amber-400',
-                      ].join(' ')}
+                      className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[claimStatus]} ${STATUS_PULSE[claimStatus] ? 'animate-pulse' : ''}`}
                     />
-                    {request.status === 'found'
-                      ? 'Item Found'
-                      : request.status === 'searching'
-                      ? 'Searching'
-                      : request.status === 'submitted'
-                      ? 'Submitted'
-                      : 'Pending'}
+                    {STATUS_LABEL[claimStatus]}
                   </span>
                 </div>
                 <p className="text-[12px] text-[#9CA3AF] mt-1.5 font-medium">
@@ -406,8 +409,7 @@ function ClaimRequestDetailPage() {
 
               {filteredSteps.map((step, idx) => {
                 const isDone = idx < completedSteps
-                const isCurrent = idx === completedSteps
-                const stepTime = getStepTime(idx)
+                const stepTime = stepTimes[idx]
 
                 return (
                   <div key={step.key} className="flex flex-col items-center flex-1 relative">
@@ -416,7 +418,7 @@ function ClaimRequestDetailPage() {
                       <div className="absolute top-3.5 right-[50%] w-full h-0.5 bg-[#F3F4F6] -z-10" />
                     )}
 
-                    {/* Connector line (Colored / Active) */}
+                    {/* Connector line (Colored / Done) */}
                     {idx > 0 && isDone && (
                       <div className="absolute top-3.5 right-[50%] w-full h-0.5 bg-emerald-500 -z-10" />
                     )}
@@ -427,15 +429,11 @@ function ClaimRequestDetailPage() {
                         'w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all shadow-sm',
                         isDone
                           ? 'bg-emerald-500 text-white'
-                          : isCurrent
-                            ? 'bg-amber-100 border-2 border-amber-400'
-                            : 'bg-[#F3F4F6] border border-[#E5E7EB]',
+                          : 'bg-[#F3F4F6] border border-[#E5E7EB]',
                       ].join(' ')}
                     >
                       {isDone ? (
                         <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
-                      ) : isCurrent ? (
-                        <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                       ) : (
                         <div className="w-2 h-2 rounded-full bg-[#D1D5DB]" />
                       )}
@@ -446,19 +444,19 @@ function ClaimRequestDetailPage() {
                       <p
                         className={[
                           'text-[12px] font-bold leading-tight whitespace-nowrap',
-                          isDone ? 'text-emerald-700' : isCurrent ? 'text-amber-700' : 'text-[#9CA3AF]',
+                          isDone ? 'text-emerald-700' : 'text-[#9CA3AF]',
                         ].join(' ')}
                       >
                         {step.label}
                       </p>
-                      {(isDone || isCurrent) && (
+                      {stepTime && (
                         <p
                           className={[
                             'text-[10px] leading-relaxed mt-1 font-medium',
-                            isDone ? 'text-emerald-600/60' : 'text-amber-600/60',
+                            isDone ? 'text-emerald-600/60' : 'text-[#9CA3AF]',
                           ].join(' ')}
                         >
-                          {formatDate(stepTime.toISOString())}
+                          {formatDate(stepTime)}
                         </p>
                       )}
                     </div>

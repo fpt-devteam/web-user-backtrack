@@ -1,14 +1,17 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
-import { Clock, Package, Search, ChevronRight, X } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Pagination } from '@/components/ui/pagination'
+import { Search, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import type { Variants } from 'framer-motion'
 import { useGetConversations } from '@/hooks/use-message'
-import { Skeleton } from '@/components/ui/skeleton'
+import { ClaimListPanel } from '@/components/claim-requests/claim-list/claim-list-panel'
+import type { ClaimRequest } from '@/components/claim-requests/claim.types'
+import { normalizeStatus } from '@/components/claim-requests/claim.constants'
 
-
+/**
+ * Legacy item shape kept for the detail route (`./$id`).
+ * The list itself now uses the normalised `ClaimRequest` model.
+ */
 export interface ClaimRequestItem {
   id: string
   itemName: string
@@ -19,7 +22,7 @@ export interface ClaimRequestItem {
   updatedAt?: string
   status: 'submitted' | 'searching' | 'found' | 'pending'
   type: 'in-inventory' | 'non-inventory'
-  images: string[]
+  images: Array<string>
   reporterName: string
   reporterPhone: string
   reporterEmail: string
@@ -44,10 +47,8 @@ const fadeUp: Variants = {
   }),
 }
 
-// Tab types and constants removed (Search & Sort used instead)
-
-/* ── hardcoded data ─────────────────────────────────────────── */
-export const MOCK_REQUESTS: ClaimRequestItem[] = [
+/* ── hardcoded data (used by the detail route as a fallback) ──── */
+export const MOCK_REQUESTS: Array<ClaimRequestItem> = [
   {
     id: '1',
     itemName: 'iPhone 14 Pro Max',
@@ -134,339 +135,110 @@ export const MOCK_REQUESTS: ClaimRequestItem[] = [
   },
 ]
 
-/* ── helpers ─────────────────────────────────────────────────── */
-function formatDate(iso: string) {
-  const d = new Date(iso)
-  return d.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
-}
-
-function StatusBadge({ status }: { status: 'submitted' | 'searching' | 'found' | 'pending' }) {
-  const isFound = status === 'found'
-  const isSearching = status === 'searching'
-  const isSubmitted = status === 'submitted'
-
-  if (isFound) {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-600">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-        Item Found
-      </span>
-    )
-  }
-
-  if (isSearching) {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide bg-blue-50 text-blue-600">
-        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-        Searching
-      </span>
-    )
-  }
-
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wide bg-amber-50 text-amber-600">
-      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-      {isSubmitted ? 'Submitted' : 'Pending'}
-    </span>
-  )
-}
-
-// TypeBadge removed as item tags are no longer displayed on cards
-
 /* ── page ────────────────────────────────────────────────────── */
 function ClaimRequestsPage() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'submitted' | 'searching' | 'found'>('all')
-  const [currentPage, setCurrentPage] = useState(1)
 
-  const ITEMS_PER_PAGE = 10
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useGetConversations()
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetConversations()
+  const claims = useMemo<Array<ClaimRequest>>(() => {
+    const conversations = data?.pages.flatMap((p) => p.items) ?? []
+    return conversations
+      .filter((c) => c.type === 'support')
+      .map((c) => {
+        const sfd = c.supportFormData
+        return {
+          id: c.conversationId,
+          itemName: sfd?.itemName || 'Untitled item',
+          description: c.lastMessage?.content || sfd?.additionalDetails || 'No additional details provided.',
+          status: normalizeStatus(c.status),
+          category: sfd?.category ?? null,
+          subCategoryId: sfd?.subCategoryId ?? null,
+          imageUrls: sfd?.imageUrls ?? [],
+          createdAt: c.createdAt ?? c.updatedAt,
+          updatedAt: c.updatedAt,
+          lastMessageAt: c.lastMessage?.timestamp ?? null,
+          orgName: c.orgName ?? null,
+          orgLogoUrl: c.orgLogoUrl ?? null,
+        }
+      })
+  }, [data])
 
-  const conversations = data?.pages.flatMap((p) => p.items ?? []).filter(Boolean) ?? []
-
-  // Filter for support conversations
-  const supportConversations = conversations.filter(
-    (c) => c.type === 'support'
-  )
-
-  const mappedRequests: ClaimRequestItem[] = supportConversations.map((c) => {
-    const sfd = c.supportFormData
-    return {
-      id: c.conversationId,
-      itemName: sfd?.itemName || 'N/A',
-      description: c.lastMessage?.content || 'N/A',
-      color: sfd?.color ?? '',
-      lostLocation: sfd?.lostLocation ?? '',
-      createdAt: c.createdAt ?? c.updatedAt ?? new Date().toISOString(),
-      updatedAt: c.updatedAt ?? c.createdAt ?? new Date().toISOString(),
-      status: (
-        c.status === 'closed'
-          ? 'found'
-          : c.status === 'in_progress'
-            ? 'searching'
-            : c.status === 'queue'
-              ? 'submitted'
-              : 'submitted'
-      ) as 'submitted' | 'searching' | 'found' | 'pending',
-      type: (sfd?.postId ? 'in-inventory' : 'non-inventory') as 'in-inventory' | 'non-inventory',
-      images: sfd?.imageUrls ?? [],
-      reporterName: c.partner?.displayName ?? '',
-      reporterPhone: '0912 345 678',
-      reporterEmail: c.partner?.email || 'an.nguyen@example.com',
-      conversationId: c.conversationId,
-      category: sfd?.category,
-      subCategoryId: sfd?.subCategoryId,
-      eventTime: sfd?.eventTime,
-      orgLogoUrl: c.orgLogoUrl ?? undefined,
-    }
-  })
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, sortBy, statusFilter])
-
-  const filteredRequests = mappedRequests.filter((req) => {
-    if (statusFilter !== 'all' && req.status !== statusFilter) {
-      return false
-    }
+  const filteredClaims = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
-    if (!query) return true
-    return (
-      req.itemName.toLowerCase().includes(query) ||
-      req.description.toLowerCase().includes(query) ||
-      req.lostLocation.toLowerCase().includes(query)
+    if (!query) return claims
+    return claims.filter(
+      (c) =>
+        c.itemName.toLowerCase().includes(query) ||
+        c.description.toLowerCase().includes(query) ||
+        (c.category ?? '').toLowerCase().includes(query),
     )
-  })
+  }, [claims, searchQuery])
 
-  const sortedRequests = [...filteredRequests].sort((a, b) => {
-    const timeA = new Date(a.createdAt).getTime()
-    const timeB = new Date(b.createdAt).getTime()
-    return sortBy === 'newest' ? timeB - timeA : timeA - timeB
-  })
-
-  const totalPages = Math.ceil(sortedRequests.length / ITEMS_PER_PAGE)
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const paginatedRequests = sortedRequests.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  function handleView(claim: ClaimRequest) {
+    void navigate({ to: '/claim-requests/$id', params: { id: claim.id } })
+  }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-72px)] bg-gray-50 pt-8 pb-12 flex flex-col justify-between">
-      <div className="w-full px-25 flex-1 flex flex-col justify-between">
-        <div className="w-full">
-          {/* Page header */}
-          <motion.div
-            custom={0} variants={fadeUp} initial="hidden" animate="show"
-            className="mb-6"
-          >
-            <h1 className="text-2xl font-black text-black tracking-tight">Claim Requests</h1>
-          </motion.div>
-
-          {/* Controls: Search and Sort */}
-          <motion.div
-            custom={0.5} variants={fadeUp} initial="hidden" animate="show"
-            className="flex flex-col sm:flex-row items-center gap-4 mb-6"
-          >
-            {/* Search Bar */}
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-              <input
-                type="text"
-                placeholder="Search claim requests..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 bg-white rounded-2xl border border-[#E5E7EB] text-[13px] font-medium text-[#111] placeholder-[#9CA3AF] focus:outline-hidden focus:border-black focus:ring-1 focus:ring-black transition-all shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#111] transition-colors cursor-pointer"
-                  aria-label="Clear search"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {/* Status Filter Dropdown */}
-            <div className="w-full sm:w-56 shrink-0">
-              <Select value={statusFilter} onValueChange={(value: 'all' | 'submitted' | 'searching' | 'found') => setStatusFilter(value)}>
-                <SelectTrigger className="w-full bg-white rounded-2xl border border-[#E5E7EB] h-[46px] px-4 text-[13px] font-bold text-[#111] shadow-[0_1px_4px_rgba(0,0,0,0.02)] hover:bg-[#F9FAFB] transition-colors cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#6B7280] font-normal">Status:</span>
-                    <SelectValue placeholder="All Statuses" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg">
-                  <SelectItem value="all" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
-                    All
-                  </SelectItem>
-                  <SelectItem value="submitted" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
-                    Submitted
-                  </SelectItem>
-                  <SelectItem value="searching" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
-                    Searching
-                  </SelectItem>
-                  <SelectItem value="found" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
-                    Found
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sort Dropdown */}
-            <div className="w-full sm:w-56 shrink-0">
-              <Select value={sortBy} onValueChange={(value: 'newest' | 'oldest') => setSortBy(value)}>
-                <SelectTrigger className="w-full bg-white rounded-2xl border border-[#E5E7EB] h-[46px] px-4 text-[13px] font-bold text-[#111] shadow-[0_1px_4px_rgba(0,0,0,0.02)] hover:bg-[#F9FAFB] transition-colors cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#6B7280] font-normal">Sort:</span>
-                    <SelectValue placeholder="Sort by" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg">
-                  <SelectItem value="newest" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
-                    Newest first
-                  </SelectItem>
-                  <SelectItem value="oldest" className="text-[13px] font-bold text-[#111] hover:bg-[#F3F4F6] focus:bg-[#F3F4F6] transition-colors cursor-pointer">
-                    Oldest first
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </motion.div>
-
-          {/* Request cards */}
-          {isLoading ? (
-            <div className="flex flex-col gap-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-3xl border border-[#E5E7EB] p-5 flex gap-5 items-center">
-                  <Skeleton className="w-[100px] h-[100px] rounded-2xl shrink-0" />
-                  <div className="flex-1 py-1 flex flex-col gap-2">
-                    <div className="flex justify-between items-start">
-                      <Skeleton className="h-5 w-1/3 rounded" />
-                      <Skeleton className="h-5 w-16 rounded" />
-                    </div>
-                    <Skeleton className="h-4 w-3/4 rounded" />
-                    <div className="flex gap-4 mt-2">
-                      <Skeleton className="h-3 w-24 rounded" />
-                      <Skeleton className="h-3 w-32 rounded" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {paginatedRequests.map((req, i) => (
-                <motion.div
-                  key={req.id}
-                  custom={i + 1}
-                  variants={fadeUp}
-                  initial="hidden"
-                  animate="show"
-                  onClick={() => navigate({ to: '/claim-requests/$id', params: { id: req.id } })}
-                  className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden cursor-pointer
-                             shadow-[0_2px_12px_rgba(0,0,0,0.04)]
-                             hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-shadow duration-200"
-                >
-                  <div className="p-5 flex gap-5 items-center">
-                    {/* Left: Image Container */}
-                    <div className="w-[100px] h-[100px] rounded-2xl bg-[#F3F4F6] overflow-hidden shrink-0 flex items-center justify-center border border-[#E5E7EB]">
-                      {req.images && req.images.length > 0 ? (
-                        <img
-                          src={req.images[0]}
-                          alt={req.itemName}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Package className="w-8 h-8 text-[#9CA3AF]" strokeWidth={1.5} />
-                      )}
-                    </div>
-
-                    {/* Middle: Content */}
-                    <div className="flex-1 min-w-0 py-1">
-                      {/* Top row: title + status */}
-                      <div className="flex items-start justify-between gap-3 mb-1.5">
-                        <h3 className="text-[15px] font-bold text-[#111] truncate">{req.itemName}</h3>
-                        <div className="shrink-0">
-                          <StatusBadge status={req.status} />
-                        </div>
-                      </div>
-
-                      {/* Body */}
-                      <p className="text-[13px] text-[#6B7280] leading-relaxed mb-3 line-clamp-2">
-                        {req.description}
-                      </p>
-
-                      {/* Footer meta */}
-                      <div className="flex items-center gap-4 text-[12px] text-[#9CA3AF]">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5" />
-                          {formatDate(req.updatedAt ?? req.createdAt)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Right: Chevron Arrow */}
-                    <div className="shrink-0 pl-1">
-                      <ChevronRight className="w-5 h-5 text-[#9CA3AF]" strokeWidth={1.8} />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-
-          {/* Load more button */}
-          {!isLoading && hasNextPage && (
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-                className="px-6 py-3 rounded-2xl text-xs font-bold bg-white border border-[#E5E7EB] text-[#111] hover:bg-[#F9FAFB] active:scale-[0.98] shadow-sm transition-all cursor-pointer flex items-center gap-2"
-              >
-                {isFetchingNextPage ? (
-                  <>Loading...</>
-                ) : (
-                  <>Load more claim requests</>
-                )}
-              </button>
-            </div>
-          )}
-
-          {/* Empty state */}
-          {!isLoading && sortedRequests.length === 0 && (
-            <motion.div
-              custom={1} variants={fadeUp} initial="hidden" animate="show"
-              className="flex flex-col items-center justify-center py-20 text-center"
-            >
-              <Search className="w-14 h-14 text-[#E5E7EB] mb-4" strokeWidth={1} />
-              <p className="text-sm font-bold text-[#9CA3AF]">No claim requests found</p>
-              <p className="text-[12px] text-[#C4C9D4] mt-1">
-                {searchQuery
-                  ? `We couldn't find any requests matching "${searchQuery}". Try a different keyword.`
-                  : 'Submit a claim request from an organization page to get started.'}
-              </p>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-8 shrink-0">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
+    <div className="min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-72px)] bg-gray-50 pt-8 pb-12">
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6">
+        {/* Search */}
+        <motion.div
+          custom={0.5}
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          className="mb-6"
+        >
+          <div className="relative w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+            <input
+              type="text"
+              placeholder="Search claim requests..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-10 py-3 bg-white rounded-2xl border border-[#E5E7EB] text-[13px] font-medium text-[#111] placeholder-[#9CA3AF] focus:outline-hidden focus:border-black focus:ring-1 focus:ring-black transition-all shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#111] transition-colors cursor-pointer"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Status bar + order bar + list */}
+        <motion.div custom={1} variants={fadeUp} initial="hidden" animate="show">
+          <ClaimListPanel
+            claims={filteredClaims}
+            isLoading={isLoading}
+            isError={isError}
+            emptyTitle="No claim requests found"
+            emptyHint={
+              searchQuery
+                ? `We couldn't find any requests matching "${searchQuery}". Try a different keyword.`
+                : 'Submit a claim request from an organization page to get started.'
+            }
+            onView={handleView}
+          />
+        </motion.div>
+
+        {/* Load more */}
+        {!isLoading && hasNextPage && (
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="px-6 py-3 rounded-2xl text-xs font-bold bg-white border border-[#E5E7EB] text-[#111] hover:bg-[#F9FAFB] active:scale-[0.98] shadow-sm transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
+            >
+              {isFetchingNextPage ? 'Loading...' : 'Load more claim requests'}
+            </button>
           </div>
         )}
       </div>
