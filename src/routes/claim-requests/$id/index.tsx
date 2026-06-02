@@ -54,6 +54,8 @@ const STEP_PROGRESS: Record<ClaimStatus, number> = {
   in_progress: 2,
   in_verified: 3,
   closed:      4,
+  // Rejected is a terminal state reached after review — it stops at the review stage.
+  rejected:    2,
 }
 
 /** Map the legacy mock status onto the canonical 4-stage claim status. */

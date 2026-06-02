@@ -1,15 +1,15 @@
 import { cn } from '@/lib/utils'
-import type { ClaimStatus } from '../claim.constants'
-import { CLAIM_STATUSES, STATUS_LABEL } from '../claim.constants'
+import type { ClaimTabKey } from '../claim.constants'
+import { CLAIM_TABS } from '../claim.constants'
 
-/** Status filter for the claim list — any claim status, or "all". */
-export type ClaimStatusFilter = ClaimStatus | 'all'
+/** Status filter for the claim list — a status-bar tab, or "all". */
+export type ClaimStatusFilter = ClaimTabKey | 'all'
 
 export type ClaimStatusCounts = Record<ClaimStatusFilter, number>
 
 const TABS: Array<{ key: ClaimStatusFilter; label: string }> = [
   { key: 'all', label: 'All' },
-  ...CLAIM_STATUSES.map((s) => ({ key: s, label: STATUS_LABEL[s] })),
+  ...CLAIM_TABS.map((t) => ({ key: t.key, label: t.label })),
 ]
 
 interface ClaimListTabsProps {

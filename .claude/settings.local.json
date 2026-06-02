@@ -27,7 +27,8 @@
       "Bash(/home/nhatthang/Fptu/web-user-backtrack/node_modules/.bin/tsc:*)",
       "Bash(./node_modules/.bin/tsc --noEmit)",
       "Bash(sh:*)",
-      "Bash(grep -E 'profile/\\\\$publicCode')"
+      "Bash(grep -E 'profile/\\\\$publicCode')",
+      "Bash(npx eslint *)"
     ]
   }
 }

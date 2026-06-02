@@ -4,9 +4,9 @@
 // ─────────────────────────────────────────────────────────
 
 /** Server-side conversation status values (same as the console backend). */
-export type ClaimStatus = 'queue' | 'in_progress' | 'in_verified' | 'closed'
+export type ClaimStatus = 'queue' | 'in_progress' | 'in_verified' | 'closed' | 'rejected'
 
-export const CLAIM_STATUSES: Array<ClaimStatus> = ['queue', 'in_progress', 'in_verified', 'closed']
+export const CLAIM_STATUSES: Array<ClaimStatus> = ['queue', 'in_progress', 'in_verified', 'closed', 'rejected']
 
 /** User-facing label for each status (what the reporter sees). */
 export const STATUS_LABEL: Record<ClaimStatus, string> = {
@@ -14,6 +14,7 @@ export const STATUS_LABEL: Record<ClaimStatus, string> = {
   in_progress: 'In Review',
   in_verified: 'Verified',
   closed:      'Resolved',
+  rejected:    'Rejected',
 }
 
 export const STATUS_BADGE: Record<ClaimStatus, string> = {
@@ -21,6 +22,7 @@ export const STATUS_BADGE: Record<ClaimStatus, string> = {
   in_progress: 'bg-blue-50 text-blue-700 border border-blue-200',
   in_verified: 'bg-violet-50 text-violet-700 border border-violet-200',
   closed:      'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  rejected:    'bg-rose-50 text-rose-700 border border-rose-200',
 }
 
 export const STATUS_DOT: Record<ClaimStatus, string> = {
@@ -28,6 +30,7 @@ export const STATUS_DOT: Record<ClaimStatus, string> = {
   in_progress: 'bg-blue-500',
   in_verified: 'bg-violet-500',
   closed:      'bg-emerald-500',
+  rejected:    'bg-rose-500',
 }
 
 /** Whether the dot should pulse (active, in-flight states). */
@@ -36,7 +39,22 @@ export const STATUS_PULSE: Record<ClaimStatus, boolean> = {
   in_progress: true,
   in_verified: false,
   closed:      false,
+  rejected:    false,
 }
+
+/**
+ * Status-bar tabs. Each tab maps to one or more item statuses.
+ * The "Closed" tab groups the two terminal states — Resolved (`closed`)
+ * and Rejected (`rejected`).
+ */
+export type ClaimTabKey = 'queue' | 'in_progress' | 'in_verified' | 'closed'
+
+export const CLAIM_TABS: Array<{ key: ClaimTabKey; label: string; statuses: Array<ClaimStatus> }> = [
+  { key: 'queue',       label: 'Submitted', statuses: ['queue'] },
+  { key: 'in_progress', label: 'In Review', statuses: ['in_progress'] },
+  { key: 'in_verified', label: 'Verified',  statuses: ['in_verified'] },
+  { key: 'closed',      label: 'Closed',    statuses: ['closed', 'rejected'] },
+]
 
 export const CATEGORY_COLOR: Record<string, { bg: string; text: string }> = {
   PersonalBelongings: { bg: 'bg-amber-50',   text: 'text-amber-600' },
@@ -57,10 +75,12 @@ export function normalizeStatus(raw?: string | null): ClaimStatus {
     case 'in_progress': return 'in_progress'
     case 'in_verified': return 'in_verified'
     case 'closed':      return 'closed'
+    case 'rejected':    return 'rejected'
     // legacy / alternate spellings kept for safety
     case 'verified':    return 'in_verified'
     case 'active':      return 'in_progress'
     case 'resolved':    return 'closed'
+    case 'reject':      return 'rejected'
     default:            return 'queue'
   }
 }

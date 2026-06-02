@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { ClaimRequest } from '../claim.types'
-import { CLAIM_STATUSES } from '../claim.constants'
+import { CLAIM_TABS } from '../claim.constants'
 import { ClaimList } from './claim-list'
 import { ClaimListTabs   } from './claim-list-tabs'
 import type {ClaimStatusCounts, ClaimStatusFilter} from './claim-list-tabs';
@@ -30,13 +30,16 @@ export function ClaimListPanel({
 
   const counts = useMemo<ClaimStatusCounts>(() => {
     const result = { all: claims.length } as ClaimStatusCounts
-    for (const s of CLAIM_STATUSES) result[s] = 0
-    for (const claim of claims) result[claim.status] += 1
+    for (const tab of CLAIM_TABS) {
+      result[tab.key] = claims.filter((c) => tab.statuses.includes(c.status)).length
+    }
     return result
   }, [claims])
 
   const visible = useMemo(() => {
-    const filtered = status === 'all' ? claims : claims.filter((c) => c.status === status)
+    const tab = CLAIM_TABS.find((t) => t.key === status)
+    const filtered =
+      status === 'all' || !tab ? claims : claims.filter((c) => tab.statuses.includes(c.status))
     const time = (c: ClaimRequest) => new Date(c.updatedAt ?? c.createdAt).getTime()
     return [...filtered].sort((a, b) => (sort === 'newest' ? time(b) - time(a) : time(a) - time(b)))
   }, [claims, status, sort])
