@@ -386,9 +386,15 @@ function ClaimRequestDetailPage() {
                     {STATUS_LABEL[claimStatus]}
                   </span>
                 </div>
-                <p className="text-[12px] text-[#9CA3AF] mt-1.5 font-medium">
-                  Last updated {formatDate(request.updatedAt ?? request.createdAt)}
-                </p>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#F3F4F6] text-[#6B7280] text-[11px] font-bold font-mono">
+                    <Tag className="w-3 h-3" strokeWidth={2} />
+                    #{request.id}
+                  </span>
+                  <span className="text-[12px] text-[#9CA3AF] font-medium">
+                    Last updated {formatDate(request.updatedAt ?? request.createdAt)}
+                  </span>
+                </div>
               </div>
             </div>
             <button
