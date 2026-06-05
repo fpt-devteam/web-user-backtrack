@@ -12,6 +12,8 @@ type MessagerPageProps = {
   readonly initialIsSupport?: boolean
   readonly fallbackName?: string
   readonly fallbackAvatarUrl?: string
+  /** When set, only conversations of this type are listed (e.g. "direct" for QR Chat). */
+  readonly conversationType?: 'direct' | 'support'
 }
 
 export function MessagerPage({
@@ -19,6 +21,7 @@ export function MessagerPage({
   initialIsSupport = false,
   fallbackName,
   fallbackAvatarUrl,
+  conversationType,
 }: MessagerPageProps) {
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null)
   const [isSupport, setIsSupport] = useState(initialIsSupport)
@@ -30,7 +33,11 @@ export function MessagerPage({
 
   return (
     <div className="flex h-full border border-gray-100 overflow-hidden">
-      <ConversationList selectedId={selectedId} onSelect={handleSelect} />
+      <ConversationList
+        selectedId={selectedId}
+        onSelect={handleSelect}
+        conversationType={conversationType}
+      />
 
       <main
         className={cn(

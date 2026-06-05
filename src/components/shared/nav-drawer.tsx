@@ -143,6 +143,7 @@ export function NavDrawer() {
   const primaryItems: Array<PrimaryMenuItem> = isSignedIn
     ? [
       { icon: User, title: 'My Account', subtitle: 'View and edit your profile', onClick: () => go('/account') },
+      { icon: MessageCircle, title: 'QR Chat', subtitle: 'Chat with people who found your items', onClick: () => go('/message') },
       { icon: Search, title: 'Claim Requests', subtitle: 'Track your claim requests', onClick: () => go('/claim-requests') },
       { icon: Building2, title: 'Organizations', subtitle: 'Manage your organizations', onClick: () => go('/organizations') },
       { icon: Sparkles, title: 'Backtrack Premium', subtitle: 'Upgrade for more features', onClick: () => go('/premium') },
@@ -150,6 +151,7 @@ export function NavDrawer() {
     ]
     : [
       { icon: User, title: 'Sign In / Sign Up', subtitle: 'Manage your account', onClick: () => go('/sign-in') },
+      { icon: MessageCircle, title: 'QR Chat', subtitle: 'Chat with people who found your items', onClick: () => go('/message') },
       { icon: Search, title: 'Claim Requests', subtitle: 'Track your claim requests', onClick: () => go('/claim-requests') },
       { icon: Building2, title: 'Organizations', subtitle: 'Manage your organizations', onClick: () => go('/organizations') },
       { icon: Sparkles, title: 'Backtrack Premium', subtitle: 'Upgrade for more features', onClick: () => go('/premium') },

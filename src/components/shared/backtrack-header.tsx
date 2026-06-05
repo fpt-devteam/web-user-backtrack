@@ -16,6 +16,7 @@ import { useTotalUnreadCount } from '@/hooks/use-message'
 const NAV_LINKS = [
   { label: 'Pricing', to: '/premium', icon: Sparkles },
   { label: 'Claim Request', to: '/claim-requests', icon: Search },
+  { label: 'QR Chat', to: '/message', icon: MessageCircle },
   { label: 'Organizations', to: '/organizations', icon: Building2 },
 ] as const
 

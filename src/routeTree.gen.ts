@@ -14,6 +14,7 @@ import { Route as SignUpIndexRouteImport } from './routes/sign-up/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as PremiumIndexRouteImport } from './routes/premium/index'
 import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
+import { Route as MessageIndexRouteImport } from './routes/message/index'
 import { Route as HelpIndexRouteImport } from './routes/help/index'
 import { Route as ClaimRequestsIndexRouteImport } from './routes/claim-requests/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
@@ -47,6 +48,11 @@ const PremiumIndexRoute = PremiumIndexRouteImport.update({
 const OrganizationsIndexRoute = OrganizationsIndexRouteImport.update({
   id: '/organizations/',
   path: '/organizations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessageIndexRoute = MessageIndexRouteImport.update({
+  id: '/message/',
+  path: '/message/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpIndexRoute = HelpIndexRouteImport.update({
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/account/': typeof AccountIndexRoute
   '/claim-requests/': typeof ClaimRequestsIndexRoute
   '/help/': typeof HelpIndexRoute
+  '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountIndexRoute
   '/claim-requests': typeof ClaimRequestsIndexRoute
   '/help': typeof HelpIndexRoute
+  '/message': typeof MessageIndexRoute
   '/organizations': typeof OrganizationsIndexRoute
   '/premium': typeof PremiumIndexRoute
   '/sign-in': typeof SignInIndexRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/account/': typeof AccountIndexRoute
   '/claim-requests/': typeof ClaimRequestsIndexRoute
   '/help/': typeof HelpIndexRoute
+  '/message/': typeof MessageIndexRoute
   '/organizations/': typeof OrganizationsIndexRoute
   '/premium/': typeof PremiumIndexRoute
   '/sign-in/': typeof SignInIndexRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/account/'
     | '/claim-requests/'
     | '/help/'
+    | '/message/'
     | '/organizations/'
     | '/premium/'
     | '/sign-in/'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/claim-requests'
     | '/help'
+    | '/message'
     | '/organizations'
     | '/premium'
     | '/sign-in'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/account/'
     | '/claim-requests/'
     | '/help/'
+    | '/message/'
     | '/organizations/'
     | '/premium/'
     | '/sign-in/'
@@ -200,6 +212,7 @@ export interface RootRouteChildren {
   AccountIndexRoute: typeof AccountIndexRoute
   ClaimRequestsIndexRoute: typeof ClaimRequestsIndexRoute
   HelpIndexRoute: typeof HelpIndexRoute
+  MessageIndexRoute: typeof MessageIndexRoute
   OrganizationsIndexRoute: typeof OrganizationsIndexRoute
   PremiumIndexRoute: typeof PremiumIndexRoute
   SignInIndexRoute: typeof SignInIndexRoute
@@ -247,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/organizations'
       fullPath: '/organizations/'
       preLoaderRoute: typeof OrganizationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/message/': {
+      id: '/message/'
+      path: '/message'
+      fullPath: '/message/'
+      preLoaderRoute: typeof MessageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help/': {
@@ -320,6 +340,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountIndexRoute: AccountIndexRoute,
   ClaimRequestsIndexRoute: ClaimRequestsIndexRoute,
   HelpIndexRoute: HelpIndexRoute,
+  MessageIndexRoute: MessageIndexRoute,
   OrganizationsIndexRoute: OrganizationsIndexRoute,
   PremiumIndexRoute: PremiumIndexRoute,
   SignInIndexRoute: SignInIndexRoute,

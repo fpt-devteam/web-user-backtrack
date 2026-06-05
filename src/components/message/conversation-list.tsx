@@ -7,13 +7,18 @@ import { cn } from '@/lib/utils'
 type ConversationListProps = {
   readonly selectedId: string | null
   readonly onSelect: (id: string, isSupport: boolean) => void
+  /** When set, only conversations of this type are listed (e.g. "direct" for QR Chat). */
+  readonly conversationType?: 'direct' | 'support'
 }
 
-export function ConversationList({ selectedId, onSelect }: ConversationListProps) {
+export function ConversationList({ selectedId, onSelect, conversationType }: ConversationListProps) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetConversations()
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const conversations = data?.pages.flatMap((p) => p.items ?? []).filter(Boolean) ?? []
+  const allConversations = data?.pages.flatMap((p) => p.items ?? []).filter(Boolean) ?? []
+  const conversations = allConversations.filter(
+    (conv) => !conversationType || conv.type === conversationType,
+  )
 
   return (
     <aside

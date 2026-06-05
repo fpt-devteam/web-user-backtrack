@@ -13,7 +13,7 @@ const FOOTER_LINKS = [
     heading: 'Account',
     items: [
       { label: 'My Account', to: '/account'   },
-      { label: 'Messages',   to: '/message'   },
+      { label: 'QR Chat',    to: '/message'   },
       { label: 'Sign in',    to: '/sign-in'   },
     ],
   },
@@ -67,12 +67,7 @@ export function BacktrackFooter() {
                     <li key={label}>
                       <button
                         onClick={() => {
-                          if (to === '/message') {
-                            // Temporarily disabled:
-                            // navigate({ to })
-                          } else {
-                            navigate({ to })
-                          }
+                          navigate({ to })
                         }}
                         className="text-sm text-[#555] hover:text-[#111] font-medium
                                    transition-colors duration-150 cursor-pointer text-left"
