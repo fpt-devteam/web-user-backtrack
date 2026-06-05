@@ -183,7 +183,7 @@ function ClaimRequestsPage() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-72px)] bg-gray-50 pt-8 pb-12">
-      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
         {/* Search */}
         <motion.div
           custom={0.5}
