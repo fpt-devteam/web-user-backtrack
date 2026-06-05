@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Send, Loader2, WifiOff, Camera } from 'lucide-react'
+import { Send, Loader2, WifiOff, Camera, Lock } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -24,11 +24,14 @@ interface MessageInputProps {
   conversationId?: string
   isSupport?: boolean
   onSend?: () => void
+  /** When set, the composer is locked and a read-only notice is shown instead. */
+  closed?: boolean
+  closedMessage?: string
 }
 
 const TYPING_DEBOUNCE_MS = 1500
 
-export function MessageInput({ conversationId, isSupport, onSend }: MessageInputProps) {
+export function MessageInput({ conversationId, isSupport, onSend, closed, closedMessage }: MessageInputProps) {
   const {
     sendMessage,
     sendTypingStart,
@@ -181,6 +184,18 @@ export function MessageInput({ conversationId, isSupport, onSend }: MessageInput
   )
 
   const isDisabled = isSending || !isConnected || isUploading
+
+  /* ── Closed conversation: read-only history, no composer ── */
+  if (closed) {
+    return (
+      <div className="flex items-center justify-center gap-2 px-4 py-4 text-gray-400">
+        <Lock className="w-4 h-4" strokeWidth={2} />
+        <p className="text-xs font-medium">
+          {closedMessage ?? 'This conversation is resolved. You can no longer send messages.'}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <Form {...form}>

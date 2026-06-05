@@ -14,6 +14,8 @@ import {
   X,
   FileText,
   Tag,
+  MapPin,
+  Layers,
 } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { MOCK_REQUESTS } from '../index'
@@ -309,7 +311,7 @@ function ClaimRequestDetailPage() {
   }
 
   const renderChatFeed = () => {
-    const feedElements: React.ReactNode[] = []
+    const feedElements: Array<React.ReactNode> = []
     let lastDateStr = ''
 
     messages.forEach((msg, idx) => {
@@ -516,9 +518,18 @@ function ClaimRequestDetailPage() {
                     <Tag className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
                     <span className="text-[13px] font-semibold">Category</span>
                   </div>
-                  <p className="text-[13px] text-black font-medium flex-1">
-                    {subcategoryName ? `${request.category} (${subcategoryName})` : request.category}
-                  </p>
+                  <p className="text-[13px] text-black font-medium flex-1">{request.category}</p>
+                </div>
+              )}
+
+              {/* Subcategory */}
+              {subcategoryName && (
+                <div className="flex items-center gap-4 py-3.5">
+                  <div className="flex items-center gap-2.5 w-44 shrink-0 text-[#6B7280]">
+                    <Layers className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
+                    <span className="text-[13px] font-semibold">Subcategory</span>
+                  </div>
+                  <p className="text-[13px] text-black font-medium flex-1">{subcategoryName}</p>
                 </div>
               )}
 
@@ -529,6 +540,28 @@ function ClaimRequestDetailPage() {
                   <span className="text-[13px] font-semibold">Color</span>
                 </div>
                 <p className="text-[13px] text-black font-medium flex-1">{request.color || 'N/A'}</p>
+              </div>
+
+              {/* Lost Location */}
+              {request.lostLocation && (
+                <div className="flex items-center gap-4 py-3.5">
+                  <div className="flex items-center gap-2.5 w-44 shrink-0 text-[#6B7280]">
+                    <MapPin className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
+                    <span className="text-[13px] font-semibold">Lost Location</span>
+                  </div>
+                  <p className="text-[13px] text-black font-medium flex-1">{request.lostLocation}</p>
+                </div>
+              )}
+
+              {/* Type */}
+              <div className="flex items-center gap-4 py-3.5">
+                <div className="flex items-center gap-2.5 w-44 shrink-0 text-[#6B7280]">
+                  <Package className="w-4 h-4 text-[#9CA3AF]" strokeWidth={1.8} />
+                  <span className="text-[13px] font-semibold">Type</span>
+                </div>
+                <p className="text-[13px] text-black font-medium flex-1">
+                  {request.type === 'in-inventory' ? 'In Inventory' : 'Not in Inventory'}
+                </p>
               </div>
 
               {/* Time Lost / Event Time */}
@@ -599,7 +632,12 @@ function ClaimRequestDetailPage() {
                 <MessageList conversationId={request.conversationId} />
               </div>
               <div className="shrink-0 border-t border-gray-100 bg-white rounded-b-2xl">
-                <MessageInput conversationId={request.conversationId} isSupport={false} />
+                <MessageInput
+                  conversationId={request.conversationId}
+                  isSupport={false}
+                  closed={claimStatus === 'closed'}
+                  closedMessage="This claim is resolved. You can view the chat history but can no longer send messages."
+                />
               </div>
             </div>
           ) : (
