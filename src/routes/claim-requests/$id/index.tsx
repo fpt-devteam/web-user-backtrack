@@ -635,8 +635,12 @@ function ClaimRequestDetailPage() {
                 <MessageInput
                   conversationId={request.conversationId}
                   isSupport={false}
-                  closed={claimStatus === 'closed'}
-                  closedMessage="This claim is resolved. You can view the chat history but can no longer send messages."
+                  closed={claimStatus === 'closed' || claimStatus === 'rejected'}
+                  closedMessage={
+                    claimStatus === 'rejected'
+                      ? 'This claim was rejected. You can view the chat history but can no longer send messages.'
+                      : 'This claim is resolved. You can view the chat history but can no longer send messages.'
+                  }
                 />
               </div>
             </div>
